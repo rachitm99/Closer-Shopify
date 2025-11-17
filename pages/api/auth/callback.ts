@@ -19,17 +19,17 @@ export default async function handler(
       throw new Error('No session found');
     }
 
-    // Store the session
+    // Store the session (offline token - never expires)
     await storeSession(session);
 
-    // Set session cookie
+    // Set session cookie (1 year since offline tokens don't expire)
     res.setHeader(
       'Set-Cookie',
       cookie.serialize('shopify_app_session', session.id, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'none',
-        maxAge: 60 * 60 * 24 * 7, // 1 week
+        maxAge: 60 * 60 * 24 * 365, // 1 year
         path: '/',
       })
     );

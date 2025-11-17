@@ -11,7 +11,7 @@ api_version = "2025-10"
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = ""
-optional_scopes = [ "read_customers", "read_orders", "write_script_tags" ]
+optional_scopes = [ "read_customers", "read_orders" ]
 use_legacy_install_flow = false
 
 [auth]

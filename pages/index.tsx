@@ -112,9 +112,13 @@ export default function Home() {
   const handleReinstall = () => {
     const { shop } = router.query;
     if (shop) {
-      const authUrl = `${window.location.origin}/api/auth?shop=${shop}`;
-      // Open in new tab to avoid iframe restrictions
-      window.open(authUrl, '_blank');
+      const authUrl = `/api/auth?shop=${shop}`;
+      // Use parent window redirect for embedded app
+      if (window.top) {
+        window.top.location.href = authUrl;
+      } else {
+        window.location.href = authUrl;
+      }
     }
   };
 

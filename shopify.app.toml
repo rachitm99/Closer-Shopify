@@ -6,7 +6,7 @@ application_url = "https://closer-shopify-qq8c.vercel.app/"
 embedded = true
 
 [access_scopes]
-scopes = "read_orders,write_script_tags,read_customers"
+scopes = "read_orders,read_customers"
 
 [auth]
 redirect_urls = [
