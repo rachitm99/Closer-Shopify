@@ -1,6 +1,10 @@
-import { NextApiRequest } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { loadSession } from './session-storage';
 import cookie from 'cookie';
+import Cryptr from 'cryptr';
+import { Session } from '@shopify/shopify-api';
+
+const cryptr = new Cryptr(process.env.ENCRYPTION_SECRET || 'default-secret-key');
 
 export async function getSessionFromRequest(req: NextApiRequest) {
   try {
@@ -13,13 +17,68 @@ export async function getSessionFromRequest(req: NextApiRequest) {
       return null;
     }
 
-    const session = await loadSession(sessionId);
+    // Try to load from storage first
+    let session = await loadSession(sessionId);
+    
+    // If not found in storage, try to load from encrypted cookie
+    if (!session) {
+      const sessionDataCookie = cookies.shopify_session_data;
+      if (sessionDataCookie) {
+        try {
+          const decrypted = cryptr.decrypt(sessionDataCookie);
+          const sessionData = JSON.parse(decrypted);
+          session = new Session(sessionData);
+          console.log('Session loaded from cookie for shop:', sessionData.shop);
+        } catch (error) {
+          console.error('Error decrypting session cookie:', error);
+        }
+      }
+    }
+    
     console.log('Session loaded:', session ? 'success' : 'not found');
     
     return session;
   } catch (error) {
     console.error('Error getting session from request:', error);
     return null;
+  }
+}
+
+export function setSessionCookie(res: NextApiResponse, session: Session) {
+  try {
+    const sessionData = {
+      id: session.id,
+      shop: session.shop,
+      state: session.state,
+      isOnline: session.isOnline,
+      accessToken: session.accessToken,
+      scope: session.scope,
+    };
+    
+    const encrypted = cryptr.encrypt(JSON.stringify(sessionData));
+    
+    // Set the session ID cookie
+    res.setHeader('Set-Cookie', [
+      cookie.serialize('shopify_app_session', session.id, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        path: '/',
+      }),
+      // Set the encrypted session data cookie
+      cookie.serialize('shopify_session_data', encrypted, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        path: '/',
+      }),
+    ]);
+    
+    console.log('Session cookies set for shop:', session.shop);
+  } catch (error) {
+    console.error('Error setting session cookie:', error);
   }
 }
 

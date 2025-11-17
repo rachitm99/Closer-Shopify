@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import shopify from '../../../lib/shopify';
 import { storeSession } from '../../../lib/session-storage';
-import cookie from 'cookie';
+import { setSessionCookie } from '../../../lib/auth-helpers';
 
 export default async function handler(
   req: NextApiRequest,
@@ -22,17 +22,8 @@ export default async function handler(
     // Store the session (offline token - never expires)
     await storeSession(session);
 
-    // Set session cookie (1 year since offline tokens don't expire)
-    res.setHeader(
-      'Set-Cookie',
-      cookie.serialize('shopify_app_session', session.id, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-        maxAge: 60 * 60 * 24 * 365, // 1 year
-        path: '/',
-      })
-    );
+    // Set session cookies (ID + encrypted data for redundancy)
+    setSessionCookie(res, session);
 
     // Get the host parameter for embedding
     const { host, shop } = req.query;
