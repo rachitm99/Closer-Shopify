@@ -1,0 +1,26 @@
+# Vercel Build Configuration
+
+# Ignore documentation files during build
+CONTRIBUTING.md
+DEPLOYMENT_CHECKLIST.md
+FREE_APP.md
+SETUP.md
+THEME_APP_EXTENSION.md
+SHOPIFY_CONFIG.md
+
+# Ignore test files
+__tests__
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+jest.config.js
+jest.setup.js
+
+# Ignore GitHub workflows
+.github
+
+# Ignore documentation
+docs/
+*.md
+!README.md
