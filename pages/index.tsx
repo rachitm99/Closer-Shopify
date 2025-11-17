@@ -13,12 +13,9 @@ import {
   Text,
 } from '@shopify/polaris';
 import { useRouter } from 'next/router';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import { Redirect } from '@shopify/app-bridge/actions';
 
 export default function Home() {
   const router = useRouter();
-  const app = useAppBridge();
   const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -235,4 +232,11 @@ export default function Home() {
       )}
     </Frame>
   );
+}
+
+// Disable static generation for this page since it requires client-side routing
+export async function getServerSideProps() {
+  return {
+    props: {},
+  };
 }
