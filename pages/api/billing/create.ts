@@ -8,12 +8,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    console.log('Billing create: Getting session...');
     const session = await getSessionFromRequest(req);
     
     if (!session) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      console.log('Billing create: No session found');
+      return res.status(401).json({ error: 'Unauthorized - Please refresh the page and try again' });
     }
 
+    console.log('Billing create: Session found for shop:', session.shop);
     const { plan } = req.body;
     
     // Define your pricing plans
@@ -34,6 +37,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const client = new shopify.clients.Rest({ session });
 
+    console.log('Billing create: Creating recurring charge for plan:', selectedPlan.name);
+    
     // Create recurring charge
     const response = await client.post({
       path: 'recurring_application_charges',
@@ -49,14 +54,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const charge = response.body.recurring_application_charge;
+    console.log('Billing create: Charge created with ID:', charge.id);
 
     return res.status(200).json({
       confirmationUrl: charge.confirmation_url,
       chargeId: charge.id,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Billing creation error:', error);
-    return res.status(500).json({ error: 'Failed to create billing' });
+    console.error('Error details:', error.message, error.response?.body);
+    return res.status(500).json({ 
+      error: 'Failed to create billing', 
+      details: error.message 
+    });
   }
 }
