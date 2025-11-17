@@ -25,6 +25,44 @@ export default function Home() {
   const [needsAuth, setNeedsAuth] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [checkingBilling, setCheckingBilling] = useState(true);
+  const [charges, setCharges] = useState<any[]>([]);
+  const [showCharges, setShowCharges] = useState(false);
+
+  const loadCharges = async () => {
+    try {
+      const response = await fetch('/api/billing/list');
+      if (response.ok) {
+        const data = await response.json();
+        setCharges(data.charges);
+      }
+    } catch (error) {
+      console.error('Load charges error:', error);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!confirm('Cancel current subscription? (For testing only)')) return;
+    
+    try {
+      setLoading(true);
+      const response = await fetch('/api/billing/cancel', {
+        method: 'POST',
+      });
+      
+      if (response.ok) {
+        alert('Subscription cancelled! Refresh to test resubscription.');
+        setHasSubscription(false);
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to cancel');
+      }
+    } catch (error) {
+      console.error('Cancel error:', error);
+      alert('Failed to cancel subscription');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Check billing status first
   useEffect(() => {
@@ -368,6 +406,59 @@ export default function Home() {
               </BlockStack>
             </Card>
           </Layout.Section>
+
+          {hasSubscription && (
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h2" variant="headingMd">
+                    Testing & Development
+                  </Text>
+                  <Text as="p" tone="subdued">
+                    Tools for testing subscription billing (development only)
+                  </Text>
+                  <BlockStack gap="200">
+                    <Button 
+                      onClick={handleCancelSubscription}
+                      tone="critical"
+                      variant="secondary"
+                    >
+                      Cancel Subscription (Test)
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        setShowCharges(!showCharges);
+                        if (!showCharges) loadCharges();
+                      }}
+                      variant="secondary"
+                    >
+                      {showCharges ? 'Hide' : 'Show'} Billing History
+                    </Button>
+                  </BlockStack>
+                  {showCharges && charges.length > 0 && (
+                    <div style={{ 
+                      background: '#f6f6f7', 
+                      padding: '16px', 
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontFamily: 'monospace'
+                    }}>
+                      {charges.map((charge, i) => (
+                        <div key={i} style={{ marginBottom: '12px', borderBottom: '1px solid #ddd', paddingBottom: '8px' }}>
+                          <div><strong>ID:</strong> {charge.id}</div>
+                          <div><strong>Name:</strong> {charge.name}</div>
+                          <div><strong>Price:</strong> ${charge.price}</div>
+                          <div><strong>Status:</strong> {charge.status}</div>
+                          <div><strong>Test Mode:</strong> {charge.test ? 'Yes' : 'No'}</div>
+                          <div><strong>Created:</strong> {new Date(charge.created_at).toLocaleString()}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </BlockStack>
+              </Card>
+            </Layout.Section>
+          )}
         </Layout>
       </Page>
       {showToast && (

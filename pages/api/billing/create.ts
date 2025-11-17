@@ -43,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           price: selectedPlan.price,
           return_url: `https://${session.shop}/admin/apps/${process.env.SHOPIFY_API_KEY}`,
           trial_days: selectedPlan.trialDays,
-          test: process.env.NODE_ENV !== 'production', // Test mode for development
+          test: true, // Always test mode - Shopify auto-handles dev vs prod stores
         },
       },
     });
