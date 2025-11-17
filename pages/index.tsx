@@ -86,21 +86,30 @@ export default function Home() {
   const handleSubscribe = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await fetch('/api/billing/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: 'basic' }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
-        // Redirect to Shopify billing confirmation
-        window.top!.location.href = data.confirmationUrl;
+        if (data.confirmationUrl) {
+          // Redirect to Shopify billing confirmation
+          window.top!.location.href = data.confirmationUrl;
+        } else {
+          setError('No confirmation URL received');
+          setLoading(false);
+        }
+      } else {
+        setError(data.error || 'Failed to create subscription');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Subscribe error:', error);
       setError('Failed to create subscription');
-    } finally {
       setLoading(false);
     }
   };
