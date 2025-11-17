@@ -1,0 +1,31 @@
+api_version = "2025-01"
+
+[[extensions]]
+
+uid = "75c2b41e-bfaf-52f7-424e-434d7c2387a799820c5a"
+
+type = "ui_extension"
+name = "reward-message"
+handle = "reward-message"
+
+[extensions.capabilities]
+# Require active subscription
+network_access = true
+
+[[extensions.targeting]]
+target = "purchase.thank-you.block.render"
+module = "./src/index.tsx"
+
+[extensions.settings]
+  [[extensions.settings.fields]]
+  key = "enabled"
+  type = "boolean"
+  name = "Enable reward message"
+  description = "Show reward message on order confirmation page"
+
+  [[extensions.settings.fields]]
+  key = "message"
+  type = "single_line_text_field"
+  name = "Reward message"
+  description = "The message to display"
+

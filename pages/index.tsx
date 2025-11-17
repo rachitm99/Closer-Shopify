@@ -23,6 +23,49 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [needsAuth, setNeedsAuth] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(false);
+  const [checkingBilling, setCheckingBilling] = useState(true);
+
+  // Check billing status first
+  useEffect(() => {
+    const checkBilling = async () => {
+      try {
+        const response = await fetch('/api/subscription/check');
+        if (response.ok) {
+          const data = await response.json();
+          setHasSubscription(data.subscribed);
+        }
+      } catch (error) {
+        console.error('Billing check error:', error);
+      } finally {
+        setCheckingBilling(false);
+      }
+    };
+
+    checkBilling();
+  }, []);
+
+  const handleSubscribe = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/billing/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: 'basic' }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Redirect to Shopify billing confirmation
+        window.top!.location.href = data.confirmationUrl;
+      }
+    } catch (error) {
+      console.error('Subscribe error:', error);
+      setError('Failed to create subscription');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Load current setting
   useEffect(() => {
@@ -163,6 +206,55 @@ export default function Home() {
                   </Button>
                 </BlockStack>
               </Banner>
+            </Layout.Section>
+          </Layout>
+        </Page>
+      </Frame>
+    );
+  }
+
+  // Show subscription prompt if not subscribed
+  if (!checkingBilling && !hasSubscription) {
+    return (
+      <Frame>
+        <Page title="Subscribe to Reward Message App">
+          <Layout>
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h2" variant="headingLg">
+                    Choose Your Plan
+                  </Text>
+                  <Text as="p">
+                    Get started with a 7-day free trial. Cancel anytime.
+                  </Text>
+                  <div style={{ 
+                    border: '2px solid #5C6AC4', 
+                    borderRadius: '8px', 
+                    padding: '20px',
+                    marginTop: '20px'
+                  }}>
+                    <BlockStack gap="300">
+                      <Text as="h3" variant="headingMd">Basic Plan</Text>
+                      <Text as="p" variant="headingLg">$9.99/month</Text>
+                      <ul style={{ marginLeft: '20px' }}>
+                        <li>Custom reward messages</li>
+                        <li>Drag-and-drop Thank You page block</li>
+                        <li>7-day free trial</li>
+                        <li>Cancel anytime</li>
+                      </ul>
+                      <Button 
+                        onClick={handleSubscribe} 
+                        variant="primary" 
+                        size="large"
+                        loading={loading}
+                      >
+                        Start Free Trial
+                      </Button>
+                    </BlockStack>
+                  </div>
+                </BlockStack>
+              </Card>
             </Layout.Section>
           </Layout>
         </Page>
