@@ -1,6 +1,7 @@
 export const APP_CONFIG = {
   name: 'Reward Message App',
   version: '1.0.0',
+  isFree: true,
   rewardMessage: {
     title: '🎉 Congratulations!',
     message: 'You have won a reward!',

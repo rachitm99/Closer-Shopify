@@ -1,7 +1,7 @@
 {
   "name": "shopify-reward-message-app",
   "version": "1.0.0",
-  "description": "Shopify app to display reward messages on Thank You page",
+  "description": "Free Shopify app to display reward messages on Thank You page - No subscription required",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

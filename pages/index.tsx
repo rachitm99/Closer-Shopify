@@ -9,6 +9,8 @@ import {
   Spinner,
   Frame,
   Toast,
+  BlockStack,
+  Text,
 } from '@shopify/polaris';
 import { useRouter } from 'next/router';
 
@@ -118,7 +120,7 @@ export default function Home() {
             <Layout.Section>
               <Banner
                 title="Error"
-                status="critical"
+                tone="critical"
                 onDismiss={() => setError(null)}
               >
                 <p>{error}</p>
@@ -153,50 +155,60 @@ export default function Home() {
           </Layout.Section>
 
           <Layout.Section>
-            <Card title="Preview" sectioned>
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  padding: '20px',
-                  borderRadius: '8px',
-                  textAlign: 'center',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                }}
-              >
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingMd">
+                  Preview
+                </Text>
                 <div
                   style={{
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    marginBottom: '8px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    padding: '20px',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                   }}
                 >
-                  🎉 Congratulations!
+                  <div
+                    style={{
+                      fontSize: '24px',
+                      fontWeight: 'bold',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    🎉 Congratulations!
+                  </div>
+                  <div style={{ fontSize: '18px' }}>
+                    You have won a reward!
+                  </div>
                 </div>
-                <div style={{ fontSize: '18px' }}>
-                  You have won a reward!
-                </div>
-              </div>
+              </BlockStack>
             </Card>
           </Layout.Section>
 
           <Layout.Section>
-            <Card title="How it works" sectioned>
-              <TextContainer>
-                <p>
-                  <strong>Step 1:</strong> Toggle the switch above to enable or
-                  disable the reward message.
-                </p>
-                <p>
-                  <strong>Step 2:</strong> Configure the app proxy in your
-                  Shopify admin (see documentation).
-                </p>
-                <p>
-                  <strong>Step 3:</strong> When enabled, the reward message will
-                  automatically appear on your Thank You page after customers
-                  complete their orders.
-                </p>
-              </TextContainer>
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingMd">
+                  How it works
+                </Text>
+                <TextContainer>
+                  <p>
+                    <strong>Step 1:</strong> Toggle the switch above to enable or
+                    disable the reward message.
+                  </p>
+                  <p>
+                    <strong>Step 2:</strong> Configure the app proxy in your
+                    Shopify admin (see documentation).
+                  </p>
+                  <p>
+                    <strong>Step 3:</strong> When enabled, the reward message will
+                    automatically appear on your Thank You page after customers
+                    complete their orders.
+                  </p>
+                </TextContainer>
+              </BlockStack>
             </Card>
           </Layout.Section>
         </Layout>

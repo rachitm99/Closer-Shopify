@@ -1,9 +1,12 @@
 # Shopify Reward Message App
 
-A Next.js Shopify app that allows merchants to enable/disable a predefined reward message on the order confirmation (Thank You) page.
+A **free** Next.js Shopify app that allows merchants to enable/disable a predefined reward message on the order confirmation (Thank You) page.
+
+> **📢 This app is completely free to use!** No subscription required, no hidden fees.
 
 ## Features
 
+- 💰 **Completely Free**: No subscription fees, no payment required
 - 🎉 **Simple Toggle**: Enable or disable the reward message with a single switch
 - 🎨 **Beautiful UI**: Built with Shopify Polaris components for a native admin experience
 - 🔒 **Secure OAuth**: Implements Shopify OAuth2 authentication
