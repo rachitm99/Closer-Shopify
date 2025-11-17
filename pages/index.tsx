@@ -11,6 +11,7 @@ import {
   Toast,
   BlockStack,
   Text,
+  Button,
 } from '@shopify/polaris';
 import { useRouter } from 'next/router';
 
@@ -21,6 +22,7 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [needsAuth, setNeedsAuth] = useState(false);
 
   // Load current setting
   useEffect(() => {
@@ -39,11 +41,10 @@ export default function Home() {
         const response = await fetch('/api/settings');
         
         if (response.status === 401) {
-          // Not authenticated - redirect to auth outside iframe
-          if (typeof window !== 'undefined') {
-            console.log('Not authenticated, redirecting to OAuth...');
-            window.top!.location.href = `/api/auth?shop=${shop}`;
-          }
+          // Not authenticated - show reinstall message
+          console.log('Not authenticated');
+          setNeedsAuth(true);
+          setLoading(false);
           return;
         }
         
@@ -64,6 +65,15 @@ export default function Home() {
 
     checkAuth();
   }, [router.query]);
+
+  const handleReinstall = () => {
+    const { shop } = router.query;
+    if (shop) {
+      const authUrl = `${window.location.origin}/api/auth?shop=${shop}`;
+      // Open in new tab to avoid iframe restrictions
+      window.open(authUrl, '_blank');
+    }
+  };
 
   const loadSettings = async () => {
     try {
@@ -130,6 +140,29 @@ export default function Home() {
                   <Spinner accessibilityLabel="Loading" size="large" />
                 </div>
               </Card>
+            </Layout.Section>
+          </Layout>
+        </Page>
+      </Frame>
+    );
+  }
+
+  if (needsAuth) {
+    return (
+      <Frame>
+        <Page title="Authentication Required">
+          <Layout>
+            <Layout.Section>
+              <Banner tone="warning">
+                <BlockStack gap="400">
+                  <Text as="p">
+                    This app needs to be authorized. Please click the button below to complete the installation.
+                  </Text>
+                  <Button onClick={handleReinstall} variant="primary">
+                    Authorize App
+                  </Button>
+                </BlockStack>
+              </Banner>
             </Layout.Section>
           </Layout>
         </Page>
