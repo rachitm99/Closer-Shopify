@@ -24,11 +24,26 @@ export default function Home() {
 
   // Check if we're embedded
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const { shop, host } = router.query;
     
-    // If not embedded and we have shop param, redirect to auth
-    if (shop && !host && typeof window !== 'undefined') {
-      window.top!.location.href = `/api/auth?shop=${shop}`;
+    // If we have shop but we're being loaded in top frame (not embedded)
+    if (shop && window.self === window.top) {
+      // Break out of iframe and redirect to Shopify admin
+      const apiKey = process.env.NEXT_PUBLIC_SHOPIFY_API_KEY;
+      if (apiKey) {
+        window.location.href = `https://${shop}/admin/apps/${apiKey}?shop=${shop}`;
+      } else {
+        // If no API key, redirect to auth
+        window.location.href = `/api/auth?shop=${shop}`;
+      }
+      return;
+    }
+    
+    // If we have shop but no host, redirect to auth
+    if (shop && !host) {
+      window.location.href = `/api/auth?shop=${shop}`;
     }
   }, [router.query]);
 
