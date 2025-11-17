@@ -26,25 +26,38 @@ export default function Home() {
   useEffect(() => {
     // Check if we're authenticated first
     const checkAuth = async () => {
+      const { shop } = router.query;
+      
+      // If no shop parameter, we can't do anything
+      if (!shop) {
+        setError('Shop parameter missing. Please install the app from your Shopify admin.');
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch('/api/settings');
+        
         if (response.status === 401) {
           // Not authenticated - redirect to auth outside iframe
-          const { shop } = router.query;
-          if (shop && typeof window !== 'undefined') {
-            // Break out of iframe for OAuth
+          if (typeof window !== 'undefined') {
+            console.log('Not authenticated, redirecting to OAuth...');
             window.top!.location.href = `/api/auth?shop=${shop}`;
-          } else {
-            setError('Please install the app from your Shopify admin.');
-            setLoading(false);
           }
           return;
         }
-        // If authenticated, load settings normally
-        loadSettings();
+        
+        if (!response.ok) {
+          throw new Error(`Settings API returned ${response.status}`);
+        }
+        
+        // If authenticated, load settings
+        const data = await response.json();
+        setEnabled(data.enabled || false);
+        setLoading(false);
       } catch (error) {
         console.error('Auth check error:', error);
-        setError('Failed to check authentication');
+        setError(error instanceof Error ? error.message : 'Failed to check authentication');
         setLoading(false);
       }
     };
@@ -60,11 +73,7 @@ export default function Home() {
       const response = await fetch('/api/settings');
       
       if (!response.ok) {
-        if (response.status === 401) {
-          // Not authenticated - this is handled by checkAuth
-          return;
-        }
-        throw new Error('Failed to load settings');
+        throw new Error(`Failed to load settings: ${response.status}`);
       }
 
       const data = await response.json();
