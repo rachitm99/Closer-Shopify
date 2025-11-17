@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "SHOPIFY_API_KEY": "@shopify-api-key",
+    "SHOPIFY_API_SECRET": "@shopify-api-secret",
+    "SHOPIFY_SCOPES": "read_orders,write_script_tags,read_customers",
+    "HOST": "@host",
+    "SHOPIFY_APP_URL": "@shopify-app-url",
+    "ENCRYPTION_SECRET": "@encryption-secret",
+    "NODE_ENV": "production"
+  }
+}
