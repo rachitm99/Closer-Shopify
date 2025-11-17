@@ -21,12 +21,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       basic: {
         name: 'Basic Plan',
         price: 9.99,
-        trialDays: 7,
+        trialDays: 0, // No trial - immediate payment
       },
       pro: {
         name: 'Pro Plan',
         price: 29.99,
-        trialDays: 7,
+        trialDays: 0, // No trial - immediate payment
       },
     };
 

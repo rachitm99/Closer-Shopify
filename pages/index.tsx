@@ -268,7 +268,7 @@ export default function Home() {
                     Choose Your Plan
                   </Text>
                   <Text as="p">
-                    Get started with a 7-day free trial. Cancel anytime.
+                    Subscribe to unlock drag-and-drop reward messages. Cancel anytime.
                   </Text>
                   <div style={{ 
                     border: '2px solid #5C6AC4', 
@@ -282,7 +282,7 @@ export default function Home() {
                       <ul style={{ marginLeft: '20px' }}>
                         <li>Custom reward messages</li>
                         <li>Drag-and-drop Thank You page block</li>
-                        <li>7-day free trial</li>
+                        <li>Instant activation</li>
                         <li>Cancel anytime</li>
                       </ul>
                       <Button 
@@ -291,7 +291,7 @@ export default function Home() {
                         size="large"
                         loading={loading}
                       >
-                        Start Free Trial
+                        Subscribe Now
                       </Button>
                     </BlockStack>
                   </div>
