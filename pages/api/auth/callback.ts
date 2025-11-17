@@ -38,19 +38,23 @@ export default async function handler(
     const { host, shop } = req.query;
     
     // Construct embedded app URL
-    const hostParam = host ? `host=${host}` : '';
-    const shopParam = shop ? `shop=${shop}` : `shop=${session.shop}`;
-    const params = [shopParam, hostParam].filter(Boolean).join('&');
+    const apiKey = process.env.SHOPIFY_API_KEY;
+    const redirectShop = shop || session.shop;
+    const hostParam = host ? `&host=${host}` : '';
     
-    // Redirect to embedded app
-    const redirectUrl = `https://${session.shop}/admin/apps/${process.env.SHOPIFY_API_KEY}${params ? '?' + params : ''}`;
+    // Redirect to embedded app in Shopify admin
+    const redirectUrl = `https://${redirectShop}/admin/apps/${apiKey}?shop=${redirectShop}${hostParam}`;
     
     return res.redirect(redirectUrl);
   } catch (error) {
     console.error('Callback error:', error);
-    res.status(500).json({ 
-      error: 'Authentication callback failed',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
+    
+    // Only send response if headers haven't been sent
+    if (!res.headersSent) {
+      return res.status(500).json({ 
+        error: 'Authentication callback failed',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
   }
 }

@@ -23,7 +23,7 @@ export default async function handler(
     }
 
     // Begin OAuth process
-    const authRoute = await shopify.auth.begin({
+    await shopify.auth.begin({
       shop: shopify.utils.sanitizeShop(shop, true)!,
       callbackPath: '/api/auth/callback',
       isOnline: false,
@@ -31,17 +31,17 @@ export default async function handler(
       rawResponse: res,
     });
 
-    // Store session
-    if (authRoute.session) {
-      await storeSession(authRoute.session);
-    }
-
-    res.redirect(authRoute.url);
+    // The redirect is handled by shopify.auth.begin
+    // Don't send any response here
   } catch (error) {
     console.error('Auth error:', error);
-    res.status(500).json({ 
-      error: 'Authentication failed',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
+    
+    // Only send response if headers haven't been sent
+    if (!res.headersSent) {
+      return res.status(500).json({ 
+        error: 'Authentication failed',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
   }
 }
