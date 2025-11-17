@@ -22,35 +22,35 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
 
-  // Check if we're embedded
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const { shop, host } = router.query;
-    
-    // If we have shop but we're being loaded in top frame (not embedded)
-    if (shop && window.self === window.top) {
-      // Break out of iframe and redirect to Shopify admin
-      const apiKey = process.env.NEXT_PUBLIC_SHOPIFY_API_KEY;
-      if (apiKey) {
-        window.location.href = `https://${shop}/admin/apps/${apiKey}?shop=${shop}`;
-      } else {
-        // If no API key, redirect to auth
-        window.location.href = `/api/auth?shop=${shop}`;
-      }
-      return;
-    }
-    
-    // If we have shop but no host, redirect to auth
-    if (shop && !host) {
-      window.location.href = `/api/auth?shop=${shop}`;
-    }
-  }, [router.query]);
-
   // Load current setting
   useEffect(() => {
-    loadSettings();
-  }, []);
+    // Check if we're authenticated first
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/settings');
+        if (response.status === 401) {
+          // Not authenticated - redirect to auth outside iframe
+          const { shop } = router.query;
+          if (shop && typeof window !== 'undefined') {
+            // Break out of iframe for OAuth
+            window.top!.location.href = `/api/auth?shop=${shop}`;
+          } else {
+            setError('Please install the app from your Shopify admin.');
+            setLoading(false);
+          }
+          return;
+        }
+        // If authenticated, load settings normally
+        loadSettings();
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setError('Failed to check authentication');
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router.query]);
 
   const loadSettings = async () => {
     try {
@@ -61,13 +61,7 @@ export default function Home() {
       
       if (!response.ok) {
         if (response.status === 401) {
-          // Not authenticated, redirect to auth
-          const { shop } = router.query;
-          if (shop) {
-            window.location.href = `/api/auth?shop=${shop}`;
-          } else {
-            setError('Shop parameter missing. Please install the app from your Shopify admin.');
-          }
+          // Not authenticated - this is handled by checkAuth
           return;
         }
         throw new Error('Failed to load settings');

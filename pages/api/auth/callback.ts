@@ -40,10 +40,10 @@ export default async function handler(
     // Construct embedded app URL
     const apiKey = process.env.SHOPIFY_API_KEY;
     const redirectShop = shop || session.shop;
-    const hostParam = host ? `&host=${host}` : '';
     
-    // Redirect to embedded app in Shopify admin
-    const redirectUrl = `https://${redirectShop}/admin/apps/${apiKey}?shop=${redirectShop}${hostParam}`;
+    // Redirect to Shopify admin with app embedded
+    // Using the shop admin URL ensures proper embedding
+    const redirectUrl = `https://${redirectShop}/admin/apps/${apiKey}`;
     
     return res.redirect(redirectUrl);
   } catch (error) {
