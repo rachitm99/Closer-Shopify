@@ -13,14 +13,27 @@ import {
   Text,
 } from '@shopify/polaris';
 import { useRouter } from 'next/router';
+import { useAppBridge } from '@shopify/app-bridge-react';
+import { Redirect } from '@shopify/app-bridge/actions';
 
 export default function Home() {
   const router = useRouter();
+  const app = useAppBridge();
   const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+
+  // Check if we're embedded
+  useEffect(() => {
+    const { shop, host } = router.query;
+    
+    // If not embedded and we have shop param, redirect to auth
+    if (shop && !host && typeof window !== 'undefined') {
+      window.top!.location.href = `/api/auth?shop=${shop}`;
+    }
+  }, [router.query]);
 
   // Load current setting
   useEffect(() => {

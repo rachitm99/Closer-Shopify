@@ -1,0 +1,22 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+name = "reward-message-app"
+client_id = "your_api_key_here"
+application_url = "https://closer-shopify-qq8c.vercel.app/"
+embedded = true
+
+[access_scopes]
+scopes = "read_orders,write_script_tags,read_customers"
+
+[auth]
+redirect_urls = [
+  "https://closer-shopify-qq8c.vercel.app/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-01"
+
+[app_proxy]
+url = "https://closer-shopify-qq8c.vercel.app/api/proxy/reward"
+subpath = "reward-message"
+prefix = "apps"

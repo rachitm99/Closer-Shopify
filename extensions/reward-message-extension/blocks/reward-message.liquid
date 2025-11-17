@@ -1,0 +1,63 @@
+{% if block.settings.enabled %}
+<div 
+  id="reward-message-{{ block.id }}" 
+  class="reward-message-container"
+  style="
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.5s ease-out;
+  "
+>
+  <div style="
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  ">
+    🎉 Congratulations!
+  </div>
+  <div style="
+    font-size: 18px;
+  ">
+    {{ block.settings.message }}
+  </div>
+</div>
+
+<style>
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Reward Message",
+  "target": "order_status",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "Show reward message",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "message",
+      "label": "Reward message",
+      "default": "You have won a reward!"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,13 @@
+api_version = "2024-01"
+
+[[extensions]]
+type = "theme"
+name = "reward-message-extension"
+handle = "reward-message-block"
+
+[extensions.settings]
+  [[extensions.settings.blocks]]
+  type = "reward_message"
+  name = "Reward Message"
+  target = "order_status"
+  enabled_on = "orders"

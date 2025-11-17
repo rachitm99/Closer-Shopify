@@ -35,11 +35,15 @@ export default async function handler(
     );
 
     // Get the host parameter for embedding
-    const { host } = req.query;
-    const hostParam = host ? `?host=${host}` : '';
-
-    // Redirect to the app homepage
-    const redirectUrl = `/${hostParam}`;
+    const { host, shop } = req.query;
+    
+    // Construct embedded app URL
+    const hostParam = host ? `host=${host}` : '';
+    const shopParam = shop ? `shop=${shop}` : `shop=${session.shop}`;
+    const params = [shopParam, hostParam].filter(Boolean).join('&');
+    
+    // Redirect to embedded app
+    const redirectUrl = `https://${session.shop}/admin/apps/${process.env.SHOPIFY_API_KEY}${params ? '?' + params : ''}`;
     
     return res.redirect(redirectUrl);
   } catch (error) {
