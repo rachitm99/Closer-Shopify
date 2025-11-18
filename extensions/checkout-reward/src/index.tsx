@@ -1,6 +1,6 @@
 import {
   reactExtension,
-  Banner,
+  View,
   BlockStack,
   Image,
   Text,
@@ -8,6 +8,8 @@ import {
   Button,
   useApi,
   InlineStack,
+  Heading,
+  Divider,
 } from '@shopify/ui-extensions-react/checkout';
 import { useEffect, useState } from 'react';
 
@@ -39,7 +41,6 @@ function Extension() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        // Get session token from Shopify
         const token = await sessionToken.get();
         
         const response = await fetch(
@@ -55,7 +56,6 @@ function Extension() {
           const data = await response.json();
           setSettings(data);
         } else {
-          console.error('Failed to fetch settings');
           setSettings({
             enabled: false,
             popupTitle: 'Enter Our Giveaway!',
@@ -107,14 +107,11 @@ function Extension() {
       if (response.ok) {
         setSubmitted(true);
         
-        // Redirect if URL provided
         if (settings?.redirectUrl) {
           setTimeout(() => {
             window.location.href = settings.redirectUrl!;
           }, 1500);
         }
-      } else {
-        console.error('Failed to submit form');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -123,22 +120,47 @@ function Extension() {
     }
   };
 
-  // Don't render anything while loading or if disabled or dismissed
   if (loading || !settings || !settings.enabled || dismissed) {
     return null;
   }
 
   return (
-    <Banner title={settings.popupTitle}>
+    <View
+      border="base"
+      cornerRadius="large"
+      padding="large"
+      background="base"
+    >
       <BlockStack spacing="base">
+        {/* Close button at top right */}
+        <InlineStack blockAlignment="start" inlineAlignment="end">
+          <Button
+            kind="plain"
+            onPress={() => setDismissed(true)}
+          >
+            ✕
+          </Button>
+        </InlineStack>
+
+        {/* Logo centered */}
         {settings.logoUrl && (
-          <Image
-            source={settings.logoUrl}
-            alt="Logo"
-          />
+          <InlineStack inlineAlignment="center">
+            <Image
+              source={settings.logoUrl}
+              alt="Logo"
+            />
+          </InlineStack>
         )}
-        
-        <Text>
+
+        {/* Title */}
+        <InlineStack inlineAlignment="center">
+          <Heading level={2}>{settings.popupTitle}</Heading>
+        </InlineStack>
+
+        <Divider />
+
+        {/* Rules text */}
+        <Text appearance="subdued" size="medium">
           {settings.giveawayRules}
         </Text>
 
@@ -150,29 +172,27 @@ function Extension() {
               onChange={setFormValue}
             />
 
-            <InlineStack spacing="tight">
-              <Button
-                onPress={handleSubmit}
-                loading={submitting}
-                disabled={submitting || !formValue.trim()}
-              >
-                {settings.submitButtonText}
-              </Button>
-              
-              <Button
-                kind="plain"
-                onPress={() => setDismissed(true)}
-              >
-                ✕ Close
-              </Button>
-            </InlineStack>
+            <Button
+              onPress={handleSubmit}
+              loading={submitting}
+              disabled={submitting || !formValue.trim()}
+            >
+              {settings.submitButtonText}
+            </Button>
           </BlockStack>
         ) : (
-          <Text emphasis="bold">
-            ✅ Thank you! Your entry has been submitted.
-          </Text>
+          <InlineStack inlineAlignment="center">
+            <BlockStack spacing="tight" inlineAlignment="center">
+              <Text size="large" emphasis="bold">
+                ✅
+              </Text>
+              <Text size="medium" emphasis="bold">
+                Thank you! Your entry has been submitted.
+              </Text>
+            </BlockStack>
+          </InlineStack>
         )}
       </BlockStack>
-    </Banner>
+    </View>
   );
 }
