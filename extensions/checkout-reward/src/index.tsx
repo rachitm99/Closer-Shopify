@@ -20,7 +20,8 @@ interface Settings {
   enabled: boolean;
   logoUrl?: string;
   popupTitle: string;
-  giveawayRules: string;
+  rulesTitle: string;
+  giveawayRules: string[];
   formFieldLabel: string;
   submitButtonText: string;
   redirectUrl?: string;
@@ -55,20 +56,32 @@ function Extension() {
         } else {
           setSettings({
             enabled: false,
-            popupTitle: 'Enter Our Giveaway!',
-            giveawayRules: 'Enter your email below for a chance to win amazing prizes!',
-            formFieldLabel: 'Your Email',
-            submitButtonText: 'Submit',
+            popupTitle: '🎉 Instagram Giveaway! 🎉',
+            rulesTitle: 'How to Enter:',
+            giveawayRules: [
+              'Follow us on Instagram',
+              'Like our latest post',
+              'Tag 2 friends in the comments',
+              'Share this post to your story'
+            ],
+            formFieldLabel: 'Instagram Username',
+            submitButtonText: 'Follow Us on Instagram',
           });
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
         setSettings({
           enabled: false,
-          popupTitle: 'Enter Our Giveaway!',
-          giveawayRules: 'Enter your email below for a chance to win amazing prizes!',
-          formFieldLabel: 'Your Email',
-          submitButtonText: 'Submit',
+          popupTitle: '🎉 Instagram Giveaway! 🎉',
+          rulesTitle: 'How to Enter:',
+          giveawayRules: [
+            'Follow us on Instagram',
+            'Like our latest post',
+            'Tag 2 friends in the comments',
+            'Share this post to your story'
+          ],
+          formFieldLabel: 'Instagram Username',
+          submitButtonText: 'Follow Us on Instagram',
         });
       } finally {
         setLoading(false);
@@ -128,14 +141,14 @@ function Extension() {
       padding="none"
     >
       <BlockStack spacing="none">
-        {/* Colorful header section */}
+        {/* Vibrant header section with gradient-like effect */}
         <View
           cornerRadius="large"
           padding="large"
           background="accent"
         >
           <BlockStack spacing="base" inlineAlignment="center">
-            {/* Logo with border */}
+            {/* Logo with decorative border */}
             {settings.logoUrl && (
               <View
                 border="base"
@@ -150,50 +163,73 @@ function Extension() {
               </View>
             )}
 
-            {/* Animated title with emoji */}
+            {/* Eye-catching title */}
             <BlockStack spacing="tight" inlineAlignment="center">
               <Text size="extraLarge" emphasis="bold">
-                🎁 {settings.popupTitle} 🎁
+                {settings.popupTitle}
               </Text>
             </BlockStack>
           </BlockStack>
         </View>
 
-        {/* Main content area */}
+        {/* Main content area with white background */}
         <View
           padding="large"
           background="base"
         >
           <BlockStack spacing="large">
-            {/* Rules with eye-catching formatting */}
+            {/* Rules section with title and bullet points */}
             <View
               border="base"
               cornerRadius="base"
               padding="base"
-              background="accent"
             >
-              <InlineStack inlineAlignment="center">
-                <Text size="medium" emphasis="bold">
-                  ✨ {settings.giveawayRules} ✨
+              <BlockStack spacing="base">
+                <Text size="large" emphasis="bold">
+                  {settings.rulesTitle}
                 </Text>
-              </InlineStack>
+                <BlockStack spacing="tight">
+                  {settings.giveawayRules.map((rule, index) => (
+                    <InlineStack key={index} spacing="tight" blockAlignment="start">
+                      <Text size="medium">•</Text>
+                      <Text size="medium">{rule}</Text>
+                    </InlineStack>
+                  ))}
+                </BlockStack>
+              </BlockStack>
             </View>
 
             {!submitted ? (
               <BlockStack spacing="base">
-                <TextField
-                  label={`🎯 ${settings.formFieldLabel}`}
-                  value={formValue}
-                  onChange={setFormValue}
-                />
+                {/* Instagram username input with @ prefix */}
+                <BlockStack spacing="tight">
+                  <Text size="medium" emphasis="bold">
+                    {settings.formFieldLabel}
+                  </Text>
+                  <View border="base" cornerRadius="base" padding="none">
+                    <InlineStack spacing="none" blockAlignment="center">
+                      <View padding="base" background="subdued">
+                        <Text size="large" emphasis="bold">@</Text>
+                      </View>
+                      <View padding="none" maxInlineSize="fill">
+                        <TextField
+                          label=""
+                          value={formValue}
+                          onChange={setFormValue}
+                        />
+                      </View>
+                    </InlineStack>
+                  </View>
+                </BlockStack>
 
+                {/* Prominent button that handles long text */}
                 <Button
                   kind="primary"
                   onPress={handleSubmit}
                   loading={submitting}
                   disabled={submitting || !formValue.trim()}
                 >
-                  {settings.submitButtonText} 🚀
+                  {settings.submitButtonText}
                 </Button>
               </BlockStack>
             ) : (
@@ -205,7 +241,7 @@ function Extension() {
               >
                 <BlockStack spacing="base" inlineAlignment="center">
                   <Text size="extraLarge" emphasis="bold">
-                    🎉 🎊 🎉
+                    🎉 🎊 ✨
                   </Text>
                   <Text size="large" emphasis="bold">
                     Thank you! Your entry has been submitted.

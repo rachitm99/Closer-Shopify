@@ -8,7 +8,8 @@ export interface MerchantSettings {
   // Popup configuration
   logoUrl?: string;
   popupTitle: string;
-  giveawayRules: string;
+  rulesTitle: string;
+  giveawayRules: string[];
   formFieldLabel: string;
   submitButtonText: string;
   redirectUrl?: string;
@@ -38,10 +39,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             shop,
             enabled: false,
             logoUrl: '',
-            popupTitle: 'Enter Our Giveaway!',
-            giveawayRules: 'Enter your email below for a chance to win amazing prizes!',
-            formFieldLabel: 'Your Email',
-            submitButtonText: 'Submit',
+            popupTitle: '🎉 Instagram Giveaway! 🎉',
+            rulesTitle: 'How to Enter:',
+            giveawayRules: [
+              'Follow us on Instagram',
+              'Like our latest post',
+              'Tag 2 friends in the comments',
+              'Share this post to your story'
+            ],
+            formFieldLabel: 'Instagram Username',
+            submitButtonText: 'Follow Us on Instagram',
             redirectUrl: '',
             updatedAt: new Date().toISOString(),
           };
@@ -57,7 +64,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const { 
           enabled, 
           logoUrl, 
-          popupTitle, 
+          popupTitle,
+          rulesTitle,
           giveawayRules, 
           formFieldLabel, 
           submitButtonText, 
@@ -68,10 +76,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           shop,
           enabled: enabled !== undefined ? enabled : false,
           logoUrl: logoUrl || '',
-          popupTitle: popupTitle || 'Enter Our Giveaway!',
-          giveawayRules: giveawayRules || 'Enter your email below for a chance to win amazing prizes!',
-          formFieldLabel: formFieldLabel || 'Your Email',
-          submitButtonText: submitButtonText || 'Submit',
+          popupTitle: popupTitle || '🎉 Instagram Giveaway! 🎉',
+          rulesTitle: rulesTitle || 'How to Enter:',
+          giveawayRules: giveawayRules || [
+            'Follow us on Instagram',
+            'Like our latest post',
+            'Tag 2 friends in the comments',
+            'Share this post to your story'
+          ],
+          formFieldLabel: formFieldLabel || 'Instagram Username',
+          submitButtonText: submitButtonText || 'Follow Us on Instagram',
           redirectUrl: redirectUrl || '',
           updatedAt: new Date().toISOString(),
         };

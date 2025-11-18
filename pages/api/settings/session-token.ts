@@ -53,19 +53,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json({
           enabled: data?.enabled || false,
           logoUrl: data?.logoUrl,
-          popupTitle: data?.popupTitle || 'Enter Our Giveaway!',
-          giveawayRules: data?.giveawayRules || 'Enter your email below for a chance to win amazing prizes!',
-          formFieldLabel: data?.formFieldLabel || 'Your Email',
-          submitButtonText: data?.submitButtonText || 'Submit',
+          popupTitle: data?.popupTitle || '🎉 Instagram Giveaway! 🎉',
+          rulesTitle: data?.rulesTitle || 'How to Enter:',
+          giveawayRules: data?.giveawayRules || [
+            'Follow us on Instagram',
+            'Like our latest post',
+            'Tag 2 friends in the comments',
+            'Share this post to your story'
+          ],
+          formFieldLabel: data?.formFieldLabel || 'Instagram Username',
+          submitButtonText: data?.submitButtonText || 'Follow Us on Instagram',
           redirectUrl: data?.redirectUrl,
         });
       } else {
         return res.status(200).json({
           enabled: false,
-          popupTitle: 'Enter Our Giveaway!',
-          giveawayRules: 'Enter your email below for a chance to win amazing prizes!',
-          formFieldLabel: 'Your Email',
-          submitButtonText: 'Submit',
+          popupTitle: '🎉 Instagram Giveaway! 🎉',
+          rulesTitle: 'How to Enter:',
+          giveawayRules: [
+            'Follow us on Instagram',
+            'Like our latest post',
+            'Tag 2 friends in the comments',
+            'Share this post to your story'
+          ],
+          formFieldLabel: 'Instagram Username',
+          submitButtonText: 'Follow Us on Instagram',
         });
       }
     } catch (tokenError) {

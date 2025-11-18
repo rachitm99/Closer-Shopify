@@ -17,10 +17,17 @@ import {
 export default function Home() {
   const [enabled, setEnabled] = useState(false);
   const [logoUrl, setLogoUrl] = useState('');
-  const [popupTitle, setPopupTitle] = useState('Enter Our Giveaway!');
-  const [giveawayRules, setGiveawayRules] = useState('Enter your email below for a chance to win amazing prizes!');
-  const [formFieldLabel, setFormFieldLabel] = useState('Your Email');
-  const [submitButtonText, setSubmitButtonText] = useState('Submit');
+  const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
+  const [rulesTitle, setRulesTitle] = useState('How to Enter:');
+  const [giveawayRules, setGiveawayRules] = useState([
+    'Follow us on Instagram',
+    'Like our latest post',
+    'Tag 2 friends in the comments',
+    'Share this post to your story'
+  ]);
+  const [newRule, setNewRule] = useState('');
+  const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
+  const [submitButtonText, setSubmitButtonText] = useState('Follow Us on Instagram');
   const [redirectUrl, setRedirectUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -37,10 +44,16 @@ export default function Home() {
           const data = await response.json();
           setEnabled(data.enabled || false);
           setLogoUrl(data.logoUrl || '');
-          setPopupTitle(data.popupTitle || 'Enter Our Giveaway!');
-          setGiveawayRules(data.giveawayRules || 'Enter your email below for a chance to win amazing prizes!');
-          setFormFieldLabel(data.formFieldLabel || 'Your Email');
-          setSubmitButtonText(data.submitButtonText || 'Submit');
+          setPopupTitle(data.popupTitle || '🎉 Instagram Giveaway! 🎉');
+          setRulesTitle(data.rulesTitle || 'How to Enter:');
+          setGiveawayRules(data.giveawayRules || [
+            'Follow us on Instagram',
+            'Like our latest post',
+            'Tag 2 friends in the comments',
+            'Share this post to your story'
+          ]);
+          setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
+          setSubmitButtonText(data.submitButtonText || 'Follow Us on Instagram');
           setRedirectUrl(data.redirectUrl || '');
         } else if (response.status === 401) {
           // Unauthorized - redirect to auth
@@ -70,7 +83,8 @@ export default function Home() {
         body: JSON.stringify({ 
           enabled: newEnabled, 
           logoUrl, 
-          popupTitle, 
+          popupTitle,
+          rulesTitle,
           giveawayRules, 
           formFieldLabel, 
           submitButtonText, 
@@ -104,7 +118,8 @@ export default function Home() {
         body: JSON.stringify({ 
           enabled, 
           logoUrl, 
-          popupTitle, 
+          popupTitle,
+          rulesTitle,
           giveawayRules, 
           formFieldLabel, 
           submitButtonText, 
@@ -291,14 +306,102 @@ export default function Home() {
                 />
 
                 <TextField
-                  label="Giveaway Rules"
-                  value={giveawayRules}
-                  onChange={setGiveawayRules}
-                  helpText="Describe the giveaway rules and details"
+                  label="Rules Section Title"
+                  value={rulesTitle}
+                  onChange={setRulesTitle}
+                  helpText="Title for the rules section (e.g., 'How to Enter:', 'Rules:')"
                   autoComplete="off"
-                  multiline={4}
-                  maxLength={500}
+                  maxLength={50}
                 />
+
+                <div>
+                  <Text as="p" variant="bodyMd" fontWeight="semibold">
+                    Giveaway Rules (List Format)
+                  </Text>
+                  <Text as="p" variant="bodySm" tone="subdued" >
+                    Add individual rule points that will be displayed as a bulleted list
+                  </Text>
+                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {giveawayRules.map((rule, index) => (
+                      <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 'bold', minWidth: '20px' }}>•</span>
+                        <input
+                          type="text"
+                          value={rule}
+                          onChange={(e) => {
+                            const newRules = [...giveawayRules];
+                            newRules[index] = e.target.value;
+                            setGiveawayRules(newRules);
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            fontSize: '14px'
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            const newRules = giveawayRules.filter((_, i) => i !== index);
+                            setGiveawayRules(newRules);
+                          }}
+                          style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#e74c3c',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                      <input
+                        type="text"
+                        value={newRule}
+                        onChange={(e) => setNewRule(e.target.value)}
+                        placeholder="Add new rule..."
+                        style={{
+                          flex: 1,
+                          padding: '8px',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          fontSize: '14px'
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && newRule.trim()) {
+                            setGiveawayRules([...giveawayRules, newRule.trim()]);
+                            setNewRule('');
+                          }
+                        }}
+                      />
+                      <button
+                        onClick={() => {
+                          if (newRule.trim()) {
+                            setGiveawayRules([...giveawayRules, newRule.trim()]);
+                            setNewRule('');
+                          }
+                        }}
+                        style={{
+                          padding: '8px 16px',
+                          backgroundColor: '#008060',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '14px'
+                        }}
+                      >
+                        Add Rule
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
                 <TextField
                   label="Form Field Label"
