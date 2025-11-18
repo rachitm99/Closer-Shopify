@@ -8,8 +8,6 @@ import {
   Button,
   useApi,
   InlineStack,
-  Heading,
-  Divider,
 } from '@shopify/ui-extensions-react/checkout';
 import { useEffect, useState } from 'react';
 
@@ -125,66 +123,101 @@ function Extension() {
 
   return (
     <View
-      border="base"
+      border="none"
       cornerRadius="large"
-      padding="large"
-      background="accent"
+      padding="none"
     >
-      <BlockStack spacing="large" inlineAlignment="center">
-        {/* Logo centered with extra spacing */}
-        {settings.logoUrl && (
-          <InlineStack inlineAlignment="center">
-            <Image
-              source={settings.logoUrl}
-              alt="Logo"
-            />
-          </InlineStack>
-        )}
-
-        {/* Title - bold and prominent */}
-        <BlockStack spacing="none" inlineAlignment="center">
-          <Heading level={1}>{settings.popupTitle}</Heading>
-        </BlockStack>
-
-        <Divider />
-
-        {/* Rules text - centered and larger */}
-        <InlineStack inlineAlignment="center">
-          <Text size="large" emphasis="bold">
-            {settings.giveawayRules}
-          </Text>
-        </InlineStack>
-
-        {!submitted ? (
-          <BlockStack spacing="base">
-            <TextField
-              label={settings.formFieldLabel}
-              value={formValue}
-              onChange={setFormValue}
-            />
-
-            <Button
-              kind="primary"
-              onPress={handleSubmit}
-              loading={submitting}
-              disabled={submitting || !formValue.trim()}
-            >
-              {settings.submitButtonText} 🎁
-            </Button>
-          </BlockStack>
-        ) : (
+      <BlockStack spacing="none">
+        {/* Colorful header section */}
+        <View
+          cornerRadius="large"
+          padding="large"
+          background="accent"
+        >
           <BlockStack spacing="base" inlineAlignment="center">
-            <Text size="extraLarge" emphasis="bold">
-              🎉
-            </Text>
-            <Text size="large" emphasis="bold">
-              Thank you! Your entry has been submitted.
-            </Text>
-            <Text size="medium" appearance="subdued">
-              Good luck! 🍀
-            </Text>
+            {/* Logo with border */}
+            {settings.logoUrl && (
+              <View
+                border="base"
+                cornerRadius="fullyRounded"
+                padding="base"
+                background="base"
+              >
+                <Image
+                  source={settings.logoUrl}
+                  alt="Logo"
+                />
+              </View>
+            )}
+
+            {/* Animated title with emoji */}
+            <BlockStack spacing="tight" inlineAlignment="center">
+              <Text size="extraLarge" emphasis="bold">
+                🎁 {settings.popupTitle} 🎁
+              </Text>
+            </BlockStack>
           </BlockStack>
-        )}
+        </View>
+
+        {/* Main content area */}
+        <View
+          padding="large"
+          background="base"
+        >
+          <BlockStack spacing="large">
+            {/* Rules with eye-catching formatting */}
+            <View
+              border="base"
+              cornerRadius="base"
+              padding="base"
+              background="accent"
+            >
+              <InlineStack inlineAlignment="center">
+                <Text size="medium" emphasis="bold">
+                  ✨ {settings.giveawayRules} ✨
+                </Text>
+              </InlineStack>
+            </View>
+
+            {!submitted ? (
+              <BlockStack spacing="base">
+                <TextField
+                  label={`🎯 ${settings.formFieldLabel}`}
+                  value={formValue}
+                  onChange={setFormValue}
+                />
+
+                <Button
+                  kind="primary"
+                  onPress={handleSubmit}
+                  loading={submitting}
+                  disabled={submitting || !formValue.trim()}
+                >
+                  {settings.submitButtonText} 🚀
+                </Button>
+              </BlockStack>
+            ) : (
+              <View
+                border="base"
+                cornerRadius="base"
+                padding="large"
+                background="accent"
+              >
+                <BlockStack spacing="base" inlineAlignment="center">
+                  <Text size="extraLarge" emphasis="bold">
+                    🎉 🎊 🎉
+                  </Text>
+                  <Text size="large" emphasis="bold">
+                    Thank you! Your entry has been submitted.
+                  </Text>
+                  <Text size="medium" emphasis="bold">
+                    Good luck! 🍀 ⭐ 💫
+                  </Text>
+                </BlockStack>
+              </View>
+            )}
+          </BlockStack>
+        </View>
       </BlockStack>
     </View>
   );
