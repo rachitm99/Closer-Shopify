@@ -221,13 +221,16 @@ function Extension() {
               <BlockStack spacing="base">
                 {/* Instagram username input */}
                 <BlockStack spacing="tight">
-                  <Text size="medium" emphasis="bold">@Instagram Handle</Text>
-                  <TextField
-                    label=""
-                    value={formValue}
-                    onChange={setFormValue}
-                    placeholder={settings.placeholderText || 'username'}
-                  />
+                  <Text size="medium" emphasis="bold">Instagram Handle</Text>
+                  <BlockStack spacing="none">
+                    <Text size="large" emphasis="bold">@</Text>
+                    <TextField
+                      label=""
+                      value={formValue}
+                      onChange={setFormValue}
+                      placeholder={settings.placeholderText || 'username'}
+                    />
+                  </BlockStack>
                 </BlockStack>
 
                 {/* Prominent button that handles long text */}
