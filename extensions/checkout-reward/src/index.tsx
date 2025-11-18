@@ -79,7 +79,8 @@ function Extension() {
               'Follow us on Instagram',
               'Like our latest post',
               'Tag 2 friends in the comments',
-              'Share this post to your story'
+              'Share this post to your story',
+              'Turn on post notifications'
             ],
             formFieldLabel: 'Instagram Username',
             placeholderText: 'Enter your Instagram handle',
@@ -224,7 +225,7 @@ function Extension() {
                     <View padding="base" background="subdued">
                       <Text size="large" emphasis="bold">@</Text>
                     </View>
-                    <View padding="none" maxInlineSize="fill">
+                    <View padding="none" inlineAlignment="start" minInlineSize="fill">
                       <TextField
                         label=""
                         value={formValue}

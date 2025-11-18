@@ -56,7 +56,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           'Follow us on Instagram',
           'Like our latest post',
           'Tag 2 friends in the comments',
-          'Share this post to your story'
+          'Share this post to your story',
+          'Turn on post notifications',
+          'Use our hashtag in your story'
         ];
         
         if (typeof rules === 'string') {
@@ -83,7 +85,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             'Follow us on Instagram',
             'Like our latest post',
             'Tag 2 friends in the comments',
-            'Share this post to your story'
+            'Share this post to your story',
+            'Turn on post notifications',
+            'Use our hashtag in your story'
           ],
           formFieldLabel: 'Instagram Username',
           placeholderText: 'Enter your Instagram handle',

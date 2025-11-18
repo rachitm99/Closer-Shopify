@@ -23,7 +23,9 @@ export default function Home() {
     'Follow us on Instagram',
     'Like our latest post',
     'Tag 2 friends in the comments',
-    'Share this post to your story'
+    'Share this post to your story',
+    'Turn on post notifications',
+    'Use our hashtag in your story'
   ]);
   const [newRule, setNewRule] = useState('');
   const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
@@ -51,7 +53,9 @@ export default function Home() {
             'Follow us on Instagram',
             'Like our latest post',
             'Tag 2 friends in the comments',
-            'Share this post to your story'
+            'Share this post to your story',
+            'Turn on post notifications',
+            'Use our hashtag in your story'
           ]);
           setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
           setPlaceholderText(data.placeholderText || 'Enter your Instagram handle');
