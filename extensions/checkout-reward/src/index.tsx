@@ -16,15 +16,24 @@ interface Settings {
 }
 
 function Extension() {
-  const { shop } = useApi();
+  const api = useApi();
+  const { shop, sessionToken } = api;
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchSettings() {
       try {
+        // Get session token from Shopify
+        const token = await sessionToken.get();
+        
         const response = await fetch(
-          `https://closer-shopify-qq8c.vercel.app/api/settings/public?shop=${shop.myshopifyDomain}`
+          `https://closer-shopify-qq8c.vercel.app/api/settings/session-token`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          }
         );
         
         if (response.ok) {
