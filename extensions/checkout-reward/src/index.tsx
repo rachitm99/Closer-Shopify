@@ -210,9 +210,11 @@ function Extension() {
                 </Text>
                 <BlockStack spacing="base">
                   {settings.giveawayRules.map((rule, index) => (
-                    <InlineStack key={index} spacing="base" blockAlignment="start">
+                    <InlineStack key={index} spacing="base" blockAlignment="start" inlineAlignment="start">
                       <Text size="medium" emphasis="bold">•</Text>
-                      <Text size="medium">{rule}</Text>
+                      <View maxInlineSize="fill">
+                        <Text size="medium">{rule}</Text>
+                      </View>
                     </InlineStack>
                   ))}
                 </BlockStack>
