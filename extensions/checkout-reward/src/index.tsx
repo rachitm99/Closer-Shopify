@@ -171,6 +171,7 @@ function Extension() {
                 cornerRadius="fullyRounded"
                 padding="base"
                 background="base"
+                maxInlineSize={150}
               >
                 <Image
                   source={settings.logoUrl}
@@ -218,25 +219,21 @@ function Extension() {
             {!submitted ? (
               <BlockStack spacing="base">
                 {/* Instagram username input with @ prefix */}
-                <BlockStack spacing="tight">
-                  <Text size="medium" emphasis="bold">
-                    {settings.formFieldLabel}
-                  </Text>
-                  <View border="base" cornerRadius="base" padding="none">
-                    <InlineStack spacing="none" blockAlignment="center">
-                      <View padding="base" background="subdued">
-                        <Text size="large" emphasis="bold">@</Text>
-                      </View>
-                      <View padding="none" maxInlineSize="fill">
-                        <TextField
-                          label=""
-                          value={formValue}
-                          onChange={setFormValue}
-                        />
-                      </View>
-                    </InlineStack>
-                  </View>
-                </BlockStack>
+                <View border="base" cornerRadius="base" padding="none">
+                  <InlineStack spacing="none" blockAlignment="center">
+                    <View padding="base" background="subdued">
+                      <Text size="large" emphasis="bold">@</Text>
+                    </View>
+                    <View padding="none" maxInlineSize="fill">
+                      <TextField
+                        label=""
+                        value={formValue}
+                        onChange={setFormValue}
+                        placeholder="Enter your Instagram handle"
+                      />
+                    </View>
+                  </InlineStack>
+                </View>
 
                 {/* Prominent button that handles long text */}
                 <Button
