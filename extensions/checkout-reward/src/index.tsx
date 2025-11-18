@@ -23,9 +23,8 @@ function Extension() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        // Shopify automatically adds HMAC signing to this request
         const response = await fetch(
-          `https://closer-shopify-qq8c.vercel.app/api/settings/secure?shop=${shop.myshopifyDomain}`
+          `https://closer-shopify-qq8c.vercel.app/api/settings/public?shop=${shop.myshopifyDomain}`
         );
         
         if (response.ok) {
