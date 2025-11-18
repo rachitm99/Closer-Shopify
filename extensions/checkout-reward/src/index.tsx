@@ -23,7 +23,6 @@ interface Settings {
   rulesTitle: string;
   giveawayRules: string[];
   formFieldLabel: string;
-  placeholderText: string;
   submitButtonText: string;
   redirectUrl?: string;
 }
@@ -83,7 +82,6 @@ function Extension() {
               'Turn on post notifications'
             ],
             formFieldLabel: 'Instagram Username',
-            placeholderText: 'Enter your Instagram handle',
             submitButtonText: 'Follow Us on Instagram',
           });
         }
@@ -100,7 +98,6 @@ function Extension() {
             'Share this post to your story'
           ],
           formFieldLabel: 'Instagram Username',
-          placeholderText: 'Enter your Instagram handle',
           submitButtonText: 'Follow Us on Instagram',
         });
       } finally {
@@ -226,9 +223,6 @@ function Extension() {
                   onChange={setFormValue}
                   prefix="@"
                 />
-                <Text size="small" appearance="subdued">
-                  {settings.placeholderText || 'Enter your Instagram username'}
-                </Text>
 
                 {/* Prominent button that handles long text */}
                 <Button

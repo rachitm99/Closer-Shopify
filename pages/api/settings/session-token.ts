@@ -72,7 +72,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           rulesTitle: data?.rulesTitle || 'How to Enter:',
           giveawayRules: rules,
           formFieldLabel: data?.formFieldLabel || 'Instagram Username',
-          placeholderText: data?.placeholderText || 'Enter your Instagram handle',
           submitButtonText: data?.submitButtonText || 'Follow Us on Instagram',
           redirectUrl: data?.redirectUrl,
         });
@@ -90,7 +89,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             'Use our hashtag in your story'
           ],
           formFieldLabel: 'Instagram Username',
-          placeholderText: 'Enter your Instagram handle',
           submitButtonText: 'Follow Us on Instagram',
         });
       }

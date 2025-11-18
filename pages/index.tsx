@@ -29,7 +29,6 @@ export default function Home() {
   ]);
   const [newRule, setNewRule] = useState('');
   const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
-  const [placeholderText, setPlaceholderText] = useState('Enter your Instagram handle');
   const [submitButtonText, setSubmitButtonText] = useState('Follow Us on Instagram');
   const [redirectUrl, setRedirectUrl] = useState('');
   const [loading, setLoading] = useState(true);
@@ -58,7 +57,6 @@ export default function Home() {
             'Use our hashtag in your story'
           ]);
           setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
-          setPlaceholderText(data.placeholderText || 'Enter your Instagram handle');
           setSubmitButtonText(data.submitButtonText || 'Follow Us on Instagram');
           setRedirectUrl(data.redirectUrl || '');
         } else if (response.status === 401) {
@@ -93,7 +91,6 @@ export default function Home() {
           rulesTitle,
           giveawayRules, 
           formFieldLabel,
-          placeholderText,
           submitButtonText, 
           redirectUrl 
         }),
@@ -129,7 +126,6 @@ export default function Home() {
           rulesTitle,
           giveawayRules, 
           formFieldLabel,
-          placeholderText,
           submitButtonText, 
           redirectUrl 
         }),
@@ -410,15 +406,6 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-
-                <TextField
-                  label="Input Placeholder Text"
-                  value={placeholderText}
-                  onChange={setPlaceholderText}
-                  helpText="Hint text shown inside the input field before user types"
-                  autoComplete="off"
-                  maxLength={100}
-                />
 
                 <TextField
                   label="Submit Button Text"

@@ -11,7 +11,6 @@ export interface MerchantSettings {
   rulesTitle: string;
   giveawayRules: string[];
   formFieldLabel: string;
-  placeholderText: string;
   submitButtonText: string;
   redirectUrl?: string;
   updatedAt: string;
@@ -58,7 +57,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               'Use our hashtag in your story'
             ],
             formFieldLabel: 'Instagram Username',
-            placeholderText: 'Enter your Instagram handle',
             submitButtonText: 'Follow Us on Instagram',
             redirectUrl: '',
             updatedAt: new Date().toISOString(),
@@ -79,7 +77,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           rulesTitle,
           giveawayRules, 
           formFieldLabel,
-          placeholderText,
           submitButtonText, 
           redirectUrl 
         } = req.body;
@@ -99,7 +96,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             'Use our hashtag in your story'
           ],
           formFieldLabel: formFieldLabel || 'Instagram Username',
-          placeholderText: placeholderText || 'Enter your Instagram handle',
           submitButtonText: submitButtonText || 'Follow Us on Instagram',
           redirectUrl: redirectUrl || '',
           updatedAt: new Date().toISOString(),
