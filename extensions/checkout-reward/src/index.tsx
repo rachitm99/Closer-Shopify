@@ -220,19 +220,20 @@ function Extension() {
             {!submitted ? (
               <BlockStack spacing="base">
                 {/* Instagram username input with @ prefix */}
-                <InlineStack spacing="none" blockAlignment="center">
-                  <View padding="base" background="subdued" border="base" cornerRadius="base">
-                    <Text size="medium" emphasis="bold">@</Text>
-                  </View>
-                  <View border="base" cornerRadius="base" padding="base" minInlineSize="fill">
-                    <TextField
-                      label=""
-                      value={formValue}
-                      onChange={setFormValue}
-                      placeholder={settings.placeholderText || 'Enter your Instagram handle'}
-                    />
-                  </View>
-                </InlineStack>
+                <BlockStack spacing="tight">
+                  <Text size="medium" emphasis="bold">Instagram Handle</Text>
+                  <InlineStack spacing="tight" blockAlignment="center">
+                    <Text size="large" emphasis="bold">@</Text>
+                    <View maxInlineSize="fill">
+                      <TextField
+                        label=""
+                        value={formValue}
+                        onChange={setFormValue}
+                        placeholder={settings.placeholderText || 'username'}
+                      />
+                    </View>
+                  </InlineStack>
+                </BlockStack>
 
                 {/* Prominent button that handles long text */}
                 <Button
