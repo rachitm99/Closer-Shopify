@@ -224,9 +224,11 @@ function Extension() {
                   label="Instagram Handle"
                   value={formValue}
                   onChange={setFormValue}
-                  placeholder={settings.placeholderText || 'username'}
                   prefix="@"
                 />
+                <Text size="small" appearance="subdued">
+                  {settings.placeholderText || 'Enter your Instagram username'}
+                </Text>
 
                 {/* Prominent button that handles long text */}
                 <Button
