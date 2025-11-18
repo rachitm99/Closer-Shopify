@@ -233,7 +233,7 @@ function Extension() {
                   kind="primary"
                   onPress={handleSubmit}
                   loading={submitting}
-                  disabled={submitting || !formValue.trim()}
+                  disabled={submitting}
                 >
                   {settings.submitButtonText}
                 </Button>
