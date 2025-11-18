@@ -1,5 +1,6 @@
 import { Session } from '@shopify/shopify-api';
 import Cryptr from 'cryptr';
+import { db, collections } from './firestore';
 
 const cryptr = new Cryptr(process.env.ENCRYPTION_SECRET || 'default-secret-key');
 
@@ -12,15 +13,8 @@ export interface SessionData {
   scope?: string;
 }
 
-// In-memory session storage (for development)
-// For production, use a database like PostgreSQL, MongoDB, or Redis
-// IMPORTANT: This Map is per-serverless-instance on Vercel, so sessions may be lost
-// between requests. Using a persistent fallback mechanism.
-const sessionStorage = new Map<string, string>();
-
-// Persistent storage using a simple JSON structure
-// This is a workaround for Vercel's serverless limitations
-let persistentSessions: Record<string, string> = {};
+// Fallback in-memory storage for when Firestore is unavailable
+const memoryStorage = new Map<string, string>();
 
 export const storeSession = async (session: Session): Promise<boolean> => {
   try {
@@ -35,15 +29,29 @@ export const storeSession = async (session: Session): Promise<boolean> => {
 
     const encrypted = cryptr.encrypt(JSON.stringify(sessionData));
     
-    // Store in memory
-    sessionStorage.set(session.id, encrypted);
-    sessionStorage.set(session.shop, encrypted);
+    try {
+      // Store in Firestore
+      await db.collection(collections.sessions).doc(session.id).set({
+        data: encrypted,
+        shop: session.shop,
+        updatedAt: new Date().toISOString(),
+      });
+      
+      // Also index by shop name for easy lookup
+      await db.collection(collections.sessions).doc(session.shop).set({
+        data: encrypted,
+        shop: session.shop,
+        updatedAt: new Date().toISOString(),
+      });
+      
+      console.log('Session stored in Firestore for shop:', session.shop);
+    } catch (firestoreError) {
+      console.error('Firestore storage error, using memory fallback:', firestoreError);
+      // Fallback to memory storage
+      memoryStorage.set(session.id, encrypted);
+      memoryStorage.set(session.shop, encrypted);
+    }
     
-    // Also store in persistent object
-    persistentSessions[session.id] = encrypted;
-    persistentSessions[session.shop] = encrypted;
-    
-    console.log('Session stored for shop:', session.shop);
     return true;
   } catch (error) {
     console.error('Error storing session:', error);
@@ -53,17 +61,20 @@ export const storeSession = async (session: Session): Promise<boolean> => {
 
 export const loadSession = async (id: string): Promise<Session | undefined> => {
   try {
-    // Try memory first
-    let encrypted = sessionStorage.get(id);
+    let encrypted: string | undefined;
     
-    // Fallback to persistent storage
-    if (!encrypted) {
-      encrypted = persistentSessions[id];
-      if (encrypted) {
-        console.log('Session loaded from persistent storage for:', id);
-        // Restore to memory cache
-        sessionStorage.set(id, encrypted);
+    try {
+      // Try loading from Firestore
+      const doc = await db.collection(collections.sessions).doc(id).get();
+      
+      if (doc.exists) {
+        encrypted = doc.data()?.data;
+        console.log('Session loaded from Firestore for:', id);
       }
+    } catch (firestoreError) {
+      console.error('Firestore read error, using memory fallback:', firestoreError);
+      // Fallback to memory storage
+      encrypted = memoryStorage.get(id);
     }
     
     if (!encrypted) {
@@ -85,10 +96,16 @@ export const deleteSession = async (id: string): Promise<boolean> => {
   try {
     const session = await loadSession(id);
     if (session) {
-      sessionStorage.delete(id);
-      sessionStorage.delete(session.shop);
-      delete persistentSessions[id];
-      delete persistentSessions[session.shop];
+      try {
+        // Delete from Firestore
+        await db.collection(collections.sessions).doc(id).delete();
+        await db.collection(collections.sessions).doc(session.shop).delete();
+      } catch (firestoreError) {
+        console.error('Firestore delete error, using memory fallback:', firestoreError);
+        // Fallback to memory storage
+        memoryStorage.delete(id);
+        memoryStorage.delete(session.shop);
+      }
     }
     return true;
   } catch (error) {
@@ -99,12 +116,19 @@ export const deleteSession = async (id: string): Promise<boolean> => {
 
 export const findSessionsByShop = async (shop: string): Promise<Session[]> => {
   try {
-    // Try memory first
-    let encrypted = sessionStorage.get(shop);
+    let encrypted: string | undefined;
     
-    // Fallback to persistent storage
-    if (!encrypted) {
-      encrypted = persistentSessions[shop];
+    try {
+      // Try Firestore first
+      const doc = await db.collection(collections.sessions).doc(shop).get();
+      
+      if (doc.exists) {
+        encrypted = doc.data()?.data;
+      }
+    } catch (firestoreError) {
+      console.error('Firestore read error, using memory fallback:', firestoreError);
+      // Fallback to memory storage
+      encrypted = memoryStorage.get(shop);
     }
     
     if (!encrypted) return [];

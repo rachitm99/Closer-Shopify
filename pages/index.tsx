@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Page,
   Layout,
@@ -9,325 +9,123 @@ import {
   Spinner,
   Frame,
   Toast,
+  TextField,
   BlockStack,
   Text,
-  Button,
 } from '@shopify/polaris';
-import { useRouter } from 'next/router';
 
 export default function Home() {
-  const router = useRouter();
   const [enabled, setEnabled] = useState(false);
+  const [message, setMessage] = useState('Thank you for your purchase! 🎉');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
-  const [needsAuth, setNeedsAuth] = useState(false);
-  const [hasSubscription, setHasSubscription] = useState(false);
-  const [checkingBilling, setCheckingBilling] = useState(true);
-  const [charges, setCharges] = useState<any[]>([]);
-  const [showCharges, setShowCharges] = useState(false);
 
-  const loadCharges = async () => {
-    try {
-      const response = await fetch('/api/billing/list');
-      if (response.ok) {
-        const data = await response.json();
-        setCharges(data.charges);
-      }
-    } catch (error) {
-      console.error('Load charges error:', error);
-    }
-  };
-
-  const handleCancelSubscription = async () => {
-    if (!confirm('Cancel current subscription? (For testing only)')) return;
-    
-    try {
-      setLoading(true);
-      const response = await fetch('/api/billing/cancel', {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        alert('Subscription cancelled! Refresh to test resubscription.');
-        setHasSubscription(false);
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to cancel');
-      }
-    } catch (error) {
-      console.error('Cancel error:', error);
-      alert('Failed to cancel subscription');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Check billing status first
+  // Load current settings
   useEffect(() => {
-    const checkBilling = async () => {
+    const loadSettings = async () => {
       try {
-        const response = await fetch('/api/subscription/check');
+        const response = await fetch('/api/settings/merchant');
         if (response.ok) {
           const data = await response.json();
-          setHasSubscription(data.subscribed);
+          setEnabled(data.enabled || false);
+          setMessage(data.message || 'Thank you for your purchase! 🎉');
+        } else if (response.status === 401) {
+          // Unauthorized - redirect to auth
+          window.location.href = `/api/auth?shop=${window.location.hostname}`;
         }
       } catch (error) {
-        console.error('Billing check error:', error);
+        console.error('Error loading settings:', error);
+        setError('Failed to load settings');
       } finally {
-        setCheckingBilling(false);
+        setLoading(false);
       }
     };
 
-    checkBilling();
+    loadSettings();
   }, []);
 
-  const handleSubscribe = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await fetch('/api/billing/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: 'basic' }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (data.confirmationUrl) {
-          // Redirect to Shopify billing confirmation
-          window.top!.location.href = data.confirmationUrl;
-        } else {
-          setError('No confirmation URL received');
-          setLoading(false);
-        }
-      } else {
-        setError(data.error || 'Failed to create subscription');
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error('Subscribe error:', error);
-      setError('Failed to create subscription');
-      setLoading(false);
-    }
-  };
-
-  // Load current setting
-  useEffect(() => {
-    // Check if we're authenticated first
-    const checkAuth = async () => {
-      const { shop } = router.query;
-      
-      // If no shop parameter, we can't do anything
-      if (!shop) {
-        setError('Shop parameter missing. Please install the app from your Shopify admin.');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/settings');
-        
-        if (response.status === 401) {
-          // Not authenticated - show reinstall message
-          console.log('Not authenticated');
-          setNeedsAuth(true);
-          setLoading(false);
-          return;
-        }
-        
-        if (!response.ok) {
-          throw new Error(`Settings API returned ${response.status}`);
-        }
-        
-        // If authenticated, load settings
-        const data = await response.json();
-        setEnabled(data.enabled || false);
-        setLoading(false);
-      } catch (error) {
-        console.error('Auth check error:', error);
-        setError(error instanceof Error ? error.message : 'Failed to check authentication');
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router.query]);
-
-  const handleReinstall = () => {
-    const { shop } = router.query;
-    if (shop) {
-      const authUrl = `/api/auth?shop=${shop}`;
-      // Use parent window redirect for embedded app
-      if (window.top) {
-        window.top.location.href = authUrl;
-      } else {
-        window.location.href = authUrl;
-      }
-    }
-  };
-
-  const loadSettings = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch('/api/settings');
-      
-      if (!response.ok) {
-        throw new Error(`Failed to load settings: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setEnabled(data.enabled || false);
-    } catch (err) {
-      console.error('Error loading settings:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load settings');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleToggle = useCallback(async () => {
+  const handleToggle = async () => {
     try {
       setSaving(true);
       setError(null);
-
-      const newValue = !enabled;
-
-      const response = await fetch('/api/settings', {
+      
+      const newEnabled = !enabled;
+      
+      const response = await fetch('/api/settings/merchant', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ enabled: newValue }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: newEnabled, message }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update settings');
+      if (response.ok) {
+        setEnabled(newEnabled);
+        setShowToast(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to update settings');
       }
-
-      const data = await response.json();
-      setEnabled(data.enabled);
-      setShowToast(true);
-    } catch (err) {
-      console.error('Error updating settings:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update settings');
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      setError('Failed to update settings');
     } finally {
       setSaving(false);
     }
-  }, [enabled]);
+  };
 
-  const contentStatus = enabled ? 'Disable' : 'Enable';
-  const textStatus = enabled ? 'enabled' : 'disabled';
+  const handleMessageChange = (value: string) => {
+    setMessage(value);
+  };
+
+  const handleSaveMessage = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      
+      const response = await fetch('/api/settings/merchant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled, message }),
+      });
+
+      if (response.ok) {
+        setShowToast(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to save message');
+      }
+    } catch (error) {
+      console.error('Error saving message:', error);
+      setError('Failed to save message');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading) {
     return (
       <Frame>
-        <Page title="Reward Message App">
-          <Layout>
-            <Layout.Section>
-              <Card>
-                <div style={{ textAlign: 'center', padding: '40px' }}>
-                  <Spinner accessibilityLabel="Loading" size="large" />
-                </div>
-              </Card>
-            </Layout.Section>
-          </Layout>
+        <Page title="Reward Message Settings">
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <Spinner size="large" />
+          </div>
         </Page>
       </Frame>
     );
   }
 
-  if (needsAuth) {
-    return (
-      <Frame>
-        <Page title="Authentication Required">
-          <Layout>
-            <Layout.Section>
-              <Banner tone="warning">
-                <BlockStack gap="400">
-                  <Text as="p">
-                    This app needs to be authorized. Please click the button below to complete the installation.
-                  </Text>
-                  <Button onClick={handleReinstall} variant="primary">
-                    Authorize App
-                  </Button>
-                </BlockStack>
-              </Banner>
-            </Layout.Section>
-          </Layout>
-        </Page>
-      </Frame>
-    );
-  }
-
-  // Show subscription prompt if not subscribed
-  if (!checkingBilling && !hasSubscription) {
-    return (
-      <Frame>
-        <Page title="Subscribe to Reward Message App">
-          <Layout>
-            <Layout.Section>
-              <Card>
-                <BlockStack gap="400">
-                  <Text as="h2" variant="headingLg">
-                    Choose Your Plan
-                  </Text>
-                  <Text as="p">
-                    Subscribe to unlock drag-and-drop reward messages. Cancel anytime.
-                  </Text>
-                  <div style={{ 
-                    border: '2px solid #5C6AC4', 
-                    borderRadius: '8px', 
-                    padding: '20px',
-                    marginTop: '20px'
-                  }}>
-                    <BlockStack gap="300">
-                      <Text as="h3" variant="headingMd">Basic Plan</Text>
-                      <Text as="p" variant="headingLg">$9.99/month</Text>
-                      <ul style={{ marginLeft: '20px' }}>
-                        <li>Custom reward messages</li>
-                        <li>Drag-and-drop Thank You page block</li>
-                        <li>Instant activation</li>
-                        <li>Cancel anytime</li>
-                      </ul>
-                      <Button 
-                        onClick={handleSubscribe} 
-                        variant="primary" 
-                        size="large"
-                        loading={loading}
-                      >
-                        Subscribe Now
-                      </Button>
-                    </BlockStack>
-                  </div>
-                </BlockStack>
-              </Card>
-            </Layout.Section>
-          </Layout>
-        </Page>
-      </Frame>
-    );
-  }
+  const contentStatus = enabled ? 'Turn off' : 'Turn on';
+  const textStatus = enabled ? 'enabled' : 'disabled';
 
   return (
     <Frame>
-      <Page
-        title="Reward Message Settings"
-        subtitle="Control the reward message displayed on your Thank You page"
-      >
+      <Page title="Reward Message Settings">
         <Layout>
           {error && (
             <Layout.Section>
-              <Banner
-                title="Error"
-                tone="critical"
-                onDismiss={() => setError(null)}
-              >
-                <p>{error}</p>
+              <Banner status="critical" onDismiss={() => setError(null)}>
+                {error}
               </Banner>
             </Layout.Section>
           )}
@@ -339,20 +137,18 @@ export default function Home() {
                   content: contentStatus,
                   onAction: handleToggle,
                   loading: saving,
-                  disabled: saving,
                 }}
                 enabled={enabled}
               >
                 <TextContainer>
-                  <p>
-                    The reward message is currently{' '}
-                    <strong>{textStatus}</strong>.
-                  </p>
-                  <p>
-                    When enabled, customers will see the message "You have won a
-                    reward!" on the order confirmation page after completing
-                    their purchase.
-                  </p>
+                  <Text as="h2" variant="headingMd">
+                    Reward message is {textStatus}
+                  </Text>
+                  <Text as="p" variant="bodyMd">
+                    {enabled
+                      ? 'Your reward message will appear on the Thank You page after checkout.'
+                      : 'Enable to show a reward message on the Thank You page after checkout.'}
+                  </Text>
                 </TextContainer>
               </SettingToggle>
             </Card>
@@ -362,30 +158,32 @@ export default function Home() {
             <Card>
               <BlockStack gap="400">
                 <Text as="h2" variant="headingMd">
-                  Preview
+                  Customize Message
                 </Text>
-                <div
-                  style={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white',
-                    padding: '20px',
-                    borderRadius: '8px',
-                    textAlign: 'center',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                  }}
-                >
-                  <div
+                <TextField
+                  label="Reward message"
+                  value={message}
+                  onChange={handleMessageChange}
+                  helpText="This message will be displayed to customers on the Thank You page"
+                  autoComplete="off"
+                  maxLength={200}
+                />
+                <div>
+                  <button
+                    onClick={handleSaveMessage}
+                    disabled={saving}
                     style={{
-                      fontSize: '24px',
-                      fontWeight: 'bold',
-                      marginBottom: '8px',
+                      padding: '8px 16px',
+                      backgroundColor: '#008060',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: saving ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
                     }}
                   >
-                    🎉 Congratulations!
-                  </div>
-                  <div style={{ fontSize: '18px' }}>
-                    You have won a reward!
-                  </div>
+                    {saving ? 'Saving...' : 'Save Message'}
+                  </button>
                 </div>
               </BlockStack>
             </Card>
@@ -397,93 +195,30 @@ export default function Home() {
                 <Text as="h2" variant="headingMd">
                   How it works
                 </Text>
-                <TextContainer>
-                  <p>
-                    <strong>Step 1:</strong> Toggle the switch above to enable or
-                    disable the reward message.
-                  </p>
-                  <p>
-                    <strong>Step 2:</strong> Configure the app proxy in your
-                    Shopify admin (see documentation).
-                  </p>
-                  <p>
-                    <strong>Step 3:</strong> When enabled, the reward message will
-                    automatically appear on your Thank You page after customers
-                    complete their orders.
-                  </p>
-                </TextContainer>
+                <Text as="p" variant="bodyMd">
+                  1. Enable the reward message above
+                </Text>
+                <Text as="p" variant="bodyMd">
+                  2. Customize your message text
+                </Text>
+                <Text as="p" variant="bodyMd">
+                  3. The message will automatically appear on your store's Thank You page after customers complete a purchase
+                </Text>
+                <Text as="p" variant="bodyMd">
+                  4. You can customize the position by using the Shopify theme editor
+                </Text>
               </BlockStack>
             </Card>
           </Layout.Section>
-
-          {hasSubscription && (
-            <Layout.Section>
-              <Card>
-                <BlockStack gap="400">
-                  <Text as="h2" variant="headingMd">
-                    Testing & Development
-                  </Text>
-                  <Text as="p" tone="subdued">
-                    Tools for testing subscription billing (development only)
-                  </Text>
-                  <BlockStack gap="200">
-                    <Button 
-                      onClick={handleCancelSubscription}
-                      tone="critical"
-                      variant="secondary"
-                    >
-                      Cancel Subscription (Test)
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        setShowCharges(!showCharges);
-                        if (!showCharges) loadCharges();
-                      }}
-                      variant="secondary"
-                    >
-                      {showCharges ? 'Hide' : 'Show'} Billing History
-                    </Button>
-                  </BlockStack>
-                  {showCharges && charges.length > 0 && (
-                    <div style={{ 
-                      background: '#f6f6f7', 
-                      padding: '16px', 
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                      fontFamily: 'monospace'
-                    }}>
-                      {charges.map((charge, i) => (
-                        <div key={i} style={{ marginBottom: '12px', borderBottom: '1px solid #ddd', paddingBottom: '8px' }}>
-                          <div><strong>ID:</strong> {charge.id}</div>
-                          <div><strong>Name:</strong> {charge.name}</div>
-                          <div><strong>Price:</strong> ${charge.price}</div>
-                          <div><strong>Status:</strong> {charge.status}</div>
-                          <div><strong>Test Mode:</strong> {charge.test ? 'Yes' : 'No'}</div>
-                          <div><strong>Created:</strong> {new Date(charge.created_at).toLocaleString()}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </BlockStack>
-              </Card>
-            </Layout.Section>
-          )}
         </Layout>
+
+        {showToast && (
+          <Toast
+            content="Settings saved successfully"
+            onDismiss={() => setShowToast(false)}
+          />
+        )}
       </Page>
-      {showToast && (
-        <Toast
-          content={`Reward message ${enabled ? 'enabled' : 'disabled'} successfully`}
-          onDismiss={() => setShowToast(false)}
-          duration={3000}
-        />
-      )}
     </Frame>
   );
-}
-
-// Disable static generation for this page since it requires client-side routing
-export async function getServerSideProps() {
-  return {
-    props: {},
-  };
 }
