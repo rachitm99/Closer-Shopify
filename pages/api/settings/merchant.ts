@@ -5,7 +5,13 @@ import { db, collections } from '../../../lib/firestore';
 export interface MerchantSettings {
   shop: string;
   enabled: boolean;
-  message: string;
+  // Popup configuration
+  logoUrl?: string;
+  popupTitle: string;
+  giveawayRules: string;
+  formFieldLabel: string;
+  submitButtonText: string;
+  redirectUrl?: string;
   updatedAt: string;
 }
 
@@ -31,7 +37,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const defaultSettings: MerchantSettings = {
             shop,
             enabled: false,
-            message: 'Thank you for your purchase! 🎉',
+            logoUrl: '',
+            popupTitle: 'Enter Our Giveaway!',
+            giveawayRules: 'Enter your email below for a chance to win amazing prizes!',
+            formFieldLabel: 'Your Email',
+            submitButtonText: 'Submit',
+            redirectUrl: '',
             updatedAt: new Date().toISOString(),
           };
           return res.status(200).json(defaultSettings);
@@ -43,12 +54,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else if (req.method === 'POST') {
       // Update merchant settings
       try {
-        const { enabled, message } = req.body;
+        const { 
+          enabled, 
+          logoUrl, 
+          popupTitle, 
+          giveawayRules, 
+          formFieldLabel, 
+          submitButtonText, 
+          redirectUrl 
+        } = req.body;
         
         const settings: MerchantSettings = {
           shop,
           enabled: enabled !== undefined ? enabled : false,
-          message: message || 'Thank you for your purchase! 🎉',
+          logoUrl: logoUrl || '',
+          popupTitle: popupTitle || 'Enter Our Giveaway!',
+          giveawayRules: giveawayRules || 'Enter your email below for a chance to win amazing prizes!',
+          formFieldLabel: formFieldLabel || 'Your Email',
+          submitButtonText: submitButtonText || 'Submit',
+          redirectUrl: redirectUrl || '',
           updatedAt: new Date().toISOString(),
         };
 

@@ -16,7 +16,12 @@ import {
 
 export default function Home() {
   const [enabled, setEnabled] = useState(false);
-  const [message, setMessage] = useState('Thank you for your purchase! 🎉');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [popupTitle, setPopupTitle] = useState('Enter Our Giveaway!');
+  const [giveawayRules, setGiveawayRules] = useState('Enter your email below for a chance to win amazing prizes!');
+  const [formFieldLabel, setFormFieldLabel] = useState('Your Email');
+  const [submitButtonText, setSubmitButtonText] = useState('Submit');
+  const [redirectUrl, setRedirectUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +35,12 @@ export default function Home() {
         if (response.ok) {
           const data = await response.json();
           setEnabled(data.enabled || false);
-          setMessage(data.message || 'Thank you for your purchase! 🎉');
+          setLogoUrl(data.logoUrl || '');
+          setPopupTitle(data.popupTitle || 'Enter Our Giveaway!');
+          setGiveawayRules(data.giveawayRules || 'Enter your email below for a chance to win amazing prizes!');
+          setFormFieldLabel(data.formFieldLabel || 'Your Email');
+          setSubmitButtonText(data.submitButtonText || 'Submit');
+          setRedirectUrl(data.redirectUrl || '');
         } else if (response.status === 401) {
           // Unauthorized - redirect to auth
           window.location.href = `/api/auth?shop=${window.location.hostname}`;
@@ -56,7 +66,15 @@ export default function Home() {
       const response = await fetch('/api/settings/merchant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: newEnabled, message }),
+        body: JSON.stringify({ 
+          enabled: newEnabled, 
+          logoUrl, 
+          popupTitle, 
+          giveawayRules, 
+          formFieldLabel, 
+          submitButtonText, 
+          redirectUrl 
+        }),
       });
 
       if (response.ok) {
@@ -74,11 +92,7 @@ export default function Home() {
     }
   };
 
-  const handleMessageChange = (value: string) => {
-    setMessage(value);
-  };
-
-  const handleSaveMessage = async () => {
+  const handleSaveSettings = async () => {
     try {
       setSaving(true);
       setError(null);
@@ -86,7 +100,15 @@ export default function Home() {
       const response = await fetch('/api/settings/merchant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled, message }),
+        body: JSON.stringify({ 
+          enabled, 
+          logoUrl, 
+          popupTitle, 
+          giveawayRules, 
+          formFieldLabel, 
+          submitButtonText, 
+          redirectUrl 
+        }),
       });
 
       if (response.ok) {
@@ -120,7 +142,7 @@ export default function Home() {
 
   return (
     <Frame>
-      <Page title="Reward Message Settings">
+      <Page title="Giveaway Popup Settings">
         <Layout>
           {error && (
             <Layout.Section>
@@ -142,12 +164,12 @@ export default function Home() {
               >
                 <TextContainer>
                   <Text as="h2" variant="headingMd">
-                    Reward message is {textStatus}
+                    Giveaway popup is {textStatus}
                   </Text>
                   <Text as="p" variant="bodyMd">
                     {enabled
-                      ? 'Your reward message will appear on the Thank You page after checkout.'
-                      : 'Enable to show a reward message on the Thank You page after checkout.'}
+                      ? 'Your giveaway popup will appear on the Thank You page after checkout.'
+                      : 'Enable to show a giveaway popup on the Thank You page after checkout.'}
                   </Text>
                 </TextContainer>
               </SettingToggle>
@@ -158,19 +180,67 @@ export default function Home() {
             <Card>
               <BlockStack gap="400">
                 <Text as="h2" variant="headingMd">
-                  Customize Message
+                  Popup Configuration
                 </Text>
+                
                 <TextField
-                  label="Reward message"
-                  value={message}
-                  onChange={handleMessageChange}
-                  helpText="This message will be displayed to customers on the Thank You page"
+                  label="Logo URL"
+                  value={logoUrl}
+                  onChange={setLogoUrl}
+                  helpText="Enter the URL of your logo image (e.g., https://example.com/logo.png)"
                   autoComplete="off"
-                  maxLength={200}
+                  placeholder="https://example.com/logo.png"
                 />
+
+                <TextField
+                  label="Popup Title"
+                  value={popupTitle}
+                  onChange={setPopupTitle}
+                  helpText="The main title shown at the top of the popup"
+                  autoComplete="off"
+                  maxLength={100}
+                />
+
+                <TextField
+                  label="Giveaway Rules"
+                  value={giveawayRules}
+                  onChange={setGiveawayRules}
+                  helpText="Describe the giveaway rules and details"
+                  autoComplete="off"
+                  multiline={4}
+                  maxLength={500}
+                />
+
+                <TextField
+                  label="Form Field Label"
+                  value={formFieldLabel}
+                  onChange={setFormFieldLabel}
+                  helpText="Label for the input field (e.g., 'Your Email', 'Phone Number')"
+                  autoComplete="off"
+                  maxLength={50}
+                />
+
+                <TextField
+                  label="Submit Button Text"
+                  value={submitButtonText}
+                  onChange={setSubmitButtonText}
+                  helpText="Text displayed on the submit button"
+                  autoComplete="off"
+                  maxLength={30}
+                />
+
+                <TextField
+                  label="Redirect URL (Optional)"
+                  value={redirectUrl}
+                  onChange={setRedirectUrl}
+                  helpText="URL to redirect after form submission (leave empty for no redirect)"
+                  autoComplete="off"
+                  placeholder="https://example.com/thank-you"
+                />
+
                 <div>
                   <button
-                    onClick={handleSaveMessage}
+                    onClick={handleSaveSettings}
                     disabled={saving}
                     style={{
                       padding: '8px 16px',
@@ -182,7 +252,7 @@ export default function Home() {
                       fontSize: '14px',
                     }}
                   >
-                    {saving ? 'Saving...' : 'Save Message'}
+                    {saving ? 'Saving...' : 'Save All Settings'}
                   </button>
                 </div>
               </BlockStack>
@@ -196,16 +266,19 @@ export default function Home() {
                   How it works
                 </Text>
                 <Text as="p" variant="bodyMd">
-                  1. Enable the reward message above
+                  1. Enable the giveaway popup above
                 </Text>
                 <Text as="p" variant="bodyMd">
-                  2. Customize your message text
+                  2. Configure your popup: add logo, title, rules, and form settings
                 </Text>
                 <Text as="p" variant="bodyMd">
-                  3. The message will automatically appear on your store's Thank You page after customers complete a purchase
+                  3. The popup will appear on the Thank You page after customers complete a purchase
                 </Text>
                 <Text as="p" variant="bodyMd">
-                  4. You can customize the position by using the Shopify theme editor
+                  4. Customer submissions are stored in Firestore for your review
+                </Text>
+                <Text as="p" variant="bodyMd">
+                  5. Optional: Set a redirect URL to send customers after submission
                 </Text>
               </BlockStack>
             </Card>
