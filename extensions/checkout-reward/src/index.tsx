@@ -33,7 +33,6 @@ function Extension() {
   const { shop, sessionToken } = api;
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [dismissed, setDismissed] = useState(false);
   const [formValue, setFormValue] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -120,7 +119,7 @@ function Extension() {
     }
   };
 
-  if (loading || !settings || !settings.enabled || dismissed) {
+  if (loading || !settings || !settings.enabled) {
     return null;
   }
 
@@ -129,20 +128,10 @@ function Extension() {
       border="base"
       cornerRadius="large"
       padding="large"
-      background="base"
+      background="accent"
     >
-      <BlockStack spacing="base">
-        {/* Close button at top right */}
-        <InlineStack blockAlignment="start" inlineAlignment="end">
-          <Button
-            kind="plain"
-            onPress={() => setDismissed(true)}
-          >
-            ✕
-          </Button>
-        </InlineStack>
-
-        {/* Logo centered */}
+      <BlockStack spacing="large" inlineAlignment="center">
+        {/* Logo centered with extra spacing */}
         {settings.logoUrl && (
           <InlineStack inlineAlignment="center">
             <Image
@@ -152,17 +141,19 @@ function Extension() {
           </InlineStack>
         )}
 
-        {/* Title */}
-        <InlineStack inlineAlignment="center">
-          <Heading level={2}>{settings.popupTitle}</Heading>
-        </InlineStack>
+        {/* Title - bold and prominent */}
+        <BlockStack spacing="none" inlineAlignment="center">
+          <Heading level={1}>{settings.popupTitle}</Heading>
+        </BlockStack>
 
         <Divider />
 
-        {/* Rules text */}
-        <Text appearance="subdued" size="medium">
-          {settings.giveawayRules}
-        </Text>
+        {/* Rules text - centered and larger */}
+        <InlineStack inlineAlignment="center">
+          <Text size="large" emphasis="bold">
+            {settings.giveawayRules}
+          </Text>
+        </InlineStack>
 
         {!submitted ? (
           <BlockStack spacing="base">
@@ -173,24 +164,26 @@ function Extension() {
             />
 
             <Button
+              kind="primary"
               onPress={handleSubmit}
               loading={submitting}
               disabled={submitting || !formValue.trim()}
             >
-              {settings.submitButtonText}
+              {settings.submitButtonText} 🎁
             </Button>
           </BlockStack>
         ) : (
-          <InlineStack inlineAlignment="center">
-            <BlockStack spacing="tight" inlineAlignment="center">
-              <Text size="large" emphasis="bold">
-                ✅
-              </Text>
-              <Text size="medium" emphasis="bold">
-                Thank you! Your entry has been submitted.
-              </Text>
-            </BlockStack>
-          </InlineStack>
+          <BlockStack spacing="base" inlineAlignment="center">
+            <Text size="extraLarge" emphasis="bold">
+              🎉
+            </Text>
+            <Text size="large" emphasis="bold">
+              Thank you! Your entry has been submitted.
+            </Text>
+            <Text size="medium" appearance="subdued">
+              Good luck! 🍀
+            </Text>
+          </BlockStack>
         )}
       </BlockStack>
     </View>
