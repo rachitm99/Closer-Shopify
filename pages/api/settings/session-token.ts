@@ -50,17 +50,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       if (doc.exists) {
         const data = doc.data();
+        
+        // Backward compatibility: convert old string format to array
+        let rules = data?.giveawayRules || [
+          'Follow us on Instagram',
+          'Like our latest post',
+          'Tag 2 friends in the comments',
+          'Share this post to your story'
+        ];
+        
+        if (typeof rules === 'string') {
+          rules = [rules];
+        }
+        
         return res.status(200).json({
           enabled: data?.enabled || false,
           logoUrl: data?.logoUrl,
           popupTitle: data?.popupTitle || '🎉 Instagram Giveaway! 🎉',
           rulesTitle: data?.rulesTitle || 'How to Enter:',
-          giveawayRules: data?.giveawayRules || [
-            'Follow us on Instagram',
-            'Like our latest post',
-            'Tag 2 friends in the comments',
-            'Share this post to your story'
-          ],
+          giveawayRules: rules,
           formFieldLabel: data?.formFieldLabel || 'Instagram Username',
           submitButtonText: data?.submitButtonText || 'Follow Us on Instagram',
           redirectUrl: data?.redirectUrl,

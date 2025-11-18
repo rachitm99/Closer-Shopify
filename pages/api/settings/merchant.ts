@@ -32,7 +32,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const doc = await db.collection(collections.settings).doc(shop).get();
         
         if (doc.exists) {
-          return res.status(200).json(doc.data());
+          const data = doc.data();
+          
+          // Backward compatibility: convert old string format to array
+          if (data && data.giveawayRules && typeof data.giveawayRules === 'string') {
+            data.giveawayRules = [data.giveawayRules];
+          }
+          
+          return res.status(200).json(data);
         } else {
           // Return default settings
           const defaultSettings: MerchantSettings = {

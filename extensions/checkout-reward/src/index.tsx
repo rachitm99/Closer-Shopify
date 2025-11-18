@@ -52,6 +52,22 @@ function Extension() {
         
         if (response.ok) {
           const data = await response.json();
+          
+          // Backward compatibility: convert old string format to array
+          if (data.giveawayRules && typeof data.giveawayRules === 'string') {
+            data.giveawayRules = [data.giveawayRules];
+          }
+          
+          // Ensure giveawayRules is always an array
+          if (!Array.isArray(data.giveawayRules)) {
+            data.giveawayRules = [
+              'Follow us on Instagram',
+              'Like our latest post',
+              'Tag 2 friends in the comments',
+              'Share this post to your story'
+            ];
+          }
+          
           setSettings(data);
         } else {
           setSettings({
