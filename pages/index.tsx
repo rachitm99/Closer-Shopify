@@ -124,7 +124,7 @@ export default function Home() {
         <Layout>
           {error && (
             <Layout.Section>
-              <Banner status="critical" onDismiss={() => setError(null)}>
+              <Banner tone="critical" onDismiss={() => setError(null)}>
                 {error}
               </Banner>
             </Layout.Section>
