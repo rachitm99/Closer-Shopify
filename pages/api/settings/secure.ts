@@ -8,26 +8,34 @@ import { db, collections } from '../../../lib/firestore';
  */
 
 function verifyShopifyHMAC(query: any, hmac: string, secret: string): boolean {
-  // Remove HMAC from query params
-  const { hmac: _, ...params } = query;
-  
-  // Sort and encode params
-  const message = Object.keys(params)
-    .sort()
-    .map(key => `${key}=${params[key]}`)
-    .join('&');
-  
-  // Generate HMAC
-  const generatedHmac = crypto
-    .createHmac('sha256', secret)
-    .update(message)
-    .digest('hex');
-  
-  // Compare (timing-safe)
-  return crypto.timingSafeEqual(
-    Buffer.from(hmac, 'hex'),
-    Buffer.from(generatedHmac, 'hex')
-  );
+  try {
+    // Remove HMAC and signature from query params
+    const { hmac: _, signature: __, ...params } = query;
+    
+    // Sort and encode params
+    const message = Object.keys(params)
+      .sort()
+      .map(key => {
+        const value = Array.isArray(params[key]) ? params[key][0] : params[key];
+        return `${key}=${value}`;
+      })
+      .join('&');
+    
+    // Generate HMAC
+    const generatedHmac = crypto
+      .createHmac('sha256', secret)
+      .update(message)
+      .digest('hex');
+    
+    // Compare (timing-safe)
+    return crypto.timingSafeEqual(
+      Buffer.from(hmac),
+      Buffer.from(generatedHmac)
+    );
+  } catch (error) {
+    console.error('HMAC verification error:', error);
+    return false;
+  }
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -51,18 +59,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Shop parameter is required' });
     }
 
-    // Verify HMAC if provided (for requests from Shopify)
-    if (hmac && typeof hmac === 'string') {
-      const isValid = verifyShopifyHMAC(
-        req.query,
-        hmac,
-        process.env.SHOPIFY_API_SECRET!
-      );
+    // HMAC is required for security
+    if (!hmac || typeof hmac !== 'string') {
+      console.error('Missing HMAC signature');
+      return res.status(401).json({ error: 'HMAC signature required' });
+    }
 
-      if (!isValid) {
-        console.error('Invalid HMAC signature');
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
+    // Verify HMAC from Shopify
+    const isValid = verifyShopifyHMAC(
+      req.query,
+      hmac,
+      process.env.SHOPIFY_API_SECRET!
+    );
+
+    if (!isValid) {
+      console.error('Invalid HMAC signature');
+      return res.status(401).json({ error: 'Unauthorized - Invalid HMAC' });
     }
 
     // Fetch settings from Firestore
