@@ -52,13 +52,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const data = doc.data();
         return res.status(200).json({
           enabled: data?.enabled || false,
-          message: data?.message || 'Thank you for your purchase! 🎉',
-          // Can include sensitive data here
+          logoUrl: data?.logoUrl,
+          popupTitle: data?.popupTitle || 'Enter Our Giveaway!',
+          giveawayRules: data?.giveawayRules || 'Enter your email below for a chance to win amazing prizes!',
+          formFieldLabel: data?.formFieldLabel || 'Your Email',
+          submitButtonText: data?.submitButtonText || 'Submit',
+          redirectUrl: data?.redirectUrl,
         });
       } else {
         return res.status(200).json({
           enabled: false,
-          message: 'Thank you for your purchase! 🎉',
+          popupTitle: 'Enter Our Giveaway!',
+          giveawayRules: 'Enter your email below for a chance to win amazing prizes!',
+          formFieldLabel: 'Your Email',
+          submitButtonText: 'Submit',
         });
       }
     } catch (tokenError) {
