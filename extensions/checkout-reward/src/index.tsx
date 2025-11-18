@@ -1,12 +1,14 @@
 import {
   reactExtension,
-  Modal,
+  Banner,
   BlockStack,
   Image,
   Text,
   TextField,
   Button,
   useApi,
+  InlineStack,
+  Pressable,
 } from '@shopify/ui-extensions-react/checkout';
 import { useEffect, useState } from 'react';
 
@@ -30,7 +32,7 @@ function Extension() {
   const { shop, sessionToken } = api;
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const [formValue, setFormValue] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -53,10 +55,6 @@ function Extension() {
         if (response.ok) {
           const data = await response.json();
           setSettings(data);
-          // Show modal if enabled
-          if (data.enabled) {
-            setShowModal(true);
-          }
         } else {
           console.error('Failed to fetch settings');
           setSettings({
@@ -115,11 +113,6 @@ function Extension() {
           setTimeout(() => {
             window.location.href = settings.redirectUrl!;
           }, 1500);
-        } else {
-          // Close modal after 2 seconds
-          setTimeout(() => {
-            setShowModal(false);
-          }, 2000);
         }
       } else {
         console.error('Failed to submit form');
@@ -131,19 +124,14 @@ function Extension() {
     }
   };
 
-  // Don't render anything while loading
-  if (loading || !settings || !settings.enabled) {
+  // Don't render anything while loading or if disabled or dismissed
+  if (loading || !settings || !settings.enabled || dismissed) {
     return null;
   }
 
   return (
-    <Modal
-      id="giveaway-modal"
-      title={settings.popupTitle}
-      open={showModal}
-      onClose={() => setShowModal(false)}
-    >
-      <BlockStack spacing="loose">
+    <Banner title={settings.popupTitle}>
+      <BlockStack spacing="base">
         {settings.logoUrl && (
           <Image
             source={settings.logoUrl}
@@ -151,32 +139,41 @@ function Extension() {
           />
         )}
         
-        <Text size="medium">
+        <Text>
           {settings.giveawayRules}
         </Text>
 
         {!submitted ? (
-          <>
+          <BlockStack spacing="base">
             <TextField
               label={settings.formFieldLabel}
               value={formValue}
               onChange={setFormValue}
             />
 
-            <Button
-              onPress={handleSubmit}
-              loading={submitting}
-              disabled={submitting || !formValue.trim()}
-            >
-              {settings.submitButtonText}
-            </Button>
-          </>
+            <InlineStack spacing="tight">
+              <Button
+                onPress={handleSubmit}
+                loading={submitting}
+                disabled={submitting || !formValue.trim()}
+              >
+                {settings.submitButtonText}
+              </Button>
+              
+              <Button
+                kind="plain"
+                onPress={() => setDismissed(true)}
+              >
+                ✕ Close
+              </Button>
+            </InlineStack>
+          </BlockStack>
         ) : (
-          <Text size="large" emphasis="bold">
+          <Text emphasis="bold">
             ✅ Thank you! Your entry has been submitted.
           </Text>
         )}
       </BlockStack>
-    </Modal>
+    </Banner>
   );
 }
