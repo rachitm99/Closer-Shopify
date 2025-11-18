@@ -9,7 +9,6 @@ name = "reward-message"
 handle = "reward-message"
 
 [extensions.capabilities]
-# Require active subscription
 network_access = true
 
 [[extensions.targeting]]

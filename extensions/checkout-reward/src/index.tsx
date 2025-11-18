@@ -8,7 +8,6 @@ import {
   Button,
   useApi,
   InlineStack,
-  Pressable,
 } from '@shopify/ui-extensions-react/checkout';
 import { useEffect, useState } from 'react';
 
