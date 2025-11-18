@@ -27,6 +27,7 @@ export default function Home() {
   ]);
   const [newRule, setNewRule] = useState('');
   const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
+  const [placeholderText, setPlaceholderText] = useState('Enter your Instagram handle');
   const [submitButtonText, setSubmitButtonText] = useState('Follow Us on Instagram');
   const [redirectUrl, setRedirectUrl] = useState('');
   const [loading, setLoading] = useState(true);
@@ -53,6 +54,7 @@ export default function Home() {
             'Share this post to your story'
           ]);
           setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
+          setPlaceholderText(data.placeholderText || 'Enter your Instagram handle');
           setSubmitButtonText(data.submitButtonText || 'Follow Us on Instagram');
           setRedirectUrl(data.redirectUrl || '');
         } else if (response.status === 401) {
@@ -86,7 +88,8 @@ export default function Home() {
           popupTitle,
           rulesTitle,
           giveawayRules, 
-          formFieldLabel, 
+          formFieldLabel,
+          placeholderText,
           submitButtonText, 
           redirectUrl 
         }),
@@ -121,7 +124,8 @@ export default function Home() {
           popupTitle,
           rulesTitle,
           giveawayRules, 
-          formFieldLabel, 
+          formFieldLabel,
+          placeholderText,
           submitButtonText, 
           redirectUrl 
         }),
@@ -404,12 +408,12 @@ export default function Home() {
                 </div>
 
                 <TextField
-                  label="Form Field Label"
-                  value={formFieldLabel}
-                  onChange={setFormFieldLabel}
-                  helpText="Label for the input field (e.g., 'Your Email', 'Phone Number')"
+                  label="Input Placeholder Text"
+                  value={placeholderText}
+                  onChange={setPlaceholderText}
+                  helpText="Hint text shown inside the input field before user types"
                   autoComplete="off"
-                  maxLength={50}
+                  maxLength={100}
                 />
 
                 <TextField
@@ -418,7 +422,7 @@ export default function Home() {
                   onChange={setSubmitButtonText}
                   helpText="Text displayed on the submit button"
                   autoComplete="off"
-                  maxLength={30}
+                  maxLength={50}
                 />
 
                 <TextField

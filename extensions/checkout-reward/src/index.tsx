@@ -23,6 +23,7 @@ interface Settings {
   rulesTitle: string;
   giveawayRules: string[];
   formFieldLabel: string;
+  placeholderText: string;
   submitButtonText: string;
   redirectUrl?: string;
 }
@@ -81,6 +82,7 @@ function Extension() {
               'Share this post to your story'
             ],
             formFieldLabel: 'Instagram Username',
+            placeholderText: 'Enter your Instagram handle',
             submitButtonText: 'Follow Us on Instagram',
           });
         }
@@ -97,6 +99,7 @@ function Extension() {
             'Share this post to your story'
           ],
           formFieldLabel: 'Instagram Username',
+          placeholderText: 'Enter your Instagram handle',
           submitButtonText: 'Follow Us on Instagram',
         });
       } finally {
@@ -207,9 +210,11 @@ function Extension() {
                 </Text>
                 <BlockStack spacing="tight">
                   {settings.giveawayRules.map((rule, index) => (
-                    <InlineStack key={index} spacing="tight" blockAlignment="start">
-                      <Text size="medium">•</Text>
-                      <Text size="medium">{rule}</Text>
+                    <InlineStack key={index} spacing="base" blockAlignment="start">
+                      <Text size="medium" emphasis="bold">•</Text>
+                      <View>
+                        <Text size="medium">{rule}</Text>
+                      </View>
                     </InlineStack>
                   ))}
                 </BlockStack>
@@ -229,7 +234,7 @@ function Extension() {
                         label=""
                         value={formValue}
                         onChange={setFormValue}
-                        placeholder="Enter your Instagram handle"
+                        placeholder={settings.placeholderText || 'Enter your Instagram handle'}
                       />
                     </View>
                   </InlineStack>
