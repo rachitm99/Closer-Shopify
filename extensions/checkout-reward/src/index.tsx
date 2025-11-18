@@ -126,7 +126,7 @@ function Extension() {
             'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({
-            formData: formValue,
+            instaHandle: formValue,
           }),
         }
       );

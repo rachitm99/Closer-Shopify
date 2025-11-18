@@ -10,7 +10,7 @@ import { db, collections } from '../../../lib/firestore';
 export interface FormSubmission {
   id: string;
   shop: string;
-  formData: string;
+  instaHandle: string;
   submittedAt: string;
   orderNumber?: string;
   customerEmail?: string;
@@ -45,10 +45,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const payload = await shopify.session.decodeSessionToken(sessionToken);
       const shop = payload.dest.replace('https://', '');
 
-      const { formData, orderNumber, customerEmail } = req.body;
+      const { instaHandle, orderNumber, customerEmail } = req.body;
 
-      if (!formData) {
-        return res.status(400).json({ error: 'Form data is required' });
+      if (!instaHandle) {
+        return res.status(400).json({ error: 'Instagram handle is required' });
       }
 
       // Create submission document
@@ -57,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const submission: FormSubmission = {
         id: submissionId,
         shop,
-        formData,
+        instaHandle,
         orderNumber: orderNumber || '',
         customerEmail: customerEmail || '',
         submittedAt: new Date().toISOString(),
