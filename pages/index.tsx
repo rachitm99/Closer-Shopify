@@ -24,6 +24,7 @@ export default function Home() {
   const [redirectUrl, setRedirectUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
 
@@ -125,6 +126,52 @@ export default function Home() {
     }
   };
 
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Invalid file type. Only images (JPEG, PNG, GIF, WebP) are allowed.');
+      return;
+    }
+
+    // Validate file size (5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('File too large. Maximum size is 5MB.');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError(null);
+
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      const response = await fetch('/api/upload/logo', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLogoUrl(data.logoUrl);
+        setShowToast(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to upload logo');
+      }
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      setError('Failed to upload logo');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (loading) {
     return (
       <Frame>
@@ -183,14 +230,56 @@ export default function Home() {
                   Popup Configuration
                 </Text>
                 
-                <TextField
-                  label="Logo URL"
-                  value={logoUrl}
-                  onChange={setLogoUrl}
-                  helpText="Enter the URL of your logo image (e.g., https://example.com/logo.png)"
-                  autoComplete="off"
-                  placeholder="https://example.com/logo.png"
-                />
+                <div>
+                  <Text as="p" variant="bodyMd" fontWeight="semibold">
+                    Logo Image
+                  </Text>
+                  <div style={{ marginTop: '8px' }}>
+                    {logoUrl && (
+                      <div style={{ marginBottom: '12px' }}>
+                        <img 
+                          src={logoUrl} 
+                          alt="Logo preview" 
+                          style={{ 
+                            maxWidth: '200px', 
+                            maxHeight: '100px', 
+                            objectFit: 'contain',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            padding: '8px',
+                            backgroundColor: '#f9f9f9'
+                          }} 
+                        />
+                      </div>
+                    )}
+                    <label
+                      htmlFor="logo-upload"
+                      style={{
+                        display: 'inline-block',
+                        padding: '8px 16px',
+                        backgroundColor: uploading ? '#ccc' : '#008060',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: uploading ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                      }}
+                    >
+                      {uploading ? 'Uploading...' : (logoUrl ? 'Change Logo' : 'Upload Logo')}
+                    </label>
+                    <input
+                      id="logo-upload"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                      onChange={handleLogoUpload}
+                      disabled={uploading}
+                      style={{ display: 'none' }}
+                    />
+                    <Text as="p" variant="bodySm" tone="subdued" >
+                      Upload your brand logo (JPEG, PNG, GIF, WebP - Max 5MB)
+                    </Text>
+                  </div>
+                </div>
 
                 <TextField
                   label="Popup Title"
