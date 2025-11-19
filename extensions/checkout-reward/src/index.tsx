@@ -79,6 +79,22 @@ function Extension() {
           }
           
           setSettings(data);
+          
+          // Track impression if extension is enabled
+          if (data.enabled && data.shop) {
+            fetch(
+              `https://closer-shopify-qq8c.vercel.app/api/analytics/impressions`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  shop: data.shop,
+                }),
+              }
+            ).catch((err) => console.error('Failed to track impression:', err));
+          }
         } else {
           setSettings({
             enabled: false,

@@ -18,46 +18,50 @@ import { CheckCircleIcon } from '@shopify/polaris-icons';
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [extensionInstalled, setExtensionInstalled] = useState(false);
-  const [checkingExtension, setCheckingExtension] = useState(false);
+  const [shop, setShop] = useState<string>('');
 
   useEffect(() => {
-    // Track onboarding start
-    fetch('/api/analytics/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event: 'onboarding_started' }),
-    });
-    setLoading(false);
+    const initializeOnboarding = async () => {
+      try {
+        // Get shop information first
+        const response = await fetch('/api/settings/merchant');
+        if (response.ok) {
+          const data = await response.json();
+          const shopDomain = data.shop || 'unknown';
+          setShop(shopDomain);
+          
+          // Track onboarding start with shop info
+          await fetch('/api/analytics/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              event: 'onboarding_started',
+              shop: shopDomain,
+            }),
+          });
+        }
+      } catch (error) {
+        console.error('Error initializing onboarding:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    initializeOnboarding();
   }, []);
 
-  const checkExtensionStatus = async () => {
-    setCheckingExtension(true);
-    try {
-      const response = await fetch('/api/settings/merchant');
-      if (response.ok) {
-        const data = await response.json();
-        // If settings exist and enabled, consider extension installed
-        setExtensionInstalled(data.enabled === true);
-        return data.enabled === true;
-      }
-    } catch (error) {
-      console.error('Error checking extension:', error);
-    } finally {
-      setCheckingExtension(false);
-    }
-    return false;
-  };
-
   const completeOnboarding = async () => {
-    // Track completion
+    // Track completion with shop info
     await fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event: 'onboarding_completed' }),
+      body: JSON.stringify({ 
+        event: 'onboarding_completed',
+        shop: shop,
+      }),
     });
     
-    // Mark extension as enabled in settings
+    // Mark extension as enabled and onboarding completed
     await fetch('/api/settings/merchant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -67,7 +71,8 @@ export default function Onboarding() {
       }),
     });
     
-    window.location.href = '/';
+    // Redirect to settings page to customize
+    window.location.href = '/settings';
   };
 
   const steps = [
@@ -79,7 +84,7 @@ export default function Onboarding() {
             Thank you for installing our app! This quick guide will help you set up your giveaway popup in minutes.
           </Text>
           <Text as="p" variant="bodyMd">
-            Your customers will see a beautiful Instagram giveaway popup on the Thank You page after checkout, helping you:
+            Your customers will see a beautiful Instagram giveaway popup on the Thank You page and Order Status page after checkout, helping you:
           </Text>
           <BlockStack gap="200">
             <Text as="p" variant="bodyMd">✅ Increase Instagram followers</Text>
@@ -87,6 +92,11 @@ export default function Onboarding() {
             <Text as="p" variant="bodyMd">✅ Collect customer Instagram handles</Text>
             <Text as="p" variant="bodyMd">✅ Grow your brand awareness</Text>
           </BlockStack>
+          <div style={{ marginTop: '24px' }}>
+            <Button variant="primary" onClick={() => setCurrentStep(1)} size="large">
+              Let's Get Started →
+            </Button>
+          </div>
         </BlockStack>
       ),
     },
@@ -96,66 +106,82 @@ export default function Onboarding() {
         <BlockStack gap="400">
           <Banner tone="info">
             <Text as="p" variant="bodyMd">
-              The app has automatically added a checkout extension to your store. You need to activate it in your Shopify admin.
+              To show the giveaway popup to your customers, you need to add our app block to your checkout pages.
             </Text>
           </Banner>
           
-          <Text as="p" variant="bodyLg" fontWeight="semibold">
-            Follow these steps:
-          </Text>
-          
-          <BlockStack gap="300">
-            <div style={{ paddingLeft: '16px' }}>
-              <Text as="p" variant="bodyMd">
-                1. Go to <strong>Settings → Checkout</strong> in your Shopify admin
+          <Card>
+            <BlockStack gap="300">
+              <Text as="p" variant="headingSm">
+                📋 Follow these steps:
               </Text>
-            </div>
-            <div style={{ paddingLeft: '16px' }}>
-              <Text as="p" variant="bodyMd">
-                2. Scroll down to <strong>Order status page</strong> section
-              </Text>
-            </div>
-            <div style={{ paddingLeft: '16px' }}>
-              <Text as="p" variant="bodyMd">
-                3. Click <strong>Add app block</strong>
-              </Text>
-            </div>
-            <div style={{ paddingLeft: '16px' }}>
-              <Text as="p" variant="bodyMd">
-                4. Select <strong>Instagram Giveaway Popup</strong>
-              </Text>
-            </div>
-            <div style={{ paddingLeft: '16px' }}>
-              <Text as="p" variant="bodyMd">
-                5. Click <strong>Save</strong>
-              </Text>
-            </div>
-          </BlockStack>
+              <BlockStack gap="200">
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Text as="span" variant="bodyMd" fontWeight="bold">1.</Text>
+                  <Text as="p" variant="bodyMd">
+                    Click the button below to open <strong>Checkout Settings</strong>
+                  </Text>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Text as="span" variant="bodyMd" fontWeight="bold">2.</Text>
+                  <Text as="p" variant="bodyMd">
+                    Scroll to <strong>"Order status page"</strong> section
+                  </Text>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Text as="span" variant="bodyMd" fontWeight="bold">3.</Text>
+                  <Text as="p" variant="bodyMd">
+                    Click <strong>"Add app block"</strong> or <strong>"Customize"</strong>
+                  </Text>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Text as="span" variant="bodyMd" fontWeight="bold">4.</Text>
+                  <Text as="p" variant="bodyMd">
+                    Find and enable <strong>"Instagram Giveaway Popup"</strong>
+                  </Text>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Text as="span" variant="bodyMd" fontWeight="bold">5.</Text>
+                  <Text as="p" variant="bodyMd">
+                    Click <strong>"Save"</strong> at the top right
+                  </Text>
+                </div>
+              </BlockStack>
+            </BlockStack>
+          </Card>
+
+          <Button
+            variant="primary"
+            url="https://admin.shopify.com/settings/checkout"
+            external
+            size="large"
+          >
+            Open Checkout Settings →
+          </Button>
 
           <Divider />
 
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <Banner tone="warning">
+            <BlockStack gap="200">
+              <Text as="p" variant="bodyMd" fontWeight="bold">
+                After completing the steps above:
+              </Text>
+              <Text as="p" variant="bodyMd">
+                Come back here and click "I've Added the Block" to continue setup.
+              </Text>
+            </BlockStack>
+          </Banner>
+
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <Button
               variant="primary"
-              onClick={async () => {
-                const installed = await checkExtensionStatus();
-                if (installed) {
-                  setExtensionInstalled(true);
-                  setCurrentStep(2);
-                } else {
-                  alert('Extension not detected yet. Please follow the steps above and try again.');
-                }
+              onClick={() => {
+                // Just move to next step - merchant confirms they've done it
+                setCurrentStep(2);
               }}
-              loading={checkingExtension}
+              size="large"
             >
-              I've Enabled the Extension
-            </Button>
-            <Button
-              variant="plain"
-              url="https://admin.shopify.com/settings/checkout"
-              external
-            >
-              Open Checkout Settings →
+              ✓ I've Added the Block
             </Button>
           </div>
         </BlockStack>
@@ -165,8 +191,14 @@ export default function Onboarding() {
       title: 'Step 2: Customize Your Giveaway',
       content: (
         <BlockStack gap="400">
+          <Banner tone="success">
+            <Text as="p" variant="bodyMd" fontWeight="bold">
+              Great! Your giveaway block is now active on your store.
+            </Text>
+          </Banner>
+          
           <Text as="p" variant="bodyLg">
-            Great! Now let's customize your giveaway popup to match your brand.
+            Now let's customize your giveaway popup to match your brand.
           </Text>
           
           <Card>
@@ -177,79 +209,23 @@ export default function Onboarding() {
               <BlockStack gap="200">
                 <Text as="p" variant="bodyMd">🎨 Brand logo and colors</Text>
                 <Text as="p" variant="bodyMd">📝 Popup title and rules</Text>
-                <Text as="p" variant="bodyMd">✏️ Form field labels</Text>
+                <Text as="p" variant="bodyMd">✏️ Instagram handle field label</Text>
                 <Text as="p" variant="bodyMd">🔗 Redirect URL after submission</Text>
               </BlockStack>
             </BlockStack>
           </Card>
 
-          <Banner tone="success">
-            <Text as="p" variant="bodyMd">
-              Click "Go to Settings" to customize your giveaway popup now!
-            </Text>
-          </Banner>
-
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <Button
-              variant="primary"
-              onClick={() => setCurrentStep(3)}
-            >
-              Continue
-            </Button>
-            <Button
-              variant="plain"
-              onClick={() => {
-                completeOnboarding();
-              }}
-            >
-              Go to Settings →
-            </Button>
-          </div>
-        </BlockStack>
-      ),
-    },
-    {
-      title: 'Step 3: Test Your Setup',
-      content: (
-        <BlockStack gap="400">
-          <Text as="p" variant="bodyLg">
-            Almost done! Let's make sure everything works correctly.
+          <Text as="p" variant="bodyMd">
+            Click "Complete Setup" below to finish onboarding. You'll be taken to the settings page where you can configure everything.
           </Text>
-          
-          <Card>
-            <BlockStack gap="300">
-              <Text as="p" variant="headingSm">
-                Testing Instructions:
-              </Text>
-              <BlockStack gap="200">
-                <Text as="p" variant="bodyMd">
-                  1. Create a test order in your store (you can use Shopify's Bogus Gateway)
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  2. Complete the checkout process
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  3. Check the Thank You page - you should see your giveaway popup
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  4. Submit a test Instagram handle to verify the form works
-                </Text>
-              </BlockStack>
-            </BlockStack>
-          </Card>
 
-          <Banner tone="info">
-            <Text as="p" variant="bodyMd">
-              💡 Tip: All submissions are stored in your Firestore database. You can export them anytime!
-            </Text>
-          </Banner>
-
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
             <Button
               variant="primary"
               onClick={completeOnboarding}
+              size="large"
             >
-              Complete Setup & Go to Dashboard
+              Complete Setup →
             </Button>
           </div>
         </BlockStack>

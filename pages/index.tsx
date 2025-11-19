@@ -28,10 +28,18 @@ interface AnalyticsData {
   allTimeData: DailySubmission[];
 }
 
+interface ImpressionStats {
+  totalImpressions: number;
+  lastImpression: any;
+  timeline: { date: string; impressions: number }[];
+  totalLast30Days: number;
+}
+
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [impressions, setImpressions] = useState<ImpressionStats | null>(null);
   const [shop, setShop] = useState<string>('');
   const [onboardingComplete, setOnboardingComplete] = useState(false);
 
@@ -61,6 +69,13 @@ export default function Dashboard() {
             setAnalytics(data);
           } else {
             setError('Failed to load analytics data');
+          }
+          
+          // Load impression data
+          const impressionsResponse = await fetch(`/api/analytics/impressions?shop=${shopDomain}`);
+          if (impressionsResponse.ok) {
+            const impressionData = await impressionsResponse.json();
+            setImpressions(impressionData);
           }
         } else if (settingsResponse.status === 401) {
           // Unauthorized - redirect to auth
@@ -197,6 +212,23 @@ export default function Dashboard() {
                   value={analytics?.totalUniqueCustomers || 0}
                   description="Distinct Instagram handles"
                 />
+                <StatCard
+                  title="Block Impressions"
+                  value={impressions?.totalImpressions || 0}
+                  description="Times popup was shown"
+                />
+                <StatCard
+                  title="Conversion Rate"
+                  value={
+                    impressions?.totalImpressions 
+                      ? `${((analytics?.totalSubmissions || 0) / impressions.totalImpressions * 100).toFixed(1)}%`
+                      : '0%'
+                  }
+                  description="Submissions / Impressions"
+                />
+              </InlineGrid>
+              
+              <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
                 <StatCard
                   title="Today's Entries"
                   value={todayCount}

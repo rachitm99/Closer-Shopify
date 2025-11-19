@@ -15,3 +15,7 @@ network_access = true
 target = "purchase.thank-you.block.render"
 module = "./src/index.tsx"
 
+[[extensions.targeting]]
+target = "customer-account.order-status.block.render"
+module = "./src/index.tsx"
+
