@@ -45,7 +45,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     submissionsSnapshot.forEach((doc) => {
       const data = doc.data();
-      const submittedDate = data.submittedAt ? new Date(data.submittedAt).toISOString().split('T')[0] : 'unknown';
+      // Handle both Firebase Timestamp and legacy string dates
+      let submittedDate: string;
+      if (data.submittedAt) {
+        if (data.submittedAt.toDate) {
+          // Firebase Timestamp
+          submittedDate = data.submittedAt.toDate().toISOString().split('T')[0];
+        } else {
+          // Legacy ISO string
+          submittedDate = new Date(data.submittedAt).toISOString().split('T')[0];
+        }
+      } else {
+        submittedDate = 'unknown';
+      }
       const email = data.customerEmail || '';
       
       if (!dailyData[submittedDate]) {

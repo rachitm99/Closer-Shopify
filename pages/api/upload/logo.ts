@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { IncomingForm, File } from 'formidable';
 import { getSessionFromRequest } from '../../../lib/auth-helpers';
-import { storage, db, collections } from '../../../lib/firestore';
+import { storage, db, collections, FieldValue } from '../../../lib/firestore';
 import fs from 'fs';
 
 // Disable default body parser to handle multipart/form-data

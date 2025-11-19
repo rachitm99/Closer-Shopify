@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSessionFromRequest } from '../../../lib/auth-helpers';
-import { db, collections } from '../../../lib/firestore';
+import { db, collections, FieldValue, Timestamp } from '../../../lib/firestore';
 
 export interface MerchantSettings {
   shop: string;
@@ -13,10 +13,10 @@ export interface MerchantSettings {
   formFieldLabel: string;
   submitButtonText: string;
   redirectUrl?: string;
-  updatedAt: string;
+  updatedAt: FirebaseFirestore.Timestamp;
   onboardingCompleted?: boolean;
   analytics?: {
-    [key: string]: string;
+    [key: string]: any;
   };
 }
 
@@ -63,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             formFieldLabel: 'Instagram Username',
             submitButtonText: 'Follow Us on Instagram',
             redirectUrl: '',
-            updatedAt: new Date().toISOString(),
+            updatedAt: Timestamp.now(),
           };
           return res.status(200).json(defaultSettings);
         }
@@ -107,7 +107,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           formFieldLabel: formFieldLabel || 'Instagram Username',
           submitButtonText: submitButtonText || 'Follow Us on Instagram',
           redirectUrl: redirectUrl || '',
-          updatedAt: new Date().toISOString(),
+          updatedAt: Timestamp.now(),
         };
 
         // Merge with existing data to preserve analytics and other fields
@@ -121,7 +121,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           mergedSettings.onboardingCompleted = true;
           mergedSettings.analytics = {
             ...mergedSettings.analytics,
-            onboarding_completed: new Date().toISOString(),
+            onboarding_completed: FieldValue.serverTimestamp(),
           };
         }
 

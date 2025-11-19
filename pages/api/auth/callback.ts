@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import shopify from '../../../lib/shopify';
 import { storeSession } from '../../../lib/session-storage';
 import { setSessionCookie } from '../../../lib/auth-helpers';
-import { db, collections } from '../../../lib/firestore';
+import { db, collections, FieldValue } from '../../../lib/firestore';
 
 export default async function handler(
   req: NextApiRequest,
@@ -38,17 +38,17 @@ export default async function handler(
       await db.collection(collections.analytics).add({
         event: 'app_installed',
         shop: shopDomain,
-        timestamp: new Date().toISOString(),
+        timestamp: FieldValue.serverTimestamp(),
         metadata: {},
       });
       
       // Initialize default settings
       await settingsRef.set({
         enabled: false,
-        installedAt: new Date().toISOString(),
-        lastActivity: new Date().toISOString(),
+        installedAt: FieldValue.serverTimestamp(),
+        lastActivity: FieldValue.serverTimestamp(),
         analytics: {
-          app_installed: new Date().toISOString(),
+          app_installed: FieldValue.serverTimestamp(),
         },
       });
     }

@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import shopify from '../../../lib/shopify';
-import { db, collections } from '../../../lib/firestore';
+import { db, collections, FieldValue, Timestamp } from '../../../lib/firestore';
 
 /**
  * Form Submissions API - Store customer giveaway entries
@@ -11,10 +11,10 @@ export interface FormSubmission {
   id: string;
   shop: string;
   instaHandle: string;
-  submittedAt: string;
+  submittedAt: FirebaseFirestore.Timestamp;
   orderNumber?: string;
   customerEmail?: string;
-  updatedAt?: string;
+  updatedAt?: FirebaseFirestore.Timestamp;
   submissionCount?: number;
 }
 
@@ -71,8 +71,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
       
-      const now = new Date().toISOString();
-      
       if (existingSubmission) {
         // Update existing submission
         const existingData = existingSubmission.data() as FormSubmission;
@@ -80,14 +78,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ...existingData,
           instaHandle, // Update with latest Instagram handle
           orderNumber: orderNumber || existingData.orderNumber || '',
-          updatedAt: now,
+          updatedAt: Timestamp.now(),
           submissionCount: (existingData.submissionCount || 1) + 1,
         };
         
         await db.collection(collections.submissions).doc(submissionId).update({
           instaHandle,
           orderNumber: orderNumber || existingData.orderNumber || '',
-          updatedAt: now,
+          updatedAt: FieldValue.serverTimestamp(),
           submissionCount: (existingData.submissionCount || 1) + 1,
         });
         console.log('Form submission updated:', submissionId, 'for shop:', shop, 'count:', updatedSubmission.submissionCount);
@@ -108,7 +106,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           instaHandle,
           orderNumber: orderNumber || '',
           customerEmail: customerEmail || '',
-          submittedAt: now,
+          submittedAt: Timestamp.now(),
           submissionCount: 1,
         };
 

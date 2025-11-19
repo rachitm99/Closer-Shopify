@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { db, collections } from '../../../lib/firestore';
+import { db, collections, FieldValue } from '../../../lib/firestore';
 
 /**
  * Analytics Tracking API
@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const analyticsEvent = {
       event,
       shop: shopDomain,
-      timestamp: new Date().toISOString(),
+      timestamp: FieldValue.serverTimestamp(),
       metadata: metadata || {},
     };
 
@@ -35,8 +35,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const merchantRef = db.collection(collections.settings).doc(shopDomain);
     await merchantRef.set(
       {
-        lastActivity: new Date().toISOString(),
-        [`analytics.${event}`]: new Date().toISOString(),
+        lastActivity: FieldValue.serverTimestamp(),
+        [`analytics.${event}`]: FieldValue.serverTimestamp(),
       },
       { merge: true }
     );

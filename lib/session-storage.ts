@@ -1,6 +1,6 @@
 import { Session } from '@shopify/shopify-api';
 import Cryptr from 'cryptr';
-import { db, collections } from './firestore';
+import { db, collections, FieldValue } from './firestore';
 
 const cryptr = new Cryptr(process.env.ENCRYPTION_SECRET || 'default-secret-key');
 
