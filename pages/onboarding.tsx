@@ -130,47 +130,53 @@ export default function Onboarding() {
       ),
     },
     {
-      title: 'Step 1: Enable the Checkout Extension',
+      title: 'Step 1: Add the Giveaway Block',
       content: (
         <BlockStack gap="400">
           <Banner tone="info">
             <Text as="p" variant="bodyMd">
-              To show the giveaway popup to your customers, you need to add our app block to your checkout pages.
+              Follow these steps to add the giveaway popup to your Thank You and Order Status pages.
             </Text>
           </Banner>
           
           <Card>
             <BlockStack gap="300">
               <Text as="p" variant="headingSm">
-                📋 Follow these steps:
+                📋 Step-by-Step Instructions:
               </Text>
               <BlockStack gap="200">
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <Text as="span" variant="bodyMd" fontWeight="bold">1.</Text>
                   <Text as="p" variant="bodyMd">
-                    Click the button below to open <strong>Checkout Settings</strong>
+                    Click <strong>"Open Checkout Settings"</strong> below
                   </Text>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <Text as="span" variant="bodyMd" fontWeight="bold">2.</Text>
                   <Text as="p" variant="bodyMd">
-                    Scroll to <strong>"Order status page"</strong> section
+                    Click <strong>"Customize"</strong> button in the Checkout section
                   </Text>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <Text as="span" variant="bodyMd" fontWeight="bold">3.</Text>
                   <Text as="p" variant="bodyMd">
-                    Click <strong>"Add app block"</strong> or <strong>"Customize"</strong>
+                    In the visual editor, use the page dropdown at the top to switch to <strong>"Thank you"</strong> page
                   </Text>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <Text as="span" variant="bodyMd" fontWeight="bold">4.</Text>
                   <Text as="p" variant="bodyMd">
-                    Find and enable <strong>"Instagram Giveaway Popup"</strong>
+                    Click <strong>"Add app block"</strong> and select <strong>"Instagram Giveaway Popup"</strong>
                   </Text>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <Text as="span" variant="bodyMd" fontWeight="bold">5.</Text>
+                  <Text as="p" variant="bodyMd">
+                    Repeat for <strong>"Order status"</strong> page using the same dropdown
+                  </Text>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Text as="span" variant="bodyMd" fontWeight="bold">6.</Text>
                   <Text as="p" variant="bodyMd">
                     Click <strong>"Save"</strong> at the top right
                   </Text>
@@ -193,10 +199,10 @@ export default function Onboarding() {
           <Banner tone="warning">
             <BlockStack gap="200">
               <Text as="p" variant="bodyMd" fontWeight="bold">
-                After completing the steps above:
+                Important:
               </Text>
               <Text as="p" variant="bodyMd">
-                Come back here and click "I've Added the Block" to continue setup.
+                The block is added but won't show to customers until you enable it in our dashboard (next step).
               </Text>
             </BlockStack>
           </Banner>
@@ -217,35 +223,43 @@ export default function Onboarding() {
       ),
     },
     {
-      title: 'Step 2: Customize Your Giveaway',
+      title: 'Step 2: Enable & Customize Your Giveaway',
       content: (
         <BlockStack gap="400">
           <Banner tone="success">
             <Text as="p" variant="bodyMd" fontWeight="bold">
-              Great! Your giveaway block is now active on your store.
+              Perfect! The giveaway block is now added to your checkout pages.
             </Text>
           </Banner>
           
-          <Text as="p" variant="bodyLg">
-            Now let's customize your giveaway popup to match your brand.
-          </Text>
+          <Banner tone="info">
+            <BlockStack gap="200">
+              <Text as="p" variant="bodyMd" fontWeight="bold">
+                Next: Enable the popup in your dashboard
+              </Text>
+              <Text as="p" variant="bodyMd">
+                The block won't display to customers until you enable it and customize your settings.
+              </Text>
+            </BlockStack>
+          </Banner>
           
           <Card>
             <BlockStack gap="300">
               <Text as="p" variant="headingSm">
-                You can customize:
+                In the Settings page, you can:
               </Text>
               <BlockStack gap="200">
-                <Text as="p" variant="bodyMd">🎨 Brand logo and colors</Text>
-                <Text as="p" variant="bodyMd">📝 Popup title and rules</Text>
-                <Text as="p" variant="bodyMd">✏️ Instagram handle field label</Text>
-                <Text as="p" variant="bodyMd">🔗 Redirect URL after submission</Text>
+                <Text as="p" variant="bodyMd">🎨 Upload your brand logo</Text>
+                <Text as="p" variant="bodyMd">📝 Customize popup title and giveaway rules</Text>
+                <Text as="p" variant="bodyMd">✏️ Edit form field labels</Text>
+                <Text as="p" variant="bodyMd">🔗 Set redirect URL (e.g., your Instagram profile)</Text>
+                <Text as="p" variant="bodyMd">✅ <strong>Toggle the popup ON/OFF</strong></Text>
               </BlockStack>
             </BlockStack>
           </Card>
 
           <Text as="p" variant="bodyMd">
-            Click "Complete Setup" below to finish onboarding. You'll be taken to the settings page where you can configure everything.
+            Click "Go to Settings" below to enable and customize your giveaway popup.
           </Text>
 
           <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
@@ -254,7 +268,7 @@ export default function Onboarding() {
               onClick={completeOnboarding}
               size="large"
             >
-              Complete Setup →
+              Go to Settings →
             </Button>
           </div>
         </BlockStack>
