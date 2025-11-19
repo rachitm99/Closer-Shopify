@@ -42,8 +42,11 @@ export default async function handler(
         metadata: {},
       });
       
-      // Initialize default settings
+      console.log(`✅ New app installation tracked for shop: ${shopDomain}`);
+      
+      // Initialize default settings with shop field
       await settingsRef.set({
+        shop: shopDomain,
         enabled: false,
         installedAt: FieldValue.serverTimestamp(),
         lastActivity: FieldValue.serverTimestamp(),
@@ -51,18 +54,36 @@ export default async function handler(
           app_installed: FieldValue.serverTimestamp(),
         },
       });
+      
+      console.log(`✅ Default settings created for shop: ${shopDomain}`);
+    } else {
+      // Update last activity for returning installs
+      await settingsRef.update({
+        lastActivity: FieldValue.serverTimestamp(),
+      });
+      
+      console.log(`✅ Returning installation for shop: ${shopDomain}`);
     }
 
     // Get the host parameter for embedding
     const { host, shop } = req.query;
+    const hostParam = (host as string) || '';
+    const shopParam = (shop as string) || session.shop;
     
     // Construct embedded app URL
     const apiKey = process.env.SHOPIFY_API_KEY;
-    const redirectShop = shop || session.shop;
+    const redirectShop = shopParam;
     
     // Redirect to onboarding for first-time installs, otherwise to main dashboard
     const appPath = isFirstTimeInstall ? '/onboarding' : '/';
-    const redirectUrl = `https://${redirectShop}/admin/apps/${apiKey}${appPath}`;
+    
+    // Build query params
+    const queryParams = new URLSearchParams({
+      shop: redirectShop,
+      ...(hostParam && { host: hostParam }),
+    }).toString();
+    
+    const redirectUrl = `https://${redirectShop}/admin/apps/${apiKey}${appPath}?${queryParams}`;
     
     return res.redirect(redirectUrl);
   } catch (error) {
