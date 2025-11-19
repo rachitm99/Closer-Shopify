@@ -36,14 +36,18 @@ function Extension() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [customerEmail, setCustomerEmail] = useState('');
+  const [orderNumber, setOrderNumber] = useState('');
 
   useEffect(() => {
     async function fetchSettings() {
       try {
-        // Try to get customer email from API if available
-        // On Thank You page, customer data is available through the order
-        const email = (api as any).email || (api as any).customer?.email || '';
+        // Extract order data from Thank You page API
+        const orderData = (api as any).order || {};
+        const email = (api as any).email || (api as any).customer?.email || orderData.customer?.email || '';
+        const orderId = orderData.id || orderData.name || '';
+        
         setCustomerEmail(email);
+        setOrderNumber(orderId);
         
         const token = await sessionToken.get();
         
@@ -134,6 +138,7 @@ function Extension() {
           body: JSON.stringify({
             instaHandle: formValue,
             customerEmail: customerEmail,
+            orderNumber: orderNumber,
           }),
         }
       );
