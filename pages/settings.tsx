@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import { Redirect } from '@shopify/app-bridge/actions';
 import {
   Page,
   Layout,
@@ -19,7 +17,6 @@ import {
 
 export default function Home() {
   const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
   const [enabled, setEnabled] = useState(false);
   const [logoUrl, setLogoUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
@@ -42,11 +39,6 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
 
-  // Track if component is mounted (client-side)
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   // Load current settings
   useEffect(() => {
     const loadSettings = async () => {
@@ -55,14 +47,7 @@ export default function Home() {
         if (response.ok) {
           const data = await response.json();
           
-          // Check if onboarding is complete
-          if (!data.enabled && !data.analytics?.onboarding_completed && !data.onboardingCompleted) {
-            // Redirect to onboarding if not complete - client-side only
-            if (typeof window !== 'undefined') {
-              window.location.href = '/onboarding';
-            }
-            return;
-          }
+          // No need to check onboarding here - handled in _app.tsx
           
           setEnabled(data.enabled || false);
           setLogoUrl(data.logoUrl || '');
