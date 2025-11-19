@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import shopify from '../../../lib/shopify';
 import { storeSession } from '../../../lib/session-storage';
 import { setSessionCookie } from '../../../lib/auth-helpers';
+import { db, collections } from '../../../lib/firestore';
 
 export default async function handler(
   req: NextApiRequest,
@@ -25,6 +26,33 @@ export default async function handler(
     // Set session cookies (ID + encrypted data for redundancy)
     setSessionCookie(res, session);
 
+    // Check if this is a first-time install
+    const shopDomain = session.shop;
+    const settingsRef = db.collection(collections.settings).doc(shopDomain);
+    const settingsDoc = await settingsRef.get();
+    
+    const isFirstTimeInstall = !settingsDoc.exists;
+    
+    if (isFirstTimeInstall) {
+      // Track first install
+      await db.collection(collections.analytics).add({
+        event: 'app_installed',
+        shop: shopDomain,
+        timestamp: new Date().toISOString(),
+        metadata: {},
+      });
+      
+      // Initialize default settings
+      await settingsRef.set({
+        enabled: false,
+        installedAt: new Date().toISOString(),
+        lastActivity: new Date().toISOString(),
+        analytics: {
+          app_installed: new Date().toISOString(),
+        },
+      });
+    }
+
     // Get the host parameter for embedding
     const { host, shop } = req.query;
     
@@ -32,9 +60,9 @@ export default async function handler(
     const apiKey = process.env.SHOPIFY_API_KEY;
     const redirectShop = shop || session.shop;
     
-    // Redirect to Shopify admin with app embedded
-    // Using the shop admin URL ensures proper embedding
-    const redirectUrl = `https://${redirectShop}/admin/apps/${apiKey}`;
+    // Redirect to onboarding for first-time installs, otherwise to main dashboard
+    const appPath = isFirstTimeInstall ? '/onboarding' : '/';
+    const redirectUrl = `https://${redirectShop}/admin/apps/${apiKey}${appPath}`;
     
     return res.redirect(redirectUrl);
   } catch (error) {

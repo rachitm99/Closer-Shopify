@@ -14,6 +14,8 @@ export interface FormSubmission {
   submittedAt: string;
   orderNumber?: string;
   customerEmail?: string;
+  updatedAt?: string;
+  submissionCount?: number;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -51,27 +53,75 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Instagram handle is required' });
       }
 
-      // Create submission document
-      const submissionId = `${shop}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Check for existing submission by customer email
+      let existingSubmission = null;
+      let submissionId = '';
       
-      const submission: FormSubmission = {
-        id: submissionId,
-        shop,
-        instaHandle,
-        orderNumber: orderNumber || '',
-        customerEmail: customerEmail || '',
-        submittedAt: new Date().toISOString(),
-      };
+      if (customerEmail) {
+        // Query for existing submission by email
+        const existingQuery = await db.collection(collections.submissions)
+          .where('shop', '==', shop)
+          .where('customerEmail', '==', customerEmail)
+          .limit(1)
+          .get();
+        
+        if (!existingQuery.empty) {
+          existingSubmission = existingQuery.docs[0];
+          submissionId = existingSubmission.id;
+        }
+      }
+      
+      const now = new Date().toISOString();
+      
+      if (existingSubmission) {
+        // Update existing submission
+        const existingData = existingSubmission.data() as FormSubmission;
+        const updatedSubmission: FormSubmission = {
+          ...existingData,
+          instaHandle, // Update with latest Instagram handle
+          orderNumber: orderNumber || existingData.orderNumber || '',
+          updatedAt: now,
+          submissionCount: (existingData.submissionCount || 1) + 1,
+        };
+        
+        await db.collection(collections.submissions).doc(submissionId).update({
+          instaHandle,
+          orderNumber: orderNumber || existingData.orderNumber || '',
+          updatedAt: now,
+          submissionCount: (existingData.submissionCount || 1) + 1,
+        });
+        console.log('Form submission updated:', submissionId, 'for shop:', shop, 'count:', updatedSubmission.submissionCount);
+        
+        return res.status(200).json({ 
+          success: true, 
+          submissionId,
+          updated: true,
+          submissionCount: updatedSubmission.submissionCount,
+        });
+      } else {
+        // Create new submission document
+        submissionId = `${shop}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        const submission: FormSubmission = {
+          id: submissionId,
+          shop,
+          instaHandle,
+          orderNumber: orderNumber || '',
+          customerEmail: customerEmail || '',
+          submittedAt: now,
+          submissionCount: 1,
+        };
 
-      // Store in Firestore
-      await db.collection(collections.submissions).doc(submissionId).set(submission);
+        // Store in Firestore
+        await db.collection(collections.submissions).doc(submissionId).set(submission);
+        console.log('Form submission stored:', submissionId, 'for shop:', shop);
 
-      console.log('Form submission stored:', submissionId, 'for shop:', shop);
-
-      return res.status(200).json({ 
-        success: true, 
-        submissionId,
-      });
+        return res.status(200).json({ 
+          success: true, 
+          submissionId,
+          updated: false,
+        });
+      }
     } catch (tokenError) {
       console.error('Invalid session token:', tokenError);
       return res.status(401).json({ error: 'Invalid session token' });

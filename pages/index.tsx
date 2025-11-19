@@ -208,7 +208,15 @@ export default function Home() {
 
   return (
     <Frame>
-      <Page title="Giveaway Popup Settings">
+      <Page 
+        title="Giveaway Popup Settings"
+        secondaryActions={[
+          {
+            content: 'View Analytics',
+            url: '/analytics',
+          },
+        ]}
+      >
         <Layout>
           {error && (
             <Layout.Section>

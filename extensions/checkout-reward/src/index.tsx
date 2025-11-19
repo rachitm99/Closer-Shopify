@@ -35,10 +35,16 @@ function Extension() {
   const [formValue, setFormValue] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [customerEmail, setCustomerEmail] = useState('');
 
   useEffect(() => {
     async function fetchSettings() {
       try {
+        // Try to get customer email from API if available
+        // On Thank You page, customer data is available through the order
+        const email = (api as any).email || (api as any).customer?.email || '';
+        setCustomerEmail(email);
+        
         const token = await sessionToken.get();
         
         const response = await fetch(
@@ -127,6 +133,7 @@ function Extension() {
           },
           body: JSON.stringify({
             instaHandle: formValue,
+            customerEmail: customerEmail,
           }),
         }
       );

@@ -29,6 +29,7 @@ export const collections = {
   merchants: 'merchants',
   settings: 'settings',
   submissions: 'submissions',
+  analytics: 'analytics',
 };
 
 export default admin;
