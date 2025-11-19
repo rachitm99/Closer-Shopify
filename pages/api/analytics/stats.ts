@@ -12,6 +12,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Check for admin secret - this endpoint is for internal analytics only
+    const adminSecret = req.headers['x-admin-secret'] || req.query.adminSecret;
+    
+    if (adminSecret !== process.env.ADMIN_SECRET) {
+      return res.status(403).json({ error: 'Forbidden - Admin access only' });
+    }
     // Get all settings documents to count merchants
     const settingsSnapshot = await db.collection(collections.settings).get();
     const totalInstalls = settingsSnapshot.size;

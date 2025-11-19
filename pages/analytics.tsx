@@ -1,3 +1,5 @@
+// This page is for admin use only - not accessible to merchants
+// Merchants see their shop-specific analytics on the main dashboard (/)
 import { useEffect, useState } from 'react';
 import {
   Page,
@@ -10,6 +12,7 @@ import {
   Banner,
   InlineGrid,
   Box,
+  Button,
 } from '@shopify/polaris';
 
 interface AnalyticsData {
@@ -42,10 +45,13 @@ export default function Analytics() {
   useEffect(() => {
     const loadAnalytics = async () => {
       try {
+        // This endpoint requires admin secret
         const response = await fetch('/api/analytics/stats');
         if (response.ok) {
           const data = await response.json();
           setAnalytics(data);
+        } else if (response.status === 403) {
+          setError('Access Denied - This page is for administrators only');
         } else {
           setError('Failed to load analytics data');
         }
@@ -101,13 +107,24 @@ export default function Analytics() {
         <Layout>
           {error && (
             <Layout.Section>
-              <Banner tone="critical" onDismiss={() => setError(null)}>
-                {error}
+              <Banner tone="critical">
+                <BlockStack gap="200">
+                  <Text as="p" variant="bodyMd" fontWeight="bold">
+                    {error}
+                  </Text>
+                  <Text as="p" variant="bodyMd">
+                    This page contains global installation statistics and is restricted to administrators.
+                    Merchants can view their shop-specific analytics on the main dashboard.
+                  </Text>
+                  <Button url="/">Go to Dashboard</Button>
+                </BlockStack>
               </Banner>
             </Layout.Section>
           )}
 
-          <Layout.Section>
+          {!error && (
+            <>
+            <Layout.Section>
             <BlockStack gap="400">
               <Text as="h2" variant="headingLg">
                 Installation & Activation
@@ -220,6 +237,8 @@ export default function Analytics() {
               </BlockStack>
             </Card>
           </Layout.Section>
+          </>
+          )}
         </Layout>
       </Page>
     </Frame>

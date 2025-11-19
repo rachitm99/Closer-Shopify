@@ -326,18 +326,9 @@ export default function Dashboard() {
                   <Text as="h3" variant="headingMd">
                     Quick Actions
                   </Text>
-                  <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
-                    <Button url="/settings" size="large">
-                      Configure Giveaway Settings
-                    </Button>
-                    <Button 
-                      url="https://console.firebase.google.com" 
-                      external
-                      size="large"
-                    >
-                      View All Submissions in Firestore
-                    </Button>
-                  </InlineGrid>
+                  <Button url="/settings" size="large">
+                    Configure Giveaway Settings
+                  </Button>
                 </BlockStack>
               </Box>
             </Card>
