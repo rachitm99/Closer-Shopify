@@ -11,10 +11,20 @@ import {
 } from '@shopify/ui-extensions-react/checkout';
 import { useEffect, useState } from 'react';
 
-export default reactExtension(
+// Export for Thank You page
+export const thankYouExtension = reactExtension(
   'purchase.thank-you.block.render',
   () => <Extension />
 );
+
+// Export for Order Status page
+export const orderStatusExtension = reactExtension(
+  'customer-account.order-status.block.render',
+  () => <Extension />
+);
+
+// Default export for backward compatibility
+export default thankYouExtension;
 
 interface Settings {
   enabled: boolean;

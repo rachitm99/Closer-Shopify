@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { useAppBridge } from '@shopify/app-bridge-react';
+import { Redirect } from '@shopify/app-bridge/actions';
 import {
   Page,
   Layout,
@@ -36,6 +39,8 @@ interface ImpressionStats {
 }
 
 export default function Dashboard() {
+  const router = useRouter();
+  const app = useAppBridge();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -53,8 +58,9 @@ export default function Dashboard() {
           
           // Check if onboarding is complete (extension is enabled)
           if (!settingsData.enabled && !settingsData.analytics?.onboarding_completed) {
-            // Redirect to onboarding
-            window.location.href = '/onboarding';
+            // Redirect to onboarding using App Bridge
+            const redirect = Redirect.create(app);
+            redirect.dispatch(Redirect.Action.APP, '/onboarding');
             return;
           }
           

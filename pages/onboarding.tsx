@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useAppBridge } from '@shopify/app-bridge-react';
+import { Redirect } from '@shopify/app-bridge/actions';
 import {
   Page,
   Layout,
@@ -18,6 +20,7 @@ import { CheckCircleIcon } from '@shopify/polaris-icons';
 
 export default function Onboarding() {
   const router = useRouter();
+  const app = useAppBridge();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [shop, setShop] = useState<string>('');
@@ -100,8 +103,9 @@ export default function Onboarding() {
       }),
     });
     
-    // Redirect to settings page to customize
-    window.location.href = '/settings';
+    // Redirect to settings page using App Bridge
+    const redirect = Redirect.create(app);
+    redirect.dispatch(Redirect.Action.APP, '/settings');
   };
 
   const steps = [

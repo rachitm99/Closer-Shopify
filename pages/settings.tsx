@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { useAppBridge } from '@shopify/app-bridge-react';
+import { Redirect } from '@shopify/app-bridge/actions';
 import {
   Page,
   Layout,
@@ -15,6 +18,8 @@ import {
 } from '@shopify/polaris';
 
 export default function Home() {
+  const router = useRouter();
+  const app = useAppBridge();
   const [enabled, setEnabled] = useState(false);
   const [logoUrl, setLogoUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
@@ -47,8 +52,9 @@ export default function Home() {
           
           // Check if onboarding is complete
           if (!data.enabled && !data.analytics?.onboarding_completed && !data.onboardingCompleted) {
-            // Redirect to onboarding if not complete
-            window.location.href = '/onboarding';
+            // Redirect to onboarding if not complete using App Bridge
+            const redirect = Redirect.create(app);
+            redirect.dispatch(Redirect.Action.APP, '/onboarding');
             return;
           }
           
