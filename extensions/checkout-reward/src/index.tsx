@@ -172,9 +172,13 @@ function Extension() {
       if (response.ok) {
         setSubmitted(true);
         
+        // Redirect after submission if URL is provided
         if (settings?.redirectUrl) {
           setTimeout(() => {
-            window.location.href = settings.redirectUrl!;
+            // Use external navigation for redirects
+            if (typeof window !== 'undefined' && window.open) {
+              window.open(settings.redirectUrl, '_blank');
+            }
           }, 1500);
         }
       }
