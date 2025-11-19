@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import {
   Page,
   Layout,
@@ -16,6 +17,7 @@ import {
 import { CheckCircleIcon } from '@shopify/polaris-icons';
 
 export default function Onboarding() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [shop, setShop] = useState<string>('');
@@ -23,13 +25,34 @@ export default function Onboarding() {
   useEffect(() => {
     const initializeOnboarding = async () => {
       try {
-        // Get shop information first
-        const response = await fetch('/api/settings/merchant');
-        if (response.ok) {
-          const data = await response.json();
-          const shopDomain = data.shop || 'unknown';
-          setShop(shopDomain);
-          
+        // Get shop from URL query parameter (Shopify embeds this)
+        const shopFromQuery = router.query.shop as string;
+        let shopDomain = 'unknown';
+        
+        // Try to get shop from merchant API first
+        try {
+          const response = await fetch('/api/settings/merchant');
+          if (response.ok) {
+            const data = await response.json();
+            shopDomain = data.shop;
+          } else if (shopFromQuery) {
+            // Fallback to query parameter if API call fails
+            shopDomain = shopFromQuery;
+          }
+        } catch (error) {
+          // If merchant API fails, use query parameter
+          if (shopFromQuery) {
+            shopDomain = shopFromQuery;
+          }
+        }
+        
+        setShop(shopDomain);
+        
+        // Check if we've already tracked onboarding_started for this shop in this session
+        const trackingKey = `onboarding_tracked_${shopDomain}`;
+        const alreadyTracked = sessionStorage.getItem(trackingKey);
+        
+        if (!alreadyTracked && shopDomain !== 'unknown') {
           // Track onboarding start with shop info
           await fetch('/api/analytics/track', {
             method: 'POST',
@@ -39,6 +62,9 @@ export default function Onboarding() {
               shop: shopDomain,
             }),
           });
+          
+          // Mark as tracked in session storage to prevent duplicates
+          sessionStorage.setItem(trackingKey, 'true');
         }
       } catch (error) {
         console.error('Error initializing onboarding:', error);
@@ -47,8 +73,11 @@ export default function Onboarding() {
       }
     };
     
-    initializeOnboarding();
-  }, []);
+    // Only initialize once router is ready
+    if (router.isReady) {
+      initializeOnboarding();
+    }
+  }, [router.isReady, router.query.shop]);
 
   const completeOnboarding = async () => {
     // Track completion with shop info
