@@ -40,13 +40,18 @@ interface ImpressionStats {
 
 export default function Dashboard() {
   const router = useRouter();
-  const app = useAppBridge();
+  const [isMounted, setIsMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [impressions, setImpressions] = useState<ImpressionStats | null>(null);
   const [shop, setShop] = useState<string>('');
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+
+  // Track if component is mounted (client-side)
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const checkOnboardingAndLoadData = async () => {
@@ -58,9 +63,10 @@ export default function Dashboard() {
           
           // Check if onboarding is complete (extension is enabled)
           if (!settingsData.enabled && !settingsData.analytics?.onboarding_completed) {
-            // Redirect to onboarding using App Bridge
-            const redirect = Redirect.create(app);
-            redirect.dispatch(Redirect.Action.APP, '/onboarding');
+            // Redirect to onboarding - client-side only
+            if (typeof window !== 'undefined') {
+              window.location.href = '/onboarding';
+            }
             return;
           }
           

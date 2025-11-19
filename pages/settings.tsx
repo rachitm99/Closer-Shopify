@@ -19,7 +19,7 @@ import {
 
 export default function Home() {
   const router = useRouter();
-  const app = useAppBridge();
+  const [isMounted, setIsMounted] = useState(false);
   const [enabled, setEnabled] = useState(false);
   const [logoUrl, setLogoUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
@@ -42,6 +42,11 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
 
+  // Track if component is mounted (client-side)
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Load current settings
   useEffect(() => {
     const loadSettings = async () => {
@@ -52,9 +57,10 @@ export default function Home() {
           
           // Check if onboarding is complete
           if (!data.enabled && !data.analytics?.onboarding_completed && !data.onboardingCompleted) {
-            // Redirect to onboarding if not complete using App Bridge
-            const redirect = Redirect.create(app);
-            redirect.dispatch(Redirect.Action.APP, '/onboarding');
+            // Redirect to onboarding if not complete - client-side only
+            if (typeof window !== 'undefined') {
+              window.location.href = '/onboarding';
+            }
             return;
           }
           

@@ -20,10 +20,15 @@ import { CheckCircleIcon } from '@shopify/polaris-icons';
 
 export default function Onboarding() {
   const router = useRouter();
-  const app = useAppBridge();
+  const [isMounted, setIsMounted] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [shop, setShop] = useState<string>('');
+
+  // Track if component is mounted (client-side)
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const initializeOnboarding = async () => {
@@ -130,10 +135,11 @@ export default function Onboarding() {
         console.error('❌ Failed to update settings:', error);
       }
       
-      // Redirect to settings page using App Bridge
+      // Redirect to settings page - client-side only
       console.log('🔀 Redirecting to settings page...');
-      const redirect = Redirect.create(app);
-      redirect.dispatch(Redirect.Action.APP, '/settings');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/settings';
+      }
     } catch (error) {
       console.error('❌ Error in completeOnboarding:', error);
     }
