@@ -218,7 +218,6 @@ export default function Home() {
     <Frame>
       <Page 
         title="Giveaway Popup Settings"
-        backAction={{ content: 'Dashboard', url: '/' }}
       >
         <Layout>
           {error && (

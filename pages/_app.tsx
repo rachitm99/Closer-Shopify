@@ -1,7 +1,7 @@
 import '@shopify/polaris/build/esm/styles.css';
 import type { AppProps } from 'next/app';
 import { AppProvider } from '@shopify/polaris';
-import { Provider as AppBridgeProvider } from '@shopify/app-bridge-react';
+import { Provider as AppBridgeProvider, NavigationMenu } from '@shopify/app-bridge-react';
 import { useRouter } from 'next/router';
 import { useMemo } from 'react';
 import enTranslations from '@shopify/polaris/locales/en.json';
@@ -34,6 +34,18 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <AppBridgeProvider config={appBridgeConfig}>
       <AppProvider i18n={enTranslations}>
+        <NavigationMenu
+          navigationLinks={[
+            {
+              label: 'Dashboard',
+              destination: '/',
+            },
+            {
+              label: 'Settings',
+              destination: '/settings',
+            },
+          ]}
+        />
         <Component {...pageProps} />
       </AppProvider>
     </AppBridgeProvider>

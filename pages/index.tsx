@@ -155,10 +155,6 @@ export default function Dashboard() {
       <Page
         title="Analytics Dashboard"
         subtitle={`Tracking giveaway performance for ${shop}`}
-        primaryAction={{
-          content: 'Settings',
-          url: '/settings',
-        }}
       >
         <Layout>
           {error && (
@@ -324,11 +320,14 @@ export default function Dashboard() {
               <Box padding="400">
                 <BlockStack gap="400">
                   <Text as="h3" variant="headingMd">
-                    Quick Actions
+                    About Your Data
                   </Text>
-                  <Button url="/settings" size="large">
-                    Configure Giveaway Settings
-                  </Button>
+                  <Text as="p" variant="bodyMd">
+                    This dashboard shows submission analytics for your store only. All customer entries are securely stored and can be viewed in your submissions collection.
+                  </Text>
+                  <Text as="p" variant="bodyMd">
+                    💡 Use the <strong>Settings</strong> page (in the navigation) to customize your giveaway popup appearance and rules.
+                  </Text>
                 </BlockStack>
               </Box>
             </Card>
