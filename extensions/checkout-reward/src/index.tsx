@@ -8,6 +8,7 @@ import {
   Button,
   useApi,
   InlineStack,
+  Link,
 } from '@shopify/ui-extensions-react/checkout';
 import { useEffect, useState } from 'react';
 
@@ -171,16 +172,6 @@ function Extension() {
 
       if (response.ok) {
         setSubmitted(true);
-        
-        // Redirect after submission if URL is provided
-        if (settings?.redirectUrl) {
-          setTimeout(() => {
-            // Use external navigation for redirects
-            if (typeof window !== 'undefined' && window.open) {
-              window.open(settings.redirectUrl, '_blank');
-            }
-          }, 1500);
-        }
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -293,6 +284,13 @@ function Extension() {
                   <Text size="medium" emphasis="bold">
                     Good luck! 🍀 ⭐ 💫
                   </Text>
+                  {settings.redirectUrl && (
+                    <Link to={settings.redirectUrl} external>
+                      <Button kind="primary">
+                        Visit Our Instagram →
+                      </Button>
+                    </Link>
+                  )}
                 </BlockStack>
               </View>
             )}
