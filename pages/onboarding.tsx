@@ -50,11 +50,23 @@ export default function Onboarding() {
   };
 
   const completeOnboarding = async () => {
+    // Track completion
     await fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ event: 'onboarding_completed' }),
     });
+    
+    // Mark extension as enabled in settings
+    await fetch('/api/settings/merchant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        enabled: true,
+        onboardingCompleted: true,
+      }),
+    });
+    
     window.location.href = '/';
   };
 

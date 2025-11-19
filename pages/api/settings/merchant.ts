@@ -14,6 +14,10 @@ export interface MerchantSettings {
   submitButtonText: string;
   redirectUrl?: string;
   updatedAt: string;
+  onboardingCompleted?: boolean;
+  analytics?: {
+    [key: string]: string;
+  };
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -78,8 +82,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           giveawayRules, 
           formFieldLabel,
           submitButtonText, 
-          redirectUrl 
+          redirectUrl,
+          onboardingCompleted,
         } = req.body;
+        
+        // Get existing settings to preserve fields not being updated
+        const existingDoc = await db.collection(collections.settings).doc(shop).get();
+        const existingData = existingDoc.exists ? existingDoc.data() : {};
         
         const settings: MerchantSettings = {
           shop,
@@ -101,10 +110,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           updatedAt: new Date().toISOString(),
         };
 
-        await db.collection(collections.settings).doc(shop).set(settings);
+        // Merge with existing data to preserve analytics and other fields
+        const mergedSettings = {
+          ...existingData,
+          ...settings,
+        };
+        
+        // If onboarding is being marked as complete, add that flag
+        if (onboardingCompleted) {
+          mergedSettings.onboardingCompleted = true;
+          mergedSettings.analytics = {
+            ...mergedSettings.analytics,
+            onboarding_completed: new Date().toISOString(),
+          };
+        }
+
+        await db.collection(collections.settings).doc(shop).set(mergedSettings);
         
         console.log('Settings updated for shop:', shop);
-        return res.status(200).json(settings);
+        return res.status(200).json(mergedSettings);
       } catch (error) {
         console.error('Error updating settings:', error);
         return res.status(500).json({ error: 'Failed to update settings' });

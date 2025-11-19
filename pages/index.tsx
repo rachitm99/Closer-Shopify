@@ -3,198 +3,87 @@ import {
   Page,
   Layout,
   Card,
-  SettingToggle,
-  TextContainer,
-  Banner,
-  Spinner,
-  Frame,
-  Toast,
-  TextField,
   BlockStack,
   Text,
+  Spinner,
+  Frame,
+  Banner,
+  InlineGrid,
+  Box,
+  Button,
 } from '@shopify/polaris';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-export default function Home() {
-  const [enabled, setEnabled] = useState(false);
-  const [logoUrl, setLogoUrl] = useState('');
-  const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
-  const [rulesTitle, setRulesTitle] = useState('How to Enter:');
-  const [giveawayRules, setGiveawayRules] = useState([
-    'Follow us on Instagram',
-    'Like our latest post',
-    'Tag 2 friends in the comments',
-    'Share this post to your story',
-    'Turn on post notifications',
-    'Use our hashtag in your story'
-  ]);
-  const [newRule, setNewRule] = useState('');
-  const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
-  const [submitButtonText, setSubmitButtonText] = useState('Follow Us on Instagram');
-  const [redirectUrl, setRedirectUrl] = useState('');
+interface DailySubmission {
+  date: string;
+  count: number;
+  uniqueCustomers: number;
+  repeatCustomers: number;
+}
+
+interface AnalyticsData {
+  timeline: DailySubmission[];
+  totalSubmissions: number;
+  totalUniqueCustomers: number;
+  allTimeData: DailySubmission[];
+}
+
+export default function Dashboard() {
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showToast, setShowToast] = useState(false);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [shop, setShop] = useState<string>('');
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
 
-  // Load current settings
   useEffect(() => {
-    const loadSettings = async () => {
+    const checkOnboardingAndLoadData = async () => {
       try {
-        const response = await fetch('/api/settings/merchant');
-        if (response.ok) {
-          const data = await response.json();
-          setEnabled(data.enabled || false);
-          setLogoUrl(data.logoUrl || '');
-          setPopupTitle(data.popupTitle || '🎉 Instagram Giveaway! 🎉');
-          setRulesTitle(data.rulesTitle || 'How to Enter:');
-          setGiveawayRules(data.giveawayRules || [
-            'Follow us on Instagram',
-            'Like our latest post',
-            'Tag 2 friends in the comments',
-            'Share this post to your story',
-            'Turn on post notifications',
-            'Use our hashtag in your story'
-          ]);
-          setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
-          setSubmitButtonText(data.submitButtonText || 'Follow Us on Instagram');
-          setRedirectUrl(data.redirectUrl || '');
-        } else if (response.status === 401) {
+        // Check settings to see if onboarding is complete
+        const settingsResponse = await fetch('/api/settings/merchant');
+        if (settingsResponse.ok) {
+          const settingsData = await settingsResponse.json();
+          
+          // Check if onboarding is complete (extension is enabled)
+          if (!settingsData.enabled && !settingsData.analytics?.onboarding_completed) {
+            // Redirect to onboarding
+            window.location.href = '/onboarding';
+            return;
+          }
+          
+          setOnboardingComplete(true);
+          const shopDomain = settingsData.shop || 'unknown';
+          setShop(shopDomain);
+          
+          // Load analytics data
+          const analyticsResponse = await fetch(`/api/analytics/submissions-timeline?shop=${shopDomain}`);
+          if (analyticsResponse.ok) {
+            const data = await analyticsResponse.json();
+            setAnalytics(data);
+          } else {
+            setError('Failed to load analytics data');
+          }
+        } else if (settingsResponse.status === 401) {
           // Unauthorized - redirect to auth
           window.location.href = `/api/auth?shop=${window.location.hostname}`;
+        } else {
+          // No settings found, redirect to onboarding
+          window.location.href = '/onboarding';
         }
       } catch (error) {
-        console.error('Error loading settings:', error);
-        setError('Failed to load settings');
+        console.error('Error loading data:', error);
+        setError('Failed to load analytics data');
       } finally {
         setLoading(false);
       }
     };
 
-    loadSettings();
+    checkOnboardingAndLoadData();
   }, []);
-
-  const handleToggle = async () => {
-    try {
-      setSaving(true);
-      setError(null);
-      
-      const newEnabled = !enabled;
-      
-      const response = await fetch('/api/settings/merchant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          enabled: newEnabled, 
-          logoUrl, 
-          popupTitle,
-          rulesTitle,
-          giveawayRules, 
-          formFieldLabel,
-          submitButtonText, 
-          redirectUrl 
-        }),
-      });
-
-      if (response.ok) {
-        setEnabled(newEnabled);
-        setShowToast(true);
-      } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to update settings');
-      }
-    } catch (error) {
-      console.error('Error updating settings:', error);
-      setError('Failed to update settings');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSaveSettings = async () => {
-    try {
-      setSaving(true);
-      setError(null);
-      
-      const response = await fetch('/api/settings/merchant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          enabled, 
-          logoUrl, 
-          popupTitle,
-          rulesTitle,
-          giveawayRules, 
-          formFieldLabel,
-          submitButtonText, 
-          redirectUrl 
-        }),
-      });
-
-      if (response.ok) {
-        setShowToast(true);
-      } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to save message');
-      }
-    } catch (error) {
-      console.error('Error saving message:', error);
-      setError('Failed to save message');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      setError('Invalid file type. Only images (JPEG, PNG, GIF, WebP) are allowed.');
-      return;
-    }
-
-    // Validate file size (5MB)
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setError('File too large. Maximum size is 5MB.');
-      return;
-    }
-
-    try {
-      setUploading(true);
-      setError(null);
-
-      const formData = new FormData();
-      formData.append('logo', file);
-
-      const response = await fetch('/api/upload/logo', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setLogoUrl(data.logoUrl);
-        setShowToast(true);
-      } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to upload logo');
-      }
-    } catch (error) {
-      console.error('Error uploading logo:', error);
-      setError('Failed to upload logo');
-    } finally {
-      setUploading(false);
-    }
-  };
 
   if (loading) {
     return (
       <Frame>
-        <Page title="Reward Message Settings">
+        <Page title="Dashboard">
           <div style={{ padding: '20px', textAlign: 'center' }}>
             <Spinner size="large" />
           </div>
@@ -203,19 +92,73 @@ export default function Home() {
     );
   }
 
-  const contentStatus = enabled ? 'Turn off' : 'Turn on';
-  const textStatus = enabled ? 'enabled' : 'disabled';
+  if (!onboardingComplete) {
+    return null; // Will redirect to onboarding
+  }
+
+  const StatCard = ({ title, value, description, trend }: { 
+    title: string; 
+    value: string | number; 
+    description?: string;
+    trend?: string;
+  }) => (
+    <Card>
+      <Box padding="400">
+        <BlockStack gap="200">
+          <Text as="h3" variant="headingSm" tone="subdued">
+            {title}
+          </Text>
+          <Text as="p" variant="heading2xl" fontWeight="bold">
+            {value}
+          </Text>
+          {description && (
+            <Text as="p" variant="bodySm" tone="subdued">
+              {description}
+            </Text>
+          )}
+          {trend && (
+            <Text as="p" variant="bodySm" tone="success">
+              {trend}
+            </Text>
+          )}
+        </BlockStack>
+      </Box>
+    </Card>
+  );
+
+  // Calculate today's and yesterday's stats for trend
+  const todayData = analytics?.timeline[analytics.timeline.length - 1];
+  const yesterdayData = analytics?.timeline[analytics.timeline.length - 2];
+  const todayCount = todayData?.count || 0;
+  const yesterdayCount = yesterdayData?.count || 0;
+  const dailyTrend = todayCount > yesterdayCount 
+    ? `↑ ${todayCount - yesterdayCount} from yesterday` 
+    : todayCount < yesterdayCount 
+    ? `↓ ${yesterdayCount - todayCount} from yesterday`
+    : 'No change from yesterday';
+
+  // Format date for display
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  // Prepare chart data
+  const chartData = analytics?.timeline.map(d => ({
+    date: formatDate(d.date),
+    Submissions: d.count,
+    'Unique Customers': d.uniqueCustomers,
+  })) || [];
 
   return (
     <Frame>
-      <Page 
-        title="Giveaway Popup Settings"
-        secondaryActions={[
-          {
-            content: 'View Analytics',
-            url: '/analytics',
-          },
-        ]}
+      <Page
+        title="Analytics Dashboard"
+        subtitle={`Tracking giveaway performance for ${shop}`}
+        primaryAction={{
+          content: 'Settings',
+          url: '/settings',
+        }}
       >
         <Layout>
           {error && (
@@ -226,266 +169,180 @@ export default function Home() {
             </Layout.Section>
           )}
 
-          <Layout.Section>
-            <Card>
-              <SettingToggle
-                action={{
-                  content: contentStatus,
-                  onAction: handleToggle,
-                  loading: saving,
-                }}
-                enabled={enabled}
-              >
-                <TextContainer>
-                  <Text as="h2" variant="headingMd">
-                    Giveaway popup is {textStatus}
+          {!analytics?.totalSubmissions && (
+            <Layout.Section>
+              <Banner tone="info">
+                <BlockStack gap="200">
+                  <Text as="p" variant="bodyMd" fontWeight="bold">
+                    No submissions yet
                   </Text>
                   <Text as="p" variant="bodyMd">
-                    {enabled
-                      ? 'Your giveaway popup will appear on the Thank You page after checkout.'
-                      : 'Enable to show a giveaway popup on the Thank You page after checkout.'}
+                    Your giveaway popup is active! Submissions will appear here as customers complete purchases and enter the giveaway.
                   </Text>
-                </TextContainer>
-              </SettingToggle>
-            </Card>
+                  <Button url="/settings">Configure Settings</Button>
+                </BlockStack>
+              </Banner>
+            </Layout.Section>
+          )}
+
+          <Layout.Section>
+            <BlockStack gap="400">
+              <Text as="h2" variant="headingLg">
+                Overview
+              </Text>
+              <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }} gap="400">
+                <StatCard
+                  title="Total Submissions"
+                  value={analytics?.totalSubmissions || 0}
+                  description="All-time giveaway entries"
+                />
+                <StatCard
+                  title="Unique Customers"
+                  value={analytics?.totalUniqueCustomers || 0}
+                  description="Distinct Instagram handles"
+                />
+                <StatCard
+                  title="Today's Entries"
+                  value={todayCount}
+                  trend={dailyTrend}
+                />
+                <StatCard
+                  title="Average per Day"
+                  value={analytics ? Math.round(analytics.totalSubmissions / 30) : 0}
+                  description="Last 30 days"
+                />
+              </InlineGrid>
+            </BlockStack>
           </Layout.Section>
+
+          {analytics && analytics.totalSubmissions > 0 && (
+            <>
+              <Layout.Section>
+                <Card>
+                  <Box padding="400">
+                    <BlockStack gap="400">
+                      <Text as="h2" variant="headingLg">
+                        Daily Submissions (Last 30 Days)
+                      </Text>
+                      <div style={{ width: '100%', height: '400px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="date" 
+                              angle={-45}
+                              textAnchor="end"
+                              height={80}
+                            />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="Submissions" fill="#008060" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </BlockStack>
+                  </Box>
+                </Card>
+              </Layout.Section>
+
+              <Layout.Section>
+                <Card>
+                  <Box padding="400">
+                    <BlockStack gap="400">
+                      <Text as="h2" variant="headingLg">
+                        Submission Trends
+                      </Text>
+                      <div style={{ width: '100%', height: '400px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="date"
+                              angle={-45}
+                              textAnchor="end"
+                              height={80}
+                            />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line 
+                              type="monotone" 
+                              dataKey="Submissions" 
+                              stroke="#008060" 
+                              strokeWidth={2}
+                              dot={{ r: 4 }}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="Unique Customers" 
+                              stroke="#5C6AC4" 
+                              strokeWidth={2}
+                              dot={{ r: 4 }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </BlockStack>
+                  </Box>
+                </Card>
+              </Layout.Section>
+
+              <Layout.Section>
+                <Card>
+                  <Box padding="400">
+                    <BlockStack gap="400">
+                      <Text as="h2" variant="headingLg">
+                        Insights
+                      </Text>
+                      <BlockStack gap="300">
+                        <Text as="p" variant="bodyMd">
+                          📊 <strong>Best Day:</strong> {analytics.allTimeData.length > 0 
+                            ? formatDate(analytics.allTimeData.reduce((max, d) => d.count > max.count ? d : max).date)
+                            : 'N/A'} with {analytics.allTimeData.length > 0 
+                            ? analytics.allTimeData.reduce((max, d) => d.count > max.count ? d : max).count
+                            : 0} submissions
+                        </Text>
+                        <Text as="p" variant="bodyMd">
+                          🎯 <strong>Conversion Rate:</strong> {analytics.totalUniqueCustomers > 0 
+                            ? Math.round((analytics.totalSubmissions / analytics.totalUniqueCustomers) * 100)
+                            : 0}% of entries are from repeat customers
+                        </Text>
+                        <Text as="p" variant="bodyMd">
+                          📈 <strong>Growth:</strong> Track your daily submissions to optimize your giveaway campaigns
+                        </Text>
+                      </BlockStack>
+                    </BlockStack>
+                  </Box>
+                </Card>
+              </Layout.Section>
+            </>
+          )}
 
           <Layout.Section>
             <Card>
-              <BlockStack gap="400">
-                <Text as="h2" variant="headingMd">
-                  Popup Configuration
-                </Text>
-                
-                <div>
-                  <Text as="p" variant="bodyMd" fontWeight="semibold">
-                    Logo Image
+              <Box padding="400">
+                <BlockStack gap="400">
+                  <Text as="h3" variant="headingMd">
+                    Quick Actions
                   </Text>
-                  <div style={{ marginTop: '8px' }}>
-                    {logoUrl && (
-                      <div style={{ marginBottom: '12px' }}>
-                        <img 
-                          src={logoUrl} 
-                          alt="Logo preview" 
-                          style={{ 
-                            maxWidth: '200px', 
-                            maxHeight: '100px', 
-                            objectFit: 'contain',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            padding: '8px',
-                            backgroundColor: '#f9f9f9'
-                          }} 
-                        />
-                      </div>
-                    )}
-                    <label
-                      htmlFor="logo-upload"
-                      style={{
-                        display: 'inline-block',
-                        padding: '8px 16px',
-                        backgroundColor: uploading ? '#ccc' : '#008060',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: uploading ? 'not-allowed' : 'pointer',
-                        fontSize: '14px',
-                      }}
+                  <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
+                    <Button url="/settings" size="large">
+                      Configure Giveaway Settings
+                    </Button>
+                    <Button 
+                      url="https://console.firebase.google.com" 
+                      external
+                      size="large"
                     >
-                      {uploading ? 'Uploading...' : (logoUrl ? 'Change Logo' : 'Upload Logo')}
-                    </label>
-                    <input
-                      id="logo-upload"
-                      type="file"
-                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                      onChange={handleLogoUpload}
-                      disabled={uploading}
-                      style={{ display: 'none' }}
-                    />
-                    <Text as="p" variant="bodySm" tone="subdued" >
-                      Upload your brand logo (JPEG, PNG, GIF, WebP - Max 5MB)
-                    </Text>
-                  </div>
-                </div>
-
-                <TextField
-                  label="Popup Title"
-                  value={popupTitle}
-                  onChange={setPopupTitle}
-                  helpText="The main title shown at the top of the popup"
-                  autoComplete="off"
-                  maxLength={100}
-                />
-
-                <TextField
-                  label="Rules Section Title"
-                  value={rulesTitle}
-                  onChange={setRulesTitle}
-                  helpText="Title for the rules section (e.g., 'How to Enter:', 'Rules:')"
-                  autoComplete="off"
-                  maxLength={50}
-                />
-
-                <div>
-                  <Text as="p" variant="bodyMd" fontWeight="semibold">
-                    Giveaway Rules (List Format)
-                  </Text>
-                  <Text as="p" variant="bodySm" tone="subdued" >
-                    Add individual rule points that will be displayed as a bulleted list
-                  </Text>
-                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {giveawayRules.map((rule, index) => (
-                      <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 'bold', minWidth: '20px' }}>•</span>
-                        <input
-                          type="text"
-                          value={rule}
-                          onChange={(e) => {
-                            const newRules = [...giveawayRules];
-                            newRules[index] = e.target.value;
-                            setGiveawayRules(newRules);
-                          }}
-                          style={{
-                            flex: 1,
-                            padding: '8px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '14px'
-                          }}
-                        />
-                        <button
-                          onClick={() => {
-                            const newRules = giveawayRules.filter((_, i) => i !== index);
-                            setGiveawayRules(newRules);
-                          }}
-                          style={{
-                            padding: '8px 12px',
-                            backgroundColor: '#e74c3c',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '14px'
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                      <input
-                        type="text"
-                        value={newRule}
-                        onChange={(e) => setNewRule(e.target.value)}
-                        placeholder="Add new rule..."
-                        style={{
-                          flex: 1,
-                          padding: '8px',
-                          border: '1px solid #ddd',
-                          borderRadius: '4px',
-                          fontSize: '14px'
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter' && newRule.trim()) {
-                            setGiveawayRules([...giveawayRules, newRule.trim()]);
-                            setNewRule('');
-                          }
-                        }}
-                      />
-                      <button
-                        onClick={() => {
-                          if (newRule.trim()) {
-                            setGiveawayRules([...giveawayRules, newRule.trim()]);
-                            setNewRule('');
-                          }
-                        }}
-                        style={{
-                          padding: '8px 16px',
-                          backgroundColor: '#008060',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '14px'
-                        }}
-                      >
-                        Add Rule
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <TextField
-                  label="Submit Button Text"
-                  value={submitButtonText}
-                  onChange={setSubmitButtonText}
-                  helpText="Text displayed on the submit button"
-                  autoComplete="off"
-                  maxLength={50}
-                />
-
-                <TextField
-                  label="Redirect URL (Optional)"
-                  value={redirectUrl}
-                  onChange={setRedirectUrl}
-                  helpText="URL to redirect after form submission (leave empty for no redirect)"
-                  autoComplete="off"
-                  placeholder="https://example.com/thank-you"
-                />
-
-                <div>
-                  <button
-                    onClick={handleSaveSettings}
-                    disabled={saving}
-                    style={{
-                      padding: '8px 16px',
-                      backgroundColor: '#008060',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: saving ? 'not-allowed' : 'pointer',
-                      fontSize: '14px',
-                    }}
-                  >
-                    {saving ? 'Saving...' : 'Save All Settings'}
-                  </button>
-                </div>
-              </BlockStack>
-            </Card>
-          </Layout.Section>
-
-          <Layout.Section>
-            <Card>
-              <BlockStack gap="400">
-                <Text as="h2" variant="headingMd">
-                  How it works
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  1. Enable the giveaway popup above
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  2. Configure your popup: add logo, title, rules, and form settings
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  3. The popup will appear on the Thank You page after customers complete a purchase
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  4. Customer submissions are stored in Firestore for your review
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  5. Optional: Set a redirect URL to send customers after submission
-                </Text>
-              </BlockStack>
+                      View All Submissions in Firestore
+                    </Button>
+                  </InlineGrid>
+                </BlockStack>
+              </Box>
             </Card>
           </Layout.Section>
         </Layout>
-
-        {showToast && (
-          <Toast
-            content="Settings saved successfully"
-            onDismiss={() => setShowToast(false)}
-          />
-        )}
       </Page>
     </Frame>
   );
