@@ -215,6 +215,14 @@ export default function Home() {
     <Frame>
       <Page 
         title="Giveaway Popup Settings"
+        backAction={{
+          content: 'Dashboard',
+          onAction: () => {
+            if (typeof window !== 'undefined') {
+              window.location.href = '/';
+            }
+          },
+        }}
       >
         <Layout>
           {error && (

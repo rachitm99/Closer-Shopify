@@ -11,17 +11,37 @@ import {
   Spinner,
   Frame,
   Divider,
-  InlineStack,
-  Icon,
+  TextField,
+  Toast,
+  SettingToggle,
+  TextContainer,
 } from '@shopify/polaris';
-import { CheckCircleIcon } from '@shopify/polaris-icons';
 
 export default function Onboarding() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [shop, setShop] = useState<string>('');
   const [isMounted, setIsMounted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+
+  // Settings state
+  const [enabled, setEnabled] = useState(true); // Default enabled for new users
+  const [logoUrl, setLogoUrl] = useState('');
+  const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
+  const [rulesTitle, setRulesTitle] = useState('How to Enter:');
+  const [giveawayRules, setGiveawayRules] = useState([
+    'Follow us on Instagram',
+    'Like our latest post',
+    'Tag 2 friends in the comments',
+    'Share this post to your story',
+  ]);
+  const [newRule, setNewRule] = useState('');
+  const [submitButtonText, setSubmitButtonText] = useState('Follow Us on Instagram');
+  const [redirectUrl, setRedirectUrl] = useState('');
 
   // Track if component is mounted (client-side only)
   useEffect(() => {
@@ -41,12 +61,23 @@ export default function Onboarding() {
           if (response.ok) {
             const data = await response.json();
             shopDomain = data.shop;
+            
+            // Load existing settings if any
+            setLogoUrl(data.logoUrl || '');
+            setPopupTitle(data.popupTitle || '🎉 Instagram Giveaway! 🎉');
+            setRulesTitle(data.rulesTitle || 'How to Enter:');
+            setGiveawayRules(data.giveawayRules || [
+              'Follow us on Instagram',
+              'Like our latest post',
+              'Tag 2 friends in the comments',
+              'Share this post to your story',
+            ]);
+            setSubmitButtonText(data.submitButtonText || 'Follow Us on Instagram');
+            setRedirectUrl(data.redirectUrl || '');
           } else if (shopFromQuery) {
-            // Fallback to query parameter if API call fails
             shopDomain = shopFromQuery;
           }
         } catch (error) {
-          // If merchant API fails, use query parameter
           if (shopFromQuery) {
             shopDomain = shopFromQuery;
           }
@@ -59,7 +90,6 @@ export default function Onboarding() {
         const alreadyTracked = sessionStorage.getItem(trackingKey);
         
         if (!alreadyTracked && shopDomain !== 'unknown') {
-          // Track onboarding start with shop info
           console.log('📊 Tracking onboarding_started for shop:', shopDomain);
           const trackResponse = await fetch('/api/analytics/track', {
             method: 'POST',
@@ -72,14 +102,8 @@ export default function Onboarding() {
           
           if (trackResponse.ok) {
             console.log('✅ Onboarding started tracked successfully');
-            // Mark as tracked in session storage to prevent duplicates
             sessionStorage.setItem(trackingKey, 'true');
-          } else {
-            const error = await trackResponse.text();
-            console.error('❌ Failed to track onboarding_started:', error);
           }
-        } else {
-          console.log('ℹ️ Skipping tracking:', { alreadyTracked, shopDomain });
         }
       } catch (error) {
         console.error('Error initializing onboarding:', error);
@@ -88,17 +112,94 @@ export default function Onboarding() {
       }
     };
     
-    // Only initialize once router is ready
     if (router.isReady) {
       initializeOnboarding();
     }
   }, [router.isReady, router.query.shop]);
 
+  const handleSaveSettings = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      
+      const response = await fetch('/api/settings/merchant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          enabled, 
+          logoUrl, 
+          popupTitle,
+          rulesTitle,
+          giveawayRules, 
+          submitButtonText, 
+          redirectUrl 
+        }),
+      });
+
+      if (response.ok) {
+        setShowToast(true);
+        // Move to next step
+        setTimeout(() => setCurrentStep(2), 500);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to save settings');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      setError('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Invalid file type. Only images (JPEG, PNG, GIF, WebP) are allowed.');
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('File too large. Maximum size is 5MB.');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError(null);
+
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      const response = await fetch('/api/upload/logo', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLogoUrl(data.logoUrl);
+        setShowToast(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to upload logo');
+      }
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      setError('Failed to upload logo');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const completeOnboarding = async () => {
     try {
       console.log('📊 Tracking onboarding_completed for shop:', shop);
       
-      // Track completion with shop info
       const trackResponse = await fetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -110,33 +211,26 @@ export default function Onboarding() {
       
       if (trackResponse.ok) {
         console.log('✅ Onboarding completed tracked successfully');
-      } else {
-        const error = await trackResponse.text();
-        console.error('❌ Failed to track onboarding_completed:', error);
       }
       
-      // Mark extension as enabled and onboarding completed
-      console.log('💾 Updating merchant settings...');
+      // Mark onboarding as completed
+      console.log('💾 Updating onboarding status...');
       const settingsResponse = await fetch('/api/settings/merchant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          enabled: true,
           onboardingCompleted: true,
         }),
       });
       
       if (settingsResponse.ok) {
-        console.log('✅ Settings updated successfully');
-      } else {
-        const error = await settingsResponse.text();
-        console.error('❌ Failed to update settings:', error);
+        console.log('✅ Onboarding status updated');
       }
       
-      // Redirect to settings page - client-side only
-      console.log('🔀 Redirecting to settings page...');
+      // Redirect to dashboard
+      console.log('🔀 Redirecting to dashboard...');
       if (typeof window !== 'undefined') {
-        window.location.href = '/settings';
+        window.location.href = '/';
       }
     } catch (error) {
       console.error('❌ Error in completeOnboarding:', error);
@@ -149,7 +243,7 @@ export default function Onboarding() {
       content: (
         <BlockStack gap="400">
           <Text as="p" variant="bodyLg">
-            Thank you for installing our app! This quick guide will help you set up your giveaway popup in minutes.
+            Thank you for installing our app! This quick setup will help you configure your giveaway popup in minutes.
           </Text>
           <Text as="p" variant="bodyMd">
             Your customers will see a beautiful Instagram giveaway popup on the Thank You page and Order Status page after checkout, helping you:
@@ -169,12 +263,220 @@ export default function Onboarding() {
       ),
     },
     {
-      title: 'Step 1: Add the Giveaway Block',
+      title: 'Configure Your Giveaway Popup',
       content: (
-        <BlockStack gap="400">
+        <BlockStack gap="500">
           <Banner tone="info">
             <Text as="p" variant="bodyMd">
-              Follow these steps to add the giveaway popup to your Thank You and Order Status pages.
+              Customize your popup appearance and rules. You can always change these settings later from the dashboard.
+            </Text>
+          </Banner>
+          
+          <Card>
+            <BlockStack gap="400">
+              <div>
+                <Text as="p" variant="bodyMd" fontWeight="semibold">
+                  Logo Image
+                </Text>
+                <div style={{ marginTop: '8px' }}>
+                  {logoUrl && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <img 
+                        src={logoUrl} 
+                        alt="Logo preview" 
+                        style={{ 
+                          maxWidth: '200px', 
+                          maxHeight: '100px', 
+                          objectFit: 'contain',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          padding: '8px',
+                          backgroundColor: '#f9f9f9'
+                        }} 
+                      />
+                    </div>
+                  )}
+                  <label
+                    htmlFor="logo-upload"
+                    style={{
+                      display: 'inline-block',
+                      padding: '8px 16px',
+                      backgroundColor: uploading ? '#ccc' : '#008060',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: uploading ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
+                    }}
+                  >
+                    {uploading ? 'Uploading...' : (logoUrl ? 'Change Logo' : 'Upload Logo')}
+                  </label>
+                  <input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                    onChange={handleLogoUpload}
+                    disabled={uploading}
+                    style={{ display: 'none' }}
+                  />
+                  <div style={{ marginTop: '4px' }}>
+                    <Text as="p" variant="bodySm" tone="subdued">
+                      Upload your brand logo (JPEG, PNG, GIF, WebP - Max 5MB)
+                    </Text>
+                  </div>
+                </div>
+              </div>
+
+              <TextField
+                label="Popup Title"
+                value={popupTitle}
+                onChange={setPopupTitle}
+                helpText="The main title shown at the top of the popup"
+                autoComplete="off"
+                maxLength={100}
+              />
+
+              <TextField
+                label="Rules Section Title"
+                value={rulesTitle}
+                onChange={setRulesTitle}
+                helpText="Title for the rules section (e.g., 'How to Enter:', 'Rules:')"
+                autoComplete="off"
+                maxLength={50}
+              />
+
+              <div>
+                <Text as="p" variant="bodyMd" fontWeight="semibold">
+                  Giveaway Rules (List Format)
+                </Text>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Add individual rule points that will be displayed as a bulleted list
+                </Text>
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {giveawayRules.map((rule, index) => (
+                    <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 'bold', minWidth: '20px' }}>•</span>
+                      <input
+                        type="text"
+                        value={rule}
+                        onChange={(e) => {
+                          const newRules = [...giveawayRules];
+                          newRules[index] = e.target.value;
+                          setGiveawayRules(newRules);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          fontSize: '14px'
+                        }}
+                      />
+                      <button
+                        onClick={() => {
+                          const newRules = giveawayRules.filter((_, i) => i !== index);
+                          setGiveawayRules(newRules);
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: '#e74c3c',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '14px'
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <input
+                      type="text"
+                      value={newRule}
+                      onChange={(e) => setNewRule(e.target.value)}
+                      placeholder="Add new rule..."
+                      style={{
+                        flex: 1,
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        borderRadius: '4px',
+                        fontSize: '14px'
+                      }}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && newRule.trim()) {
+                          setGiveawayRules([...giveawayRules, newRule.trim()]);
+                          setNewRule('');
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={() => {
+                        if (newRule.trim()) {
+                          setGiveawayRules([...giveawayRules, newRule.trim()]);
+                          setNewRule('');
+                        }
+                      }}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#008060',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}
+                    >
+                      Add Rule
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <TextField
+                label="Submit Button Text"
+                value={submitButtonText}
+                onChange={setSubmitButtonText}
+                helpText="Text displayed on the submit button"
+                autoComplete="off"
+                maxLength={50}
+              />
+
+              <TextField
+                label="Redirect URL (Optional)"
+                value={redirectUrl}
+                onChange={setRedirectUrl}
+                helpText="URL to redirect after form submission (leave empty for no redirect)"
+                autoComplete="off"
+                placeholder="https://instagram.com/yourprofile"
+              />
+            </BlockStack>
+          </Card>
+
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <Button
+              variant="primary"
+              onClick={handleSaveSettings}
+              loading={saving}
+              size="large"
+            >
+              Save Settings & Continue →
+            </Button>
+            <Button variant="plain" onClick={() => setCurrentStep(0)}>
+              ← Back
+            </Button>
+          </div>
+        </BlockStack>
+      ),
+    },
+    {
+      title: 'Add the Giveaway Block',
+      content: (
+        <BlockStack gap="400">
+          <Banner tone="success">
+            <Text as="p" variant="bodyMd" fontWeight="bold">
+              ✓ Settings saved! Now let's add the popup to your checkout pages.
             </Text>
           </Banner>
           
@@ -235,13 +537,13 @@ export default function Onboarding() {
 
           <Divider />
 
-          <Banner tone="warning">
+          <Banner tone="info">
             <BlockStack gap="200">
               <Text as="p" variant="bodyMd" fontWeight="bold">
-                Important:
+                All set? Let's go to your dashboard!
               </Text>
               <Text as="p" variant="bodyMd">
-                The block is added but won't show to customers until you enable it in our dashboard (next step).
+                Once you've added the block, click below to view your analytics dashboard where you can track submissions and access settings anytime.
               </Text>
             </BlockStack>
           </Banner>
@@ -249,65 +551,13 @@ export default function Onboarding() {
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <Button
               variant="primary"
-              onClick={() => {
-                // Just move to next step - merchant confirms they've done it
-                setCurrentStep(2);
-              }}
-              size="large"
-            >
-              ✓ I've Added the Block
-            </Button>
-          </div>
-        </BlockStack>
-      ),
-    },
-    {
-      title: 'Step 2: Enable & Customize Your Giveaway',
-      content: (
-        <BlockStack gap="400">
-          <Banner tone="success">
-            <Text as="p" variant="bodyMd" fontWeight="bold">
-              Perfect! The giveaway block is now added to your checkout pages.
-            </Text>
-          </Banner>
-          
-          <Banner tone="info">
-            <BlockStack gap="200">
-              <Text as="p" variant="bodyMd" fontWeight="bold">
-                Next: Enable the popup in your dashboard
-              </Text>
-              <Text as="p" variant="bodyMd">
-                The block won't display to customers until you enable it and customize your settings.
-              </Text>
-            </BlockStack>
-          </Banner>
-          
-          <Card>
-            <BlockStack gap="300">
-              <Text as="p" variant="headingSm">
-                In the Settings page, you can:
-              </Text>
-              <BlockStack gap="200">
-                <Text as="p" variant="bodyMd">🎨 Upload your brand logo</Text>
-                <Text as="p" variant="bodyMd">📝 Customize popup title and giveaway rules</Text>
-                <Text as="p" variant="bodyMd">✏️ Edit form field labels</Text>
-                <Text as="p" variant="bodyMd">🔗 Set redirect URL (e.g., your Instagram profile)</Text>
-                <Text as="p" variant="bodyMd">✅ <strong>Toggle the popup ON/OFF</strong></Text>
-              </BlockStack>
-            </BlockStack>
-          </Card>
-
-          <Text as="p" variant="bodyMd">
-            Click "Go to Settings" below to enable and customize your giveaway popup.
-          </Text>
-
-          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-            <Button
-              variant="primary"
               onClick={completeOnboarding}
               size="large"
             >
-              Go to Settings →
+              I've Added the Block - Go to Dashboard →
+            </Button>
+            <Button variant="plain" onClick={() => setCurrentStep(1)}>
+              ← Back
             </Button>
           </div>
         </BlockStack>
@@ -354,6 +604,14 @@ export default function Onboarding() {
             </Card>
           </Layout.Section>
 
+          {error && (
+            <Layout.Section>
+              <Banner tone="critical" onDismiss={() => setError(null)}>
+                {error}
+              </Banner>
+            </Layout.Section>
+          )}
+
           <Layout.Section>
             <Card>
               <BlockStack gap="500">
@@ -365,17 +623,6 @@ export default function Onboarding() {
               </BlockStack>
             </Card>
           </Layout.Section>
-
-          {currentStep > 0 && (
-            <Layout.Section>
-              <Button
-                variant="plain"
-                onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
-              >
-                ← Back
-              </Button>
-            </Layout.Section>
-          )}
 
           <Layout.Section>
             <Card>
@@ -393,6 +640,13 @@ export default function Onboarding() {
             </Card>
           </Layout.Section>
         </Layout>
+
+        {showToast && (
+          <Toast
+            content="Settings saved successfully"
+            onDismiss={() => setShowToast(false)}
+          />
+        )}
       </Page>
     </Frame>
   );

@@ -53,9 +53,9 @@ export default function Dashboard() {
         if (settingsResponse.ok) {
           const settingsData = await settingsResponse.json();
           
-          // Check if onboarding is complete (extension is enabled)
-          if (!settingsData.enabled && !settingsData.analytics?.onboarding_completed) {
-            // Redirect to onboarding - handled by _app.tsx navigation
+          // Check if onboarding is complete
+          if (!settingsData.onboardingCompleted && !settingsData.analytics?.onboarding_completed) {
+            // Redirect to onboarding
             if (typeof window !== 'undefined') {
               window.location.href = '/onboarding';
             }
@@ -174,6 +174,16 @@ export default function Dashboard() {
       <Page
         title="Analytics Dashboard"
         subtitle={`Tracking giveaway performance for ${shop}`}
+        secondaryActions={[
+          {
+            content: 'Settings',
+            onAction: () => {
+              if (typeof window !== 'undefined') {
+                window.location.href = '/settings';
+              }
+            },
+          },
+        ]}
       >
         <Layout>
           {error && (
@@ -360,9 +370,6 @@ export default function Dashboard() {
                   </Text>
                   <Text as="p" variant="bodyMd">
                     This dashboard shows submission analytics for your store only. All customer entries are securely stored and can be viewed in your submissions collection.
-                  </Text>
-                  <Text as="p" variant="bodyMd">
-                    💡 Use the <strong>Settings</strong> page (in the navigation) to customize your giveaway popup appearance and rules.
                   </Text>
                 </BlockStack>
               </Box>
