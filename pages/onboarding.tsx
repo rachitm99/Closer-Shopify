@@ -57,7 +57,8 @@ export default function Onboarding() {
         
         if (!alreadyTracked && shopDomain !== 'unknown') {
           // Track onboarding start with shop info
-          await fetch('/api/analytics/track', {
+          console.log('📊 Tracking onboarding_started for shop:', shopDomain);
+          const trackResponse = await fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -66,8 +67,16 @@ export default function Onboarding() {
             }),
           });
           
-          // Mark as tracked in session storage to prevent duplicates
-          sessionStorage.setItem(trackingKey, 'true');
+          if (trackResponse.ok) {
+            console.log('✅ Onboarding started tracked successfully');
+            // Mark as tracked in session storage to prevent duplicates
+            sessionStorage.setItem(trackingKey, 'true');
+          } else {
+            const error = await trackResponse.text();
+            console.error('❌ Failed to track onboarding_started:', error);
+          }
+        } else {
+          console.log('ℹ️ Skipping tracking:', { alreadyTracked, shopDomain });
         }
       } catch (error) {
         console.error('Error initializing onboarding:', error);
@@ -83,29 +92,51 @@ export default function Onboarding() {
   }, [router.isReady, router.query.shop]);
 
   const completeOnboarding = async () => {
-    // Track completion with shop info
-    await fetch('/api/analytics/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        event: 'onboarding_completed',
-        shop: shop,
-      }),
-    });
-    
-    // Mark extension as enabled and onboarding completed
-    await fetch('/api/settings/merchant', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        enabled: true,
-        onboardingCompleted: true,
-      }),
-    });
-    
-    // Redirect to settings page using App Bridge
-    const redirect = Redirect.create(app);
-    redirect.dispatch(Redirect.Action.APP, '/settings');
+    try {
+      console.log('📊 Tracking onboarding_completed for shop:', shop);
+      
+      // Track completion with shop info
+      const trackResponse = await fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          event: 'onboarding_completed',
+          shop: shop,
+        }),
+      });
+      
+      if (trackResponse.ok) {
+        console.log('✅ Onboarding completed tracked successfully');
+      } else {
+        const error = await trackResponse.text();
+        console.error('❌ Failed to track onboarding_completed:', error);
+      }
+      
+      // Mark extension as enabled and onboarding completed
+      console.log('💾 Updating merchant settings...');
+      const settingsResponse = await fetch('/api/settings/merchant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          enabled: true,
+          onboardingCompleted: true,
+        }),
+      });
+      
+      if (settingsResponse.ok) {
+        console.log('✅ Settings updated successfully');
+      } else {
+        const error = await settingsResponse.text();
+        console.error('❌ Failed to update settings:', error);
+      }
+      
+      // Redirect to settings page using App Bridge
+      console.log('🔀 Redirecting to settings page...');
+      const redirect = Redirect.create(app);
+      redirect.dispatch(Redirect.Action.APP, '/settings');
+    } catch (error) {
+      console.error('❌ Error in completeOnboarding:', error);
+    }
   };
 
   const steps = [

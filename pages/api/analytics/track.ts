@@ -15,16 +15,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { event, shop, metadata } = req.body;
 
+    console.log('📊 Analytics track request:', { event, shop, metadata });
+
     if (!event) {
+      console.error('❌ Missing event type');
       return res.status(400).json({ error: 'Event type is required' });
     }
 
     // Get shop from session or request
     const shopDomain = shop || req.headers['x-shop-domain'] || 'unknown';
     
+    console.log('🏪 Shop domain:', shopDomain);
+    
     // Don't track events for unknown shops
     if (shopDomain === 'unknown') {
-      console.log('Skipping analytics event for unknown shop:', event);
+      console.log('⚠️ Skipping analytics event for unknown shop:', event);
       return res.status(400).json({ error: 'Shop domain is required' });
     }
 
@@ -42,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
           
           if (lastStartTime > oneHourAgo) {
-            console.log('Skipping duplicate onboarding_started event for shop:', shopDomain);
+            console.log('⚠️ Skipping duplicate onboarding_started event for shop:', shopDomain);
             return res.status(200).json({ success: true, skipped: true, reason: 'Recent duplicate' });
           }
         }
@@ -57,7 +62,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     // Store in Firestore analytics collection
+    console.log('💾 Storing analytics event in Firestore...');
     await db.collection(collections.analytics).add(analyticsEvent);
+    console.log('✅ Analytics event stored in collection');
 
     // Also update merchant record with latest event
     const merchantRef = db.collection(collections.settings).doc(shopDomain);
@@ -69,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { merge: true }
     );
 
-    console.log('Analytics event tracked:', event, 'for shop:', shopDomain);
+    console.log('✅ Analytics event tracked:', event, 'for shop:', shopDomain);
 
     return res.status(200).json({ success: true });
   } catch (error) {
