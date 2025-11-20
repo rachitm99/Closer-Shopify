@@ -131,8 +131,13 @@ function ThankYouExtension() {
 
   // Separate effect to track impressions whenever settings are loaded and enabled
   useEffect(() => {
+    console.log('Thank You - useEffect triggered. Settings:', settings);
+    console.log('Thank You - Enabled:', settings?.enabled, 'Shop:', settings?.shop);
+    
     if (settings?.enabled && settings?.shop) {
-      console.log('Thank You - Tracking impression for shop:', settings.shop);
+      console.log('Thank You - CONDITIONS MET! Starting impression tracking for shop:', settings.shop);
+      console.log('Thank You - Making fetch request to:', 'https://closer-shopify-qq8c.vercel.app/api/analytics/impressions');
+      
       fetch(
         `https://closer-shopify-qq8c.vercel.app/api/analytics/impressions`,
         {
@@ -146,13 +151,26 @@ function ThankYouExtension() {
         }
       )
       .then(response => {
-        console.log('Thank You - Impression tracking response:', response.status, response.ok);
+        console.log('Thank You - Fetch completed! Response status:', response.status, 'OK:', response.ok);
+        console.log('Thank You - Response headers:', response.headers);
+        if (!response.ok) {
+          console.error('Thank You - Response not OK! Status:', response.status, response.statusText);
+        }
         return response.json();
       })
-      .then(data => console.log('Thank You - Impression tracked successfully:', data))
-      .catch((err) => console.error('Thank You - Failed to track impression:', err));
+      .then(data => {
+        console.log('Thank You - ✅ SUCCESS! Impression tracked successfully:', data);
+        console.log('Thank You - Response data:', JSON.stringify(data));
+      })
+      .catch((err) => {
+        console.error('Thank You - ❌ FETCH FAILED! Error:', err);
+        console.error('Thank You - Error message:', err.message);
+        console.error('Thank You - Error stack:', err.stack);
+      });
     } else {
-      console.log('Thank You - Not tracking impression. Settings:', settings);
+      console.log('Thank You - ⚠️ NOT tracking impression!');
+      console.log('Thank You - Reason - Settings enabled:', settings?.enabled, 'Shop present:', !!settings?.shop);
+      console.log('Thank You - Full settings object:', JSON.stringify(settings));
     }
   }, [settings?.enabled, settings?.shop]); // Run whenever settings change
 

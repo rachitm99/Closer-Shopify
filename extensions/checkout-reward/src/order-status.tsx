@@ -122,7 +122,52 @@ function OrderStatusExtension() {
     }
 
     fetchSettings();
-  }, []);
+  }, []); // Empty dependency array - run only on mount
+
+  // Separate effect to track impressions whenever settings are loaded and enabled
+  useEffect(() => {
+    console.log('Order Status - useEffect triggered. Settings:', settings);
+    console.log('Order Status - Enabled:', settings?.enabled, 'Shop:', settings?.shop);
+    
+    if (settings?.enabled && settings?.shop) {
+      console.log('Order Status - CONDITIONS MET! Starting impression tracking for shop:', settings.shop);
+      console.log('Order Status - Making fetch request to:', 'https://closer-shopify-qq8c.vercel.app/api/analytics/impressions');
+      
+      fetch(
+        `https://closer-shopify-qq8c.vercel.app/api/analytics/impressions`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            shop: settings.shop,
+          }),
+        }
+      )
+      .then(response => {
+        console.log('Order Status - Fetch completed! Response status:', response.status, 'OK:', response.ok);
+        console.log('Order Status - Response headers:', response.headers);
+        if (!response.ok) {
+          console.error('Order Status - Response not OK! Status:', response.status, response.statusText);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Order Status - ✅ SUCCESS! Impression tracked successfully:', data);
+        console.log('Order Status - Response data:', JSON.stringify(data));
+      })
+      .catch((err) => {
+        console.error('Order Status - ❌ FETCH FAILED! Error:', err);
+        console.error('Order Status - Error message:', err.message);
+        console.error('Order Status - Error stack:', err.stack);
+      });
+    } else {
+      console.log('Order Status - ⚠️ NOT tracking impression!');
+      console.log('Order Status - Reason - Settings enabled:', settings?.enabled, 'Shop present:', !!settings?.shop);
+      console.log('Order Status - Full settings object:', JSON.stringify(settings));
+    }
+  }, [settings?.enabled, settings?.shop]); // Run whenever settings change
 
   const handleSubmit = async () => {
     if (!formValue.trim()) {

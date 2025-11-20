@@ -14,35 +14,51 @@ interface ImpressionData {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('\n=== IMPRESSIONS API CALLED ===');
+  console.log('Method:', req.method);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+  
   // CORS headers for checkout extension
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
+    console.log('OPTIONS request - responding 200');
     return res.status(200).end();
   }
 
   try {
     if (req.method === 'POST') {
+      console.log('POST request detected - processing impression tracking');
       // Track a new impression
       const { shop } = req.body;
 
-      console.log('Impression tracking request received:', { shop, body: req.body });
+      console.log('Extracted shop from body:', shop);
+      console.log('Shop type:', typeof shop);
+      console.log('Full body:', JSON.stringify(req.body));
 
       if (!shop) {
-        console.error('Shop domain missing in impression request');
+        console.error('❌ ERROR: Shop domain missing in impression request');
+        console.error('Body was:', req.body);
         return res.status(400).json({ error: 'Shop domain is required' });
       }
 
+      console.log('✅ Shop validated:', shop);
+      console.log('Attempting to write to Firebase...');
+
       // Store individual impression event
-      await db.collection(collections.analytics).add({
+      console.log('Writing to analytics collection...');
+      const analyticsDoc = await db.collection(collections.analytics).add({
         event: 'block_impression',
         shop: shop,
         timestamp: FieldValue.serverTimestamp(),
       });
+      console.log('Analytics document created with ID:', analyticsDoc.id);
 
       // Update aggregate counter in merchant settings
+      console.log('Updating merchant settings for shop:', shop);
       const merchantRef = db.collection(collections.settings).doc(shop);
       await merchantRef.set(
         {
@@ -54,10 +70,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         { merge: true }
       );
+      console.log('Merchant settings updated successfully');
 
-      console.log('Block impression tracked for shop:', shop);
-      return res.status(200).json({ success: true });
+      console.log('✅✅✅ Block impression tracked successfully for shop:', shop);
+      return res.status(200).json({ success: true, message: 'Impression tracked' });
     } else if (req.method === 'GET') {
+      console.log('GET request detected - fetching impression stats');
       // Get impression stats for a shop
       const shop = req.query.shop as string;
 
@@ -124,10 +142,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         totalLast30Days: Object.values(dailyImpressions).reduce((sum, count) => sum + count, 0),
       });
     } else {
+      console.log('⚠️ Method not allowed:', req.method);
       return res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
-    console.error('Impressions API error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('❌❌❌ IMPRESSIONS API ERROR ❌❌❌');
+    console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
+    console.error('Error message:', error instanceof Error ? error.message : error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('Request method:', req.method);
+    console.error('Request body:', req.body);
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 }
