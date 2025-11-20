@@ -1,7 +1,5 @@
 import {
   reactExtension,
-} from '@shopify/ui-extensions-react/checkout';
-import {
   View,
   BlockStack,
   Image,
