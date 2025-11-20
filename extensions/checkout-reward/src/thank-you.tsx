@@ -15,6 +15,7 @@ import { use, useEffect, useState } from 'react';
 
 interface Settings {
   enabled: boolean;
+  shop?: string;
   logoUrl?: string;
   popupTitle: string;
   rulesTitle: string;
@@ -85,31 +86,6 @@ function ThankYouExtension() {
           }
           
           setSettings(data);
-          
-          // Track impression if extension is enabled
-          if (data.enabled && data.shop) {
-            console.log('Thank You - Tracking impression for shop:', data.shop);
-            fetch(
-              `https://closer-shopify-qq8c.vercel.app/api/analytics/impressions`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  shop: data.shop,
-                }),
-              }
-            )
-            .then(response => {
-              console.log('Thank You - Impression tracking response:', response.status, response.ok);
-              return response.json();
-            })
-            .then(data => console.log('Thank You - Impression tracked successfully:', data))
-            .catch((err) => console.error('Thank You - Failed to track impression:', err));
-          } else {
-            console.log('Thank You - Not tracking impression. Enabled:', data.enabled, 'Shop:', data.shop);
-          }
         } else {
           console.log('Thank You - Failed to load settings, response not OK');
           setSettings({
@@ -151,8 +127,34 @@ function ThankYouExtension() {
     }
 
     fetchSettings();
-    
-  }, [shop.myshopifyDomain]);
+  }, []); // Empty dependency array - run only on mount
+
+  // Separate effect to track impressions whenever settings are loaded and enabled
+  useEffect(() => {
+    if (settings?.enabled && settings?.shop) {
+      console.log('Thank You - Tracking impression for shop:', settings.shop);
+      fetch(
+        `https://closer-shopify-qq8c.vercel.app/api/analytics/impressions`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            shop: settings.shop,
+          }),
+        }
+      )
+      .then(response => {
+        console.log('Thank You - Impression tracking response:', response.status, response.ok);
+        return response.json();
+      })
+      .then(data => console.log('Thank You - Impression tracked successfully:', data))
+      .catch((err) => console.error('Thank You - Failed to track impression:', err));
+    } else {
+      console.log('Thank You - Not tracking impression. Settings:', settings);
+    }
+  }, [settings?.enabled, settings?.shop]); // Run whenever settings change
 
   const handleSubmit = async () => {
     if (!formValue.trim()) {

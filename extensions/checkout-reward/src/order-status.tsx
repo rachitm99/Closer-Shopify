@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 
 interface Settings {
   enabled: boolean;
+  shop?: string;
   logoUrl?: string;
   popupTitle: string;
   rulesTitle: string;
@@ -84,31 +85,6 @@ function OrderStatusExtension() {
           }
           
           setSettings(data);
-          
-          // Track impression if extension is enabled
-          if (data.enabled && data.shop) {
-            console.log('Order Status - Tracking impression for shop:', data.shop);
-            fetch(
-              `https://closer-shopify-qq8c.vercel.app/api/analytics/impressions`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  shop: data.shop,
-                }),
-              }
-            )
-            .then(response => {
-              console.log('Order Status - Impression tracking response:', response.status, response.ok);
-              return response.json();
-            })
-            .then(data => console.log('Order Status - Impression tracked successfully:', data))
-            .catch((err) => console.error('Order Status - Failed to track impression:', err));
-          } else {
-            console.log('Order Status - Not tracking impression. Enabled:', data.enabled, 'Shop:', data.shop);
-          }
         } else {
           console.log('Order Status - Failed to load settings, response not OK');
           setSettings({
