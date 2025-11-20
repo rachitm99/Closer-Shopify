@@ -142,6 +142,7 @@ function OrderStatusExtension() {
           },
           body: JSON.stringify({
             shop: settings.shop,
+            page: 'order-status',
           }),
         }
       )

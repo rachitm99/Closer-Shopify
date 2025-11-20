@@ -147,6 +147,7 @@ function ThankYouExtension() {
           },
           body: JSON.stringify({
             shop: settings.shop,
+            page: 'thank-you',
           }),
         }
       )

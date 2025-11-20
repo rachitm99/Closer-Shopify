@@ -33,9 +33,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'POST') {
       console.log('POST request detected - processing impression tracking');
       // Track a new impression
-      const { shop } = req.body;
+      const { shop, page } = req.body;
 
       console.log('Extracted shop from body:', shop);
+      console.log('Extracted page from body:', page);
       console.log('Shop type:', typeof shop);
       console.log('Full body:', JSON.stringify(req.body));
 
@@ -53,27 +54,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const analyticsDoc = await db.collection(collections.analytics).add({
         event: 'block_impression',
         shop: shop,
+        page: page || 'unknown',
         timestamp: FieldValue.serverTimestamp(),
       });
-      console.log('Analytics document created with ID:', analyticsDoc.id);
+      console.log('Analytics document created with ID:', analyticsDoc.id, 'for page:', page);
 
       // Update aggregate counter in merchant settings
       console.log('Updating merchant settings for shop:', shop);
       const merchantRef = db.collection(collections.settings).doc(shop);
-      await merchantRef.set(
-        {
-          impressionStats: {
-            totalImpressions: FieldValue.increment(1),
-            lastImpression: FieldValue.serverTimestamp(),
-          },
-          lastActivity: FieldValue.serverTimestamp(),
+      const updateData: any = {
+        impressionStats: {
+          totalImpressions: FieldValue.increment(1),
+          lastImpression: FieldValue.serverTimestamp(),
         },
-        { merge: true }
-      );
-      console.log('Merchant settings updated successfully');
+        lastActivity: FieldValue.serverTimestamp(),
+      };
+      
+      // Track page-specific impressions
+      if (page === 'thank-you') {
+        updateData.impressionStats.thankYouImpressions = FieldValue.increment(1);
+      } else if (page === 'order-status') {
+        updateData.impressionStats.orderStatusImpressions = FieldValue.increment(1);
+      }
+      
+      await merchantRef.set(updateData, { merge: true });
+      console.log('Merchant settings updated successfully for page:', page);
 
-      console.log('✅✅✅ Block impression tracked successfully for shop:', shop);
-      return res.status(200).json({ success: true, message: 'Impression tracked' });
+      console.log('✅✅✅ Block impression tracked successfully for shop:', shop, 'page:', page);
+      return res.status(200).json({ success: true, message: 'Impression tracked', page: page });
     } else if (req.method === 'GET') {
       console.log('GET request detected - fetching impression stats');
       // Get impression stats for a shop
