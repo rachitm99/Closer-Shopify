@@ -27,6 +27,7 @@ export default function Onboarding() {
   const [isMounted, setIsMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   // Settings state
   const [enabled, setEnabled] = useState(true); // Default enabled for new users
@@ -65,6 +66,7 @@ export default function Onboarding() {
             // Check if onboarding is already complete
             if (data.onboardingCompleted || data.analytics?.onboarding_completed) {
               console.log('✅ Onboarding already complete, redirecting to dashboard...');
+              setShouldRedirect(true);
               if (typeof window !== 'undefined') {
                 window.location.href = '/';
               }
@@ -581,6 +583,19 @@ export default function Onboarding() {
     return (
       <Frame>
         <Page title="Setting Up...">
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <Spinner size="large" />
+          </div>
+        </Page>
+      </Frame>
+    );
+  }
+
+  // Don't render anything if we're redirecting
+  if (shouldRedirect) {
+    return (
+      <Frame>
+        <Page title="Redirecting...">
           <div style={{ padding: '20px', textAlign: 'center' }}>
             <Spinner size="large" />
           </div>
