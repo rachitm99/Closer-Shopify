@@ -65,6 +65,7 @@ function ThankYouExtension() {
           console.log('Thank You - Settings loaded:', data);
           console.log('Thank You - Enabled status:', data.enabled);
           
+          
           // Backward compatibility: convert old string format to array
           if (data.giveawayRules && typeof data.giveawayRules === 'string') {
             data.giveawayRules = [data.giveawayRules];

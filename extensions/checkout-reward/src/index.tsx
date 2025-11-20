@@ -149,6 +149,9 @@ function ThankYouExtension() {
     }
 
     fetchSettings();
+    console.log("htllo");
+    console.log("this is shop", shop);
+    console.log(document.getElementsByClassName('_1tx8jg70 _1fragemn2 _1tx8jg7e _1tx8jg7d _1fragemph _1tx8jg717 _1tx8jg71f _1tx8jg71h'));
   }, [shop.myshopifyDomain]);
 
   const handleSubmit = async () => {
