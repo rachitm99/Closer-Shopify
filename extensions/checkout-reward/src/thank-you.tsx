@@ -144,10 +144,10 @@ function ThankYouExtension() {
       } finally {
         setLoading(false);
       }
-      console.log("going to fetch order data");
+      // console.log("going to fetch order data");
       
-        console.log(orderData);
-        console.log("finished fetching order data");
+      //   console.log(orderData);
+      //   console.log("finished fetching order data");
     }
 
     fetchSettings();
