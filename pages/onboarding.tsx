@@ -213,18 +213,21 @@ export default function Onboarding() {
         console.log('✅ Onboarding completed tracked successfully');
       }
       
-      // Mark onboarding as completed
+      // Mark onboarding as completed (preserving enabled state)
       console.log('💾 Updating onboarding status...');
       const settingsResponse = await fetch('/api/settings/merchant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
+          enabled: true, // Ensure extension is enabled
           onboardingCompleted: true,
         }),
       });
       
       if (settingsResponse.ok) {
         console.log('✅ Onboarding status updated');
+        const responseData = await settingsResponse.json();
+        console.log('💾 Saved settings:', responseData);
       }
       
       // Redirect to dashboard

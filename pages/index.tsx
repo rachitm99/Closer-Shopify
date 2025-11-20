@@ -53,8 +53,13 @@ export default function Dashboard() {
         if (settingsResponse.ok) {
           const settingsData = await settingsResponse.json();
           
+          console.log('📊 Dashboard - Loaded settings:', settingsData);
+          console.log('📊 Dashboard - onboardingCompleted:', settingsData.onboardingCompleted);
+          console.log('📊 Dashboard - analytics.onboarding_completed:', settingsData.analytics?.onboarding_completed);
+          
           // Check if onboarding is complete
           if (!settingsData.onboardingCompleted && !settingsData.analytics?.onboarding_completed) {
+            console.log('❌ Dashboard - Onboarding not complete, redirecting...');
             // Redirect to onboarding
             if (typeof window !== 'undefined') {
               window.location.href = '/onboarding';
@@ -62,6 +67,7 @@ export default function Dashboard() {
             return;
           }
           
+          console.log('✅ Dashboard - Onboarding complete, loading data...');
           setOnboardingComplete(true);
           const shopDomain = settingsData.shop || 'unknown';
           setShop(shopDomain);
