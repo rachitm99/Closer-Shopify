@@ -77,6 +77,9 @@ function ThankYouExtension() {
         if (response.ok) {
           const data = await response.json();
           
+          console.log('Thank You - Settings loaded:', data);
+          console.log('Thank You - Enabled status:', data.enabled);
+          
           // Backward compatibility: convert old string format to array
           if (data.giveawayRules && typeof data.giveawayRules === 'string') {
             data.giveawayRules = [data.giveawayRules];
@@ -110,6 +113,7 @@ function ThankYouExtension() {
             ).catch((err) => console.error('Failed to track impression:', err));
           }
         } else {
+          console.log('Thank You - Failed to load settings, response not OK');
           setSettings({
             enabled: false,
             popupTitle: '🎉 Instagram Giveaway! 🎉',
@@ -125,7 +129,7 @@ function ThankYouExtension() {
           });
         }
       } catch (error) {
-        console.error('Error fetching settings:', error);
+        console.error('Thank You - Error fetching settings:', error);
         setSettings({
           enabled: false,
           popupTitle: '🎉 Instagram Giveaway! 🎉',
@@ -182,10 +186,22 @@ function ThankYouExtension() {
     }
   };
 
-  if (loading || !settings || !settings.enabled) {
+  if (loading) {
+    console.log('Thank You - Loading...');
+    return null;
+  }
+  
+  if (!settings) {
+    console.log('Thank You - No settings found');
+    return null;
+  }
+  
+  if (!settings.enabled) {
+    console.log('Thank You - Extension disabled, enabled =', settings.enabled);
     return null;
   }
 
+  console.log('Thank You - Rendering extension!');
   return <ExtensionUI settings={settings} formValue={formValue} setFormValue={setFormValue} handleSubmit={handleSubmit} submitting={submitting} submitted={submitted} />;
 }
 
@@ -228,6 +244,9 @@ function OrderStatusExtension() {
         if (response.ok) {
           const data = await response.json();
           
+          console.log('Order Status - Settings loaded:', data);
+          console.log('Order Status - Enabled status:', data.enabled);
+          
           // Backward compatibility: convert old string format to array
           if (data.giveawayRules && typeof data.giveawayRules === 'string') {
             data.giveawayRules = [data.giveawayRules];
@@ -261,6 +280,7 @@ function OrderStatusExtension() {
             ).catch((err) => console.error('Failed to track impression:', err));
           }
         } else {
+          console.log('Order Status - Failed to load settings, response not OK');
           setSettings({
             enabled: false,
             popupTitle: '🎉 Instagram Giveaway! 🎉',
@@ -276,7 +296,7 @@ function OrderStatusExtension() {
           });
         }
       } catch (error) {
-        console.error('Error fetching settings:', error);
+        console.error('Order Status - Error fetching settings:', error);
         setSettings({
           enabled: false,
           popupTitle: '🎉 Instagram Giveaway! 🎉',
@@ -333,10 +353,22 @@ function OrderStatusExtension() {
     }
   };
 
-  if (loading || !settings || !settings.enabled) {
+  if (loading) {
+    console.log('Order Status - Loading...');
+    return null;
+  }
+  
+  if (!settings) {
+    console.log('Order Status - No settings found');
+    return null;
+  }
+  
+  if (!settings.enabled) {
+    console.log('Order Status - Extension disabled, enabled =', settings.enabled);
     return null;
   }
 
+  console.log('Order Status - Rendering extension!');
   return <ExtensionUI settings={settings} formValue={formValue} setFormValue={setFormValue} handleSubmit={handleSubmit} submitting={submitting} submitted={submitted} />;
 }
 
