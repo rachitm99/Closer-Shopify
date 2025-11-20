@@ -6,22 +6,22 @@ import {
   Text,
   TextField,
   Button,
-  useApi,
-  InlineStack,
+  useApi as useCheckoutApi,
   Link,
 } from '@shopify/ui-extensions-react/checkout';
+import { useApi as useOrderStatusApi } from '@shopify/ui-extensions-react/customer-account';
 import { useEffect, useState } from 'react';
 
 // Export for Thank You page
 export const thankYouExtension = reactExtension(
   'purchase.thank-you.block.render',
-  () => <Extension />
+  () => <ThankYouExtension />
 );
 
 // Export for Order Status page
 export const orderStatusExtension = reactExtension(
   'customer-account.order-status.block.render',
-  () => <Extension />
+  () => <OrderStatusExtension />
 );
 
 // Default export for backward compatibility
@@ -38,8 +38,9 @@ interface Settings {
   redirectUrl?: string;
 }
 
-function Extension() {
-  const api = useApi();
+// Thank You page component
+function ThankYouExtension() {
+  const api = useCheckoutApi();
   const { shop, sessionToken } = api;
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,12 +53,14 @@ function Extension() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        // Extract order data from Thank You page API
+        // Get order data from Thank You page API
         const orderData = (api as any).order || {};
-        const email = (api as any).email || (api as any).customer?.email || orderData.customer?.email || '';
+        const emailValue = (api as any).email?.value || orderData.customer?.email || '';
         const orderId = orderData.id || orderData.name || '';
         
-        setCustomerEmail(email);
+        console.log('Thank You Page - Order ID:', orderId);
+        
+        setCustomerEmail(emailValue);
         setOrderNumber(orderId);
         
         const token = await sessionToken.get();
@@ -116,7 +119,6 @@ function Extension() {
               'Like our latest post',
               'Tag 2 friends in the comments',
               'Share this post to your story',
-              'Turn on post notifications'
             ],
             formFieldLabel: 'Instagram Username',
             submitButtonText: 'Follow Us on Instagram',
@@ -183,6 +185,170 @@ function Extension() {
   if (loading || !settings || !settings.enabled) {
     return null;
   }
+
+  return <ExtensionUI settings={settings} formValue={formValue} setFormValue={setFormValue} handleSubmit={handleSubmit} submitting={submitting} submitted={submitted} />;
+}
+
+// Order Status page component
+function OrderStatusExtension() {
+  const api = useOrderStatusApi();
+  const { sessionToken } = api;
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [formValue, setFormValue] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [orderNumber, setOrderNumber] = useState('');
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        // Get order data from Order Status page API
+        const orderData = (api as any).data?.order || {};
+        const customerEmailValue = orderData.email || orderData.customer?.email || '';
+        const orderId = orderData.id || orderData.name || '';
+        
+        console.log('Order Status Page - Order ID:', orderId);
+        
+        setCustomerEmail(customerEmailValue);
+        setOrderNumber(orderId);
+        
+        const token = await sessionToken.get();
+        
+        const response = await fetch(
+          `https://closer-shopify-qq8c.vercel.app/api/settings/session-token`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          }
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Backward compatibility: convert old string format to array
+          if (data.giveawayRules && typeof data.giveawayRules === 'string') {
+            data.giveawayRules = [data.giveawayRules];
+          }
+          
+          // Ensure giveawayRules is always an array
+          if (!Array.isArray(data.giveawayRules)) {
+            data.giveawayRules = [
+              'Follow us on Instagram',
+              'Like our latest post',
+              'Tag 2 friends in the comments',
+              'Share this post to your story'
+            ];
+          }
+          
+          setSettings(data);
+          
+          // Track impression if extension is enabled
+          if (data.enabled && data.shop) {
+            fetch(
+              `https://closer-shopify-qq8c.vercel.app/api/analytics/impressions`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  shop: data.shop,
+                }),
+              }
+            ).catch((err) => console.error('Failed to track impression:', err));
+          }
+        } else {
+          setSettings({
+            enabled: false,
+            popupTitle: '🎉 Instagram Giveaway! 🎉',
+            rulesTitle: 'How to Enter:',
+            giveawayRules: [
+              'Follow us on Instagram',
+              'Like our latest post',
+              'Tag 2 friends in the comments',
+              'Share this post to your story',
+            ],
+            formFieldLabel: 'Instagram Username',
+            submitButtonText: 'Follow Us on Instagram',
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+        setSettings({
+          enabled: false,
+          popupTitle: '🎉 Instagram Giveaway! 🎉',
+          rulesTitle: 'How to Enter:',
+          giveawayRules: [
+            'Follow us on Instagram',
+            'Like our latest post',
+            'Tag 2 friends in the comments',
+            'Share this post to your story'
+          ],
+          formFieldLabel: 'Instagram Username',
+          submitButtonText: 'Follow Us on Instagram',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchSettings();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!formValue.trim()) {
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const token = await sessionToken.get();
+
+      const response = await fetch(
+        `https://closer-shopify-qq8c.vercel.app/api/submissions/create`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            instaHandle: formValue,
+            customerEmail: customerEmail,
+            orderNumber: orderNumber,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        setSubmitted(true);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading || !settings || !settings.enabled) {
+    return null;
+  }
+
+  return <ExtensionUI settings={settings} formValue={formValue} setFormValue={setFormValue} handleSubmit={handleSubmit} submitting={submitting} submitted={submitted} />;
+}
+
+// Shared UI component
+function ExtensionUI({ settings, formValue, setFormValue, handleSubmit, submitting, submitted }: {
+  settings: Settings;
+  formValue: string;
+  setFormValue: (value: string) => void;
+  handleSubmit: () => void;
+  submitting: boolean;
+  submitted: boolean;
+}) {
 
   return (
     <View

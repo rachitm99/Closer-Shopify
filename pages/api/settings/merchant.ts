@@ -90,30 +90,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const existingDoc = await db.collection(collections.settings).doc(shop).get();
         const existingData = existingDoc.exists ? existingDoc.data() : {};
         
-        const settings: MerchantSettings = {
+        // Build update object with only provided fields
+        const updateData: any = {
           shop,
-          enabled: enabled !== undefined ? enabled : false,
-          logoUrl: logoUrl || '',
-          popupTitle: popupTitle || '🎉 Instagram Giveaway! 🎉',
-          rulesTitle: rulesTitle || 'How to Enter:',
-          giveawayRules: giveawayRules || [
-            'Follow us on Instagram',
-            'Like our latest post',
-            'Tag 2 friends in the comments',
-            'Share this post to your story',
-            'Turn on post notifications',
-            'Use our hashtag in your story'
-          ],
-          formFieldLabel: formFieldLabel || 'Instagram Username',
-          submitButtonText: submitButtonText || 'Follow Us on Instagram',
-          redirectUrl: redirectUrl || '',
           updatedAt: Timestamp.now(),
         };
+        
+        // Only update fields that are explicitly provided
+        if (enabled !== undefined) updateData.enabled = enabled;
+        if (logoUrl !== undefined) updateData.logoUrl = logoUrl;
+        if (popupTitle !== undefined) updateData.popupTitle = popupTitle;
+        if (rulesTitle !== undefined) updateData.rulesTitle = rulesTitle;
+        if (giveawayRules !== undefined) updateData.giveawayRules = giveawayRules;
+        if (formFieldLabel !== undefined) updateData.formFieldLabel = formFieldLabel;
+        if (submitButtonText !== undefined) updateData.submitButtonText = submitButtonText;
+        if (redirectUrl !== undefined) updateData.redirectUrl = redirectUrl;
 
         // Merge with existing data to preserve analytics and other fields
         const mergedSettings = {
           ...existingData,
-          ...settings,
+          ...updateData,
         };
         
         // If onboarding is being marked as complete, add that flag
