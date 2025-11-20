@@ -67,6 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         
         return res.status(200).json({
           enabled: data?.enabled || false,
+          shop: shop, // Add shop domain for impression tracking
           logoUrl: data?.logoUrl,
           popupTitle: data?.popupTitle || '🎉 Instagram Giveaway! 🎉',
           rulesTitle: data?.rulesTitle || 'How to Enter:',
@@ -78,6 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } else {
         return res.status(200).json({
           enabled: false,
+          shop: shop, // Add shop domain for impression tracking
           popupTitle: '🎉 Instagram Giveaway! 🎉',
           rulesTitle: 'How to Enter:',
           giveawayRules: [
