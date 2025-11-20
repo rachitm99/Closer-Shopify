@@ -14,12 +14,24 @@ interface ImpressionData {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // CORS headers for checkout extension
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   try {
     if (req.method === 'POST') {
       // Track a new impression
       const { shop } = req.body;
 
+      console.log('Impression tracking request received:', { shop, body: req.body });
+
       if (!shop) {
+        console.error('Shop domain missing in impression request');
         return res.status(400).json({ error: 'Shop domain is required' });
       }
 

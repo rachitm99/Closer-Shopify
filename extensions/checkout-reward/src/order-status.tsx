@@ -7,7 +7,8 @@ import {
   TextField,
   Button,
   Link,
-  useApi
+  useApi,
+  useOrder
 } from '@shopify/ui-extensions-react/customer-account';
 import { useEffect, useState } from 'react';
 
@@ -26,6 +27,7 @@ interface Settings {
 function OrderStatusExtension() {
   const api = useApi();
   const { sessionToken } = api;
+  const orderData = useOrder();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [formValue, setFormValue] = useState('');
@@ -38,14 +40,16 @@ function OrderStatusExtension() {
     async function fetchSettings() {
       try {
         // Get order data from Order Status page API
-        const orderData = (api as any).data?.order || {};
-        const customerEmailValue = orderData.email || orderData.customer?.email || '';
-        const orderId = orderData.id || orderData.name || '';
         
-        console.log('Order Status Page - Order ID:', orderId);
+        // console.log()
+        console.log(orderData);
+        // const customerEmailValue = orderData.email || orderData.customer?.email || '';
+        // const orderId = orderData.id || orderData.name || '';
+        // console.log("order data", orderData);
+        // console.log('Order Status Page - Order ID:', orderId);
         
-        setCustomerEmail(customerEmailValue);
-        setOrderNumber(orderId);
+        // setCustomerEmail(customerEmailValue);
+        // setOrderNumber(orderId);
         
         const token = await sessionToken.get();
         
@@ -83,6 +87,7 @@ function OrderStatusExtension() {
           
           // Track impression if extension is enabled
           if (data.enabled && data.shop) {
+            console.log('Order Status - Tracking impression for shop:', data.shop);
             fetch(
               `https://closer-shopify-qq8c.vercel.app/api/analytics/impressions`,
               {
@@ -94,7 +99,15 @@ function OrderStatusExtension() {
                   shop: data.shop,
                 }),
               }
-            ).catch((err) => console.error('Failed to track impression:', err));
+            )
+            .then(response => {
+              console.log('Order Status - Impression tracking response:', response.status, response.ok);
+              return response.json();
+            })
+            .then(data => console.log('Order Status - Impression tracked successfully:', data))
+            .catch((err) => console.error('Order Status - Failed to track impression:', err));
+          } else {
+            console.log('Order Status - Not tracking impression. Enabled:', data.enabled, 'Shop:', data.shop);
           }
         } else {
           console.log('Order Status - Failed to load settings, response not OK');

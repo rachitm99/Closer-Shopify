@@ -8,8 +8,10 @@ import {
   Button,
   useApi,
   Link,
+  useSubscription,
+  useOrder
 } from '@shopify/ui-extensions-react/checkout';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 
 interface Settings {
   enabled: boolean;
@@ -25,7 +27,9 @@ interface Settings {
 // Thank You page component
 function ThankYouExtension() {
   const api = useApi();
-  const { shop, sessionToken } = api;
+  
+  // const orderData = useOrder();
+  const { shop, sessionToken ,   } = api;
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [formValue, setFormValue] = useState('');
@@ -38,14 +42,14 @@ function ThankYouExtension() {
     async function fetchSettings() {
       try {
         // Get order data from Thank You page API
-        const orderData = (api as any).order || {};
-        const emailValue = (api as any).email?.value || orderData.customer?.email || '';
-        const orderId = orderData.id || orderData.name || '';
+        // console.log("order data", orderData);
+        // const emailValue = (api as any).email?.value || orderData.customer?.email || '';
+        // const orderId = orderData.id || orderData.name || '';
         
-        console.log('Thank You Page - Order ID:', orderId);
+        // console.log('Thank You Page - Order ID:', orderId);
         
-        setCustomerEmail(emailValue);
-        setOrderNumber(orderId);
+        // setCustomerEmail(emailValue);
+        // setOrderNumber(orderId);
         
         const token = await sessionToken.get();
         
@@ -84,6 +88,7 @@ function ThankYouExtension() {
           
           // Track impression if extension is enabled
           if (data.enabled && data.shop) {
+            console.log('Thank You - Tracking impression for shop:', data.shop);
             fetch(
               `https://closer-shopify-qq8c.vercel.app/api/analytics/impressions`,
               {
@@ -95,7 +100,15 @@ function ThankYouExtension() {
                   shop: data.shop,
                 }),
               }
-            ).catch((err) => console.error('Failed to track impression:', err));
+            )
+            .then(response => {
+              console.log('Thank You - Impression tracking response:', response.status, response.ok);
+              return response.json();
+            })
+            .then(data => console.log('Thank You - Impression tracked successfully:', data))
+            .catch((err) => console.error('Thank You - Failed to track impression:', err));
+          } else {
+            console.log('Thank You - Not tracking impression. Enabled:', data.enabled, 'Shop:', data.shop);
           }
         } else {
           console.log('Thank You - Failed to load settings, response not OK');
@@ -131,9 +144,14 @@ function ThankYouExtension() {
       } finally {
         setLoading(false);
       }
+      console.log("going to fetch order data");
+      
+        console.log(orderData);
+        console.log("finished fetching order data");
     }
 
     fetchSettings();
+    
   }, [shop.myshopifyDomain]);
 
   const handleSubmit = async () => {
