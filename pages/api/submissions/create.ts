@@ -16,6 +16,7 @@ export interface FormSubmission {
   customerEmail?: string;
   updatedAt?: FirebaseFirestore.Timestamp;
   submissionCount?: number;
+  isFollowerChecked?: boolean;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -80,6 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           orderNumber: orderNumber || existingData.orderNumber || '',
           updatedAt: Timestamp.now(),
           submissionCount: (existingData.submissionCount || 1) + 1,
+          isFollowerChecked: false,
         };
         
         await db.collection(collections.submissions).doc(submissionId).update({
@@ -87,6 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           orderNumber: orderNumber || existingData.orderNumber || '',
           updatedAt: FieldValue.serverTimestamp(),
           submissionCount: (existingData.submissionCount || 1) + 1,
+          isFollowerChecked: false,
         });
         console.log('Form submission updated:', submissionId, 'for shop:', shop, 'count:', updatedSubmission.submissionCount);
         
