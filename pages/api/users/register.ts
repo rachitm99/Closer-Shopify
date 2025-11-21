@@ -93,7 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
           
         } else {
-          console.log('No valid Instagram username extracted from URL:', redirectUrlFinal);
+          console.log('No valid Instagram username extracted from URL:', redirectUrl);
           userData.pkId = userData.pkId || null;
           userData.brandInstaHandle = instagramUsername || '';
         }
