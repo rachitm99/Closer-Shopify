@@ -57,11 +57,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updatedAt: Timestamp.now(),
       lastActivity: Timestamp.now(),
       status: 'active',
-      impressionStats: {
-        totalImpressions: 0,
-        thankYouImpressions: 0,
-        orderStatusImpressions: 0,
-      },
     };
 
     await userDoc.set(userData, { merge: true });

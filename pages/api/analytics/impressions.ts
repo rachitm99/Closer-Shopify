@@ -59,27 +59,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
       console.log('Analytics document created with ID:', analyticsDoc.id, 'for page:', page);
 
-      // Update aggregate counter in merchant users
-      console.log('Updating merchant users for shop:', shop);
-      const merchantRef = db.collection(collections.users).doc(shop);
-      const updateData: any = {
-        impressionStats: {
-          totalImpressions: FieldValue.increment(1),
-          lastImpression: FieldValue.serverTimestamp(),
-        },
-        lastActivity: FieldValue.serverTimestamp(),
-      };
-      
-      // Track page-specific impressions
-      if (page === 'thank-you') {
-        updateData.impressionStats.thankYouImpressions = FieldValue.increment(1);
-      } else if (page === 'order-status') {
-        updateData.impressionStats.orderStatusImpressions = FieldValue.increment(1);
-      }
-      
-      await merchantRef.set(updateData, { merge: true });
-      console.log('Merchant settings updated successfully for page:', page);
-
       console.log('✅✅✅ Block impression tracked successfully for shop:', shop, 'page:', page);
       return res.status(200).json({ success: true, message: 'Impression tracked', page: page });
     } else if (req.method === 'GET') {
@@ -91,34 +70,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Shop parameter is required' });
       }
 
-      const merchantDoc = await db.collection(collections.users).doc(shop).get();
+      // Calculate impressions from analytics events
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       
-      if (!merchantDoc.exists) {
-        return res.status(404).json({ error: 'Shop not found' });
-      }
-
-      const data = merchantDoc.data();
-      const impressionStats = data?.impressionStats || {
-        totalImpressions: 0,
-        lastImpression: null,
-      };
-
-      // Get detailed timeline (last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-      const impressionEvents = await db
-        .collection(collections.analytics)
+      const impressionsQuery = await db.collection(collections.analytics)
         .where('event', '==', 'block_impression')
         .where('shop', '==', shop)
-        .where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo))
-        .orderBy('timestamp', 'desc')
+        .where('timestamp', '>=', thirtyDaysAgo)
         .get();
 
-      // Group by date
+      const impressionStats = {
+        totalImpressions: impressionsQuery.size,
+        lastImpression: impressionsQuery.docs.length > 0 
+          ? impressionsQuery.docs[impressionsQuery.docs.length - 1].data().timestamp 
+          : null,
+      };
+
+      // Get detailed timeline (last 30 days) from analytics collection
       const dailyImpressions: { [key: string]: number } = {};
       
-      impressionEvents.forEach((doc) => {
+      impressionsQuery.docs.forEach((doc) => {
         const data = doc.data();
         let date: string;
         

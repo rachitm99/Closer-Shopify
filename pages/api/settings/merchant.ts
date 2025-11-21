@@ -19,12 +19,6 @@ export interface MerchantSettings {
   registeredAt?: FirebaseFirestore.Timestamp;
   lastActivity?: FirebaseFirestore.Timestamp;
   status?: string;
-  impressionStats?: {
-    totalImpressions: number;
-    thankYouImpressions: number;
-    orderStatusImpressions: number;
-    lastImpression?: FirebaseFirestore.Timestamp;
-  };
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
