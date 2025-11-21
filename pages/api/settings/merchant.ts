@@ -140,7 +140,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               // Response path: result.data.response.body.data.user
               const user = result?.data?.response?.body?.data?.user;
               if (user) {
-                console.log('Instagram user found:', user.username);
+                console.log('Instagram user found:', user.username);  
                 // Save only the id and name (use full_name if available, otherwise username)
                 mergedSettings.pkid = user.id
                  
