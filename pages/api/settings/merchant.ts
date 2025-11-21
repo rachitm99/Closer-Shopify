@@ -151,6 +151,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
           
         } else {
+          console.log('No valid Instagram username extracted from URL:', redirectUrlFinal);
           mergedSettings.pkid = mergedSettings.pkid || null;
         }
         await db.collection(collections.users).doc(shop).set(mergedSettings);
