@@ -147,13 +147,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 
               }
             } catch (err) {
-              mergedSettings.pkid = mergedSettings.pkid || null;
+              mergedSettings.pkid = mergedSettings.pkId || null;
               console.error('Instagram lookup failed:', err);
             }
           
         } else {
           console.log('No valid Instagram username extracted from URL:', redirectUrlFinal);
-          mergedSettings.pkid = mergedSettings.pkid || null;
+          mergedSettings.pkid = mergedSettings.pkId || null;
         }
         await db.collection(collections.users).doc(shop).set(mergedSettings);
         

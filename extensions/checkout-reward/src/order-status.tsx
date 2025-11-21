@@ -8,7 +8,8 @@ import {
   Button,
   Link,
   useApi,
-  useOrder
+  useOrder,
+  // useCustomer
 } from '@shopify/ui-extensions-react/customer-account';
 import { useEffect, useState } from 'react';
 
@@ -29,6 +30,7 @@ function OrderStatusExtension() {
   const api = useApi();
   const { sessionToken } = api;
   const orderData = useOrder();
+  // const customerData = useCustomer();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [formValue, setFormValue] = useState('');
@@ -43,6 +45,7 @@ function OrderStatusExtension() {
         // Get order data from Order Status page API
         
         // console.log()
+        // console.log(customerData?.id)
         console.log(orderData);
         // const customerEmailValue = orderData.email || orderData.customer?.email || '';
         // const orderId = orderData.id || orderData.name || '';
