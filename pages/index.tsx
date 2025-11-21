@@ -55,10 +55,9 @@ export default function Dashboard() {
           
           console.log('📊 Dashboard - Loaded settings:', settingsData);
           console.log('📊 Dashboard - onboardingCompleted:', settingsData.onboardingCompleted);
-          console.log('📊 Dashboard - analytics.onboarding_completed:', settingsData.analytics?.onboarding_completed);
           
           // Check if onboarding is complete
-          if (!settingsData.onboardingCompleted && !settingsData.analytics?.onboarding_completed) {
+          if (!settingsData.onboardingCompleted) {
             console.log('❌ Dashboard - Onboarding not complete, redirecting...');
             // Redirect to onboarding
             if (typeof window !== 'undefined') {

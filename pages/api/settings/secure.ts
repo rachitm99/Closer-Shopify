@@ -78,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Fetch settings from Firestore
-    const doc = await db.collection(collections.settings).doc(shop).get();
+    const doc = await db.collection(collections.users).doc(shop).get();
     
     if (doc.exists) {
       const data = doc.data();

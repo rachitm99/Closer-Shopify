@@ -15,8 +15,15 @@ export interface MerchantSettings {
   redirectUrl?: string;
   updatedAt: FirebaseFirestore.Timestamp;
   onboardingCompleted?: boolean;
-  analytics?: {
-    [key: string]: any;
+  onboardingCompletedAt?: FirebaseFirestore.Timestamp;
+  registeredAt?: FirebaseFirestore.Timestamp;
+  lastActivity?: FirebaseFirestore.Timestamp;
+  status?: string;
+  impressionStats?: {
+    totalImpressions: number;
+    thankYouImpressions: number;
+    orderStatusImpressions: number;
+    lastImpression?: FirebaseFirestore.Timestamp;
   };
 }
 
@@ -33,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET') {
       // Get merchant settings
       try {
-        const doc = await db.collection(collections.settings).doc(shop).get();
+        const doc = await db.collection(collections.users).doc(shop).get();
         
         if (doc.exists) {
           const data = doc.data();
@@ -87,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         } = req.body;
         
         // Get existing settings to preserve fields not being updated
-        const existingDoc = await db.collection(collections.settings).doc(shop).get();
+        const existingDoc = await db.collection(collections.users).doc(shop).get();
         const existingData = existingDoc.exists ? existingDoc.data() : {};
         
         // Build update object with only provided fields
@@ -115,13 +122,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // If onboarding is being marked as complete, add that flag
         if (onboardingCompleted) {
           mergedSettings.onboardingCompleted = true;
-          mergedSettings.analytics = {
-            ...mergedSettings.analytics,
-            onboarding_completed: FieldValue.serverTimestamp(),
-          };
+          mergedSettings.onboardingCompletedAt = FieldValue.serverTimestamp();
         }
 
-        await db.collection(collections.settings).doc(shop).set(mergedSettings);
+        await db.collection(collections.users).doc(shop).set(mergedSettings);
         
         console.log('Settings updated for shop:', shop);
         return res.status(200).json(mergedSettings);

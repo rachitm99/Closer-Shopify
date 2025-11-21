@@ -18,8 +18,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (adminSecret !== process.env.ADMIN_SECRET) {
       return res.status(403).json({ error: 'Forbidden - Admin access only' });
     }
-    // Get all settings documents to count merchants
-    const settingsSnapshot = await db.collection(collections.settings).get();
+    // Get all users documents to count merchants
+    const settingsSnapshot = await db.collection(collections.users).get();
     const totalInstalls = settingsSnapshot.size;
     
     let extensionEnabled = 0;

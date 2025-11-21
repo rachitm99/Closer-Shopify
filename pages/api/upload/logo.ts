@@ -55,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // Get current settings to check for existing logo
-        const settingsDoc = await db.collection(collections.settings).doc(shop).get();
+        const settingsDoc = await db.collection(collections.users).doc(shop).get();
         const currentSettings = settingsDoc.data();
         
         // Delete old logo if exists
@@ -101,7 +101,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
 
         // Update settings with new logo URL
-        await db.collection(collections.settings).doc(shop).set(
+        await db.collection(collections.users).doc(shop).set(
           {
             logoUrl: publicUrl,
             updatedAt: new Date().toISOString(),

@@ -28,7 +28,7 @@ export default async function handler(
 
     // Check if this is a first-time install
     const shopDomain = session.shop;
-    const settingsRef = db.collection(collections.settings).doc(shopDomain);
+    const settingsRef = db.collection(collections.users).doc(shopDomain);
     const settingsDoc = await settingsRef.get();
     
     const isFirstTimeInstall = !settingsDoc.exists;

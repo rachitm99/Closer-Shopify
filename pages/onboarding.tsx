@@ -64,7 +64,7 @@ export default function Onboarding() {
             shopDomain = data.shop;
             
             // Check if onboarding is already complete
-            if (data.onboardingCompleted || data.analytics?.onboarding_completed) {
+            if (data.onboardingCompleted) {
               console.log('✅ Onboarding already complete, redirecting to dashboard...');
               setShouldRedirect(true);
               if (typeof window !== 'undefined') {

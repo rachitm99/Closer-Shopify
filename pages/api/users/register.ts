@@ -38,6 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     const userData = {
       shop: shop,
+      enabled: true, // Extension enabled by default after onboarding
       logoUrl: logoUrl || '',
       popupTitle: popupTitle || '🎉 Instagram Giveaway! 🎉',
       rulesTitle: rulesTitle || 'How to Enter:',
@@ -47,11 +48,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         'Tag 2 friends in the comments',
         'Share this post to your story',
       ],
+      formFieldLabel: 'Instagram Username',
       submitButtonText: submitButtonText || 'Follow Us on Instagram',
       redirectUrl: redirectUrl,
       registeredAt: Timestamp.now(),
+      onboardingCompleted: true,
       onboardingCompletedAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+      lastActivity: Timestamp.now(),
       status: 'active',
+      impressionStats: {
+        totalImpressions: 0,
+        thankYouImpressions: 0,
+        orderStatusImpressions: 0,
+      },
     };
 
     await userDoc.set(userData, { merge: true });

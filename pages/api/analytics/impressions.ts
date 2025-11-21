@@ -59,9 +59,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
       console.log('Analytics document created with ID:', analyticsDoc.id, 'for page:', page);
 
-      // Update aggregate counter in merchant settings
-      console.log('Updating merchant settings for shop:', shop);
-      const merchantRef = db.collection(collections.settings).doc(shop);
+      // Update aggregate counter in merchant users
+      console.log('Updating merchant users for shop:', shop);
+      const merchantRef = db.collection(collections.users).doc(shop);
       const updateData: any = {
         impressionStats: {
           totalImpressions: FieldValue.increment(1),
@@ -91,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Shop parameter is required' });
       }
 
-      const merchantDoc = await db.collection(collections.settings).doc(shop).get();
+      const merchantDoc = await db.collection(collections.users).doc(shop).get();
       
       if (!merchantDoc.exists) {
         return res.status(404).json({ error: 'Shop not found' });

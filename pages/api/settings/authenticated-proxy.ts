@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === 'GET') {
       // Fetch settings for authenticated shop
-      const doc = await db.collection(collections.settings).doc(shop).get();
+      const doc = await db.collection(collections.users).doc(shop).get();
       
       if (doc.exists) {
         const data = doc.data();

@@ -35,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // For onboarding_started events, check if already tracked recently (within last hour)
     if (event === 'onboarding_started') {
-      const merchantRef = db.collection(collections.settings).doc(shopDomain);
+      const merchantRef = db.collection(collections.users).doc(shopDomain);
       const merchantDoc = await merchantRef.get();
       
       if (merchantDoc.exists) {
