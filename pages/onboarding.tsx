@@ -63,16 +63,6 @@ export default function Onboarding() {
             const data = await response.json();
             shopDomain = data.shop;
             
-            // Check if onboarding is already complete
-            if (data.onboardingCompleted) {
-              console.log('✅ Onboarding already complete, redirecting to dashboard...');
-              setShouldRedirect(true);
-              if (typeof window !== 'undefined') {
-                window.location.href = '/';
-              }
-              return;
-            }
-            
             // Load existing settings if any
             setLogoUrl(data.logoUrl || '');
             setPopupTitle(data.popupTitle || '🎉 Instagram Giveaway! 🎉');

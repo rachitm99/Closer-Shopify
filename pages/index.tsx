@@ -48,18 +48,17 @@ export default function Dashboard() {
   useEffect(() => {
     const checkOnboardingAndLoadData = async () => {
       try {
-        // Check settings to see if onboarding is complete
+        // Fetch user data to check onboarding status
         const settingsResponse = await fetch('/api/settings/merchant');
         if (settingsResponse.ok) {
           const settingsData = await settingsResponse.json();
           
-          console.log('📊 Dashboard - Loaded settings:', settingsData);
+          console.log('📊 Dashboard - Loaded user data:', settingsData);
           console.log('📊 Dashboard - onboardingCompleted:', settingsData.onboardingCompleted);
           
-          // Check if onboarding is complete
+          // If onboarding not complete, redirect to onboarding
           if (!settingsData.onboardingCompleted) {
             console.log('❌ Dashboard - Onboarding not complete, redirecting...');
-            // Redirect to onboarding
             if (typeof window !== 'undefined') {
               window.location.href = '/onboarding';
             }

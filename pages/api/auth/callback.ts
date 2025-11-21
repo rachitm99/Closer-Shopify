@@ -87,8 +87,8 @@ export default async function handler(
     const apiKey = process.env.SHOPIFY_API_KEY;
     const redirectShop = shopParam;
     
-    // Redirect to onboarding for first-time installs, otherwise to main dashboard
-    const appPath = isFirstTimeInstall ? '/onboarding' : '/';
+    // Always redirect to dashboard - it will check onboarding status
+    const appPath = '/';
     
     // Build query params
     const queryParams = new URLSearchParams({
