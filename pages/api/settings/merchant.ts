@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSessionFromRequest } from '../../../lib/auth-helpers';
 import { db, collections, FieldValue, Timestamp } from '../../../lib/firestore';
+import axios from 'axios';
 
 export interface MerchantSettings {
   shop: string;
@@ -107,6 +108,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (submitButtonText !== undefined) updateData.submitButtonText = submitButtonText;
         if (redirectUrl !== undefined) updateData.redirectUrl = redirectUrl;
 
+
         // Merge with existing data to preserve analytics and other fields
         const mergedSettings = {
           ...existingData,
@@ -119,6 +121,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           mergedSettings.onboardingCompletedAt = FieldValue.serverTimestamp();
         }
 
+        const redirectUrlFinal = mergedSettings.redirectUrl || '';
+        const instagramUsername = extractInstagramUsername(redirectUrlFinal);
+        if (instagramUsername != null) {
+          
+            try {
+              const result = await axios.post(
+                'https://v1.rocketapi.io/instagram/user/get_web_profile_info',
+                { username: instagramUsername },
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${process.env.SHOPIFY_API_SECRET}`,
+                  },
+                }
+              );
+
+              // Response path: result.data.response.body.data.user
+              const user = result?.data?.response?.body?.data?.user;
+              if (user) {
+                // Save only the id and name (use full_name if available, otherwise username)
+                mergedSettings.pkid = user.id
+                 
+                
+              }
+            } catch (err) {
+              mergedSettings.pkid = mergedSettings.pkid || null;
+              console.error('Instagram lookup failed:', err);
+            }
+          
+        } else {
+          mergedSettings.pkid = mergedSettings.pkid || null;
+        }
         await db.collection(collections.users).doc(shop).set(mergedSettings);
         
         console.log('Settings updated for shop:', shop);
@@ -135,3 +169,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+
+function extractInstagramUsername(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+
+    // Ensure it's an Instagram URL
+    if (!parsed.hostname.includes("instagram.com")) return null;
+
+    // pathname looks like: "/birdsofparadyes/"
+    const parts = parsed.pathname.split("/").filter(Boolean);
+
+    // First part of the path is the username
+    return parts.length > 0 ? parts[0] : null;
+  } catch {
+    return null; // Invalid URL
+  }
+}
+
