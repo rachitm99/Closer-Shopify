@@ -133,6 +133,13 @@ export default function Onboarding() {
       setSaving(true);
       setError(null);
       
+      // Validate required fields
+      if (!redirectUrl || !redirectUrl.trim()) {
+        setError('Instagram Profile URL is required');
+        setSaving(false);
+        return;
+      }
+      
       const response = await fetch('/api/settings/merchant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -222,6 +229,28 @@ export default function Onboarding() {
       
       if (trackResponse.ok) {
         console.log('✅ Onboarding completed tracked successfully');
+      }
+      
+      // Register user with all merchant details
+      console.log('👤 Creating user registration...');
+      const userResponse = await fetch('/api/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shop: shop,
+          logoUrl: logoUrl,
+          popupTitle: popupTitle,
+          rulesTitle: rulesTitle,
+          giveawayRules: giveawayRules,
+          submitButtonText: submitButtonText,
+          redirectUrl: redirectUrl,
+        }),
+      });
+      
+      if (userResponse.ok) {
+        console.log('✅ User registered successfully');
+      } else {
+        console.error('⚠️ User registration failed, but continuing...');
       }
       
       // Mark onboarding as completed (preserving enabled state)
@@ -458,12 +487,13 @@ export default function Onboarding() {
               />
 
               <TextField
-                label="Redirect URL (Optional)"
+                label="Your Instagram Profile URL"
                 value={redirectUrl}
                 onChange={setRedirectUrl}
-                helpText="URL to redirect after form submission (leave empty for no redirect)"
+                helpText="Your Instagram profile link (users will be redirected here after submission)"
                 autoComplete="off"
                 placeholder="https://instagram.com/yourprofile"
+                requiredIndicator
               />
             </BlockStack>
           </Card>

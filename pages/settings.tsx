@@ -121,6 +121,13 @@ export default function Home() {
       setSaving(true);
       setError(null);
       
+      // Validate required fields
+      if (!redirectUrl || !redirectUrl.trim()) {
+        setError('Instagram Profile URL is required');
+        setSaving(false);
+        return;
+      }
+      
       const response = await fetch('/api/settings/merchant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -432,12 +439,13 @@ export default function Home() {
                 />
 
                 <TextField
-                  label="Redirect URL (Optional)"
+                  label="Your Instagram Profile URL"
                   value={redirectUrl}
                   onChange={setRedirectUrl}
-                  helpText="URL to redirect after form submission (leave empty for no redirect)"
+                  helpText="Your Instagram profile link (users will be redirected here after submission)"
                   autoComplete="off"
-                  placeholder="https://example.com/thank-you"
+                  placeholder="https://instagram.com/yourprofile"
+                  requiredIndicator
                 />
 
                 <div>
