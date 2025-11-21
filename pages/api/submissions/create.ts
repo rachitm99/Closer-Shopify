@@ -111,6 +111,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           customerEmail: customerEmail || '',
           submittedAt: Timestamp.now(),
           submissionCount: 1,
+          isFollowerChecked: false,
         };
 
         // Store in Firestore
