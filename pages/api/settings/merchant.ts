@@ -142,18 +142,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               if (user) {
                 console.log('Instagram user found:', user.username);  
                 // Save only the id and name (use full_name if available, otherwise username)
-                mergedSettings.pkid = user.id
+                mergedSettings.pkId = user.id
                  
                 
               }
             } catch (err) {
-              mergedSettings.pkid = mergedSettings.pkId || null;
+              mergedSettings.pkId = mergedSettings.pkId || null;
               console.error('Instagram lookup failed:', err);
             }
           
         } else {
           console.log('No valid Instagram username extracted from URL:', redirectUrlFinal);
-          mergedSettings.pkid = mergedSettings.pkId || null;
+          mergedSettings.pkId = mergedSettings.pkId || null;
         }
         await db.collection(collections.users).doc(shop).set(mergedSettings);
         
