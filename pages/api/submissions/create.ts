@@ -17,6 +17,7 @@ export interface FormSubmission {
   updatedAt?: FirebaseFirestore.Timestamp;
   submissionCount?: number;
   isFollowerChecked?: boolean;
+  isFollowing?: boolean;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -82,6 +83,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           updatedAt: Timestamp.now(),
           submissionCount: (existingData.submissionCount || 1) + 1,
           isFollowerChecked: false,
+          isFollowing: false,
         };
         
         await db.collection(collections.submissions).doc(submissionId).update({
@@ -90,6 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           updatedAt: FieldValue.serverTimestamp(),
           submissionCount: (existingData.submissionCount || 1) + 1,
           isFollowerChecked: false,
+          isFollowing: false,
         });
         console.log('Form submission updated:', submissionId, 'for shop:', shop, 'count:', updatedSubmission.submissionCount);
         
@@ -112,6 +115,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           submittedAt: Timestamp.now(),
           submissionCount: 1,
           isFollowerChecked: false,
+          isFollowing: false,
+
         };
 
         // Store in Firestore
