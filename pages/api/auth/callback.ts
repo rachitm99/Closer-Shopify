@@ -44,18 +44,31 @@ export default async function handler(
       
       console.log(`✅ New app installation tracked for shop: ${shopDomain}`);
       
-      // Initialize default settings with shop field
+      // Create user record immediately on installation
       await settingsRef.set({
         shop: shopDomain,
         enabled: false,
+        onboardingCompleted: false, // Key flag to check if onboarding done
+        logoUrl: '',
+        popupTitle: '🎉 Instagram Giveaway! 🎉',
+        rulesTitle: 'How to Enter:',
+        giveawayRules: [
+          'Follow us on Instagram',
+          'Like our latest post',
+          'Tag 2 friends in the comments',
+          'Share this post to your story',
+        ],
+        formFieldLabel: 'Instagram Username',
+        submitButtonText: 'Follow Us on Instagram',
+        redirectUrl: '',
         installedAt: FieldValue.serverTimestamp(),
+        registeredAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
         lastActivity: FieldValue.serverTimestamp(),
-        analytics: {
-          app_installed: FieldValue.serverTimestamp(),
-        },
+        status: 'pending', // pending until onboarding complete
       });
       
-      console.log(`✅ Default settings created for shop: ${shopDomain}`);
+      console.log(`✅ User record created for shop: ${shopDomain}`);
     } else {
       // Update last activity for returning installs
       await settingsRef.update({

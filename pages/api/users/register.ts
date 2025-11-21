@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Instagram profile URL is required' });
     }
 
-    // Create user record with all merchant details
+    // Update user record to mark onboarding complete
     const userDoc = db.collection(collections.users).doc(shop);
     
     const userData = {
@@ -51,21 +51,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       formFieldLabel: 'Instagram Username',
       submitButtonText: submitButtonText || 'Follow Us on Instagram',
       redirectUrl: redirectUrl,
-      registeredAt: Timestamp.now(),
-      onboardingCompleted: true,
+      onboardingCompleted: true, // Mark as complete
       onboardingCompletedAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
       lastActivity: Timestamp.now(),
-      status: 'active',
+      status: 'active', // Change from pending to active
     };
 
     await userDoc.set(userData, { merge: true });
 
-    console.log('✅ User registered successfully:', shop);
+    console.log('✅ Onboarding completed for user:', shop);
 
     return res.status(200).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'Onboarding completed successfully',
       user: userData,
     });
   } catch (error) {
