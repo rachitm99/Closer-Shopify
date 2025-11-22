@@ -423,7 +423,7 @@ export default function Dashboard() {
                           <Badge tone="info">Not Checked</Badge>
                         ),
                         submission.submittedAt 
-                          ? new Date(submission.submittedAt.seconds * 1000).toLocaleDateString('en-US', {
+                          ? new Date(submission.submittedAt).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric',
                               year: 'numeric',

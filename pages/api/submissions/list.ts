@@ -55,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         instaHandle: data.instaHandle || '',
         isFollowing: data.isFollowing || false,
         isFollowerChecked: data.isFollowerChecked || false,
-        submittedAt: data.submittedAt,
+        submittedAt: data.submittedAt?.toDate?.() || data.submittedAt,
         customerEmail: data.customerEmail,
         orderNumber: data.orderNumber,
         submissionCount: data.submissionCount || 1,
