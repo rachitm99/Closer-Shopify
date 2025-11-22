@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db, collections } from '../../../lib/firestore';
-import shopify from '../../../lib/shopify';
+import { getSessionFromRequest } from '../../../lib/auth-helpers';
 
 /**
  * List Submissions API - Fetch all submissions for a shop
@@ -24,16 +24,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Verify session token from App Bridge
-    const authHeader = req.headers.authorization;
+    // Get session from merchant dashboard authentication
+    const session = await getSessionFromRequest(req);
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!session) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const sessionToken = authHeader.replace('Bearer ', '');
-    const payload = await shopify.session.decodeSessionToken(sessionToken);
-    const shop = payload.dest.replace('https://', '');
+    const shop = session.shop;
 
     // Fetch all submissions for this shop
     const submissionsSnapshot = await db.collection(collections.submissions)
