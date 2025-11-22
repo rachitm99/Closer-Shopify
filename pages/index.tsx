@@ -12,6 +12,8 @@ import {
   InlineGrid,
   Box,
   Button,
+  DataTable,
+  Badge,
 } from '@shopify/polaris';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -36,12 +38,24 @@ interface ImpressionStats {
   totalLast30Days: number;
 }
 
+interface SubmissionData {
+  id: string;
+  instaHandle: string;
+  isFollowing: boolean;
+  isFollowerChecked: boolean;
+  submittedAt: any;
+  customerEmail?: string;
+  orderNumber?: string;
+  submissionCount?: number;
+}
+
 export default function Dashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [impressions, setImpressions] = useState<ImpressionStats | null>(null);
+  const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
   const [shop, setShop] = useState<string>('');
   const [onboardingComplete, setOnboardingComplete] = useState(false);
 
@@ -84,6 +98,13 @@ export default function Dashboard() {
           if (impressionsResponse.ok) {
             const impressionData = await impressionsResponse.json();
             setImpressions(impressionData);
+          }
+          
+          // Load submissions list
+          const submissionsResponse = await fetch('/api/submissions/list');
+          if (submissionsResponse.ok) {
+            const submissionsData = await submissionsResponse.json();
+            setSubmissions(submissionsData.submissions || []);
           }
         } else if (settingsResponse.status === 401) {
           // Unauthorized - redirect to auth
@@ -364,6 +385,61 @@ export default function Dashboard() {
               </Layout.Section>
             </>
           )}
+
+          <Layout.Section>
+            <Card>
+              <Box padding="400">
+                <BlockStack gap="400">
+                  <Text as="h2" variant="headingLg">
+                    Submissions
+                  </Text>
+                  {submissions.length === 0 ? (
+                    <Text as="p" variant="bodyMd" tone="subdued">
+                      No submissions yet. Entries will appear here once customers complete the giveaway form.
+                    </Text>
+                  ) : (
+                    <DataTable
+                      columnContentTypes={[
+                        'text',
+                        'text',
+                        'text',
+                        'numeric',
+                      ]}
+                      headings={[
+                        'Instagram Handle',
+                        'Following Status',
+                        'Submitted On',
+                        'Total Entries',
+                      ]}
+                      rows={submissions.map((submission) => [
+                        `@${submission.instaHandle}`,
+                        submission.isFollowerChecked ? (
+                          submission.isFollowing ? (
+                            <Badge tone="success">Following</Badge>
+                          ) : (
+                            <Badge tone="attention">Not Following</Badge>
+                          )
+                        ) : (
+                          <Badge tone="info">Not Checked</Badge>
+                        ),
+                        submission.submittedAt 
+                          ? new Date(submission.submittedAt.seconds * 1000).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
+                          : 'N/A',
+                        submission.submissionCount || 1,
+                      ])}
+                      footerContent={`Showing ${submissions.length} ${submissions.length === 1 ? 'submission' : 'submissions'}`}
+                    />
+                  )}
+                </BlockStack>
+              </Box>
+            </Card>
+          </Layout.Section>
 
           <Layout.Section>
             <Card>
