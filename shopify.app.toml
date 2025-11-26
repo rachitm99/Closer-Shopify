@@ -1,8 +1,8 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "20ea027334e56566b9a9a723e1d64c2b"
-name = "closer-reward-partner"
-application_url = "https://closer-shopify-qq8c.vercel.app"
+client_id = "ecc8f1cfd8ea660f120539d4a163929b"
+name = "Follo"
+application_url = "https://closer-qq8c.vercel.app"
 embedded = true
 
 [webhooks]
@@ -16,5 +16,5 @@ use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [
-  "https://closer-shopify-qq8c.vercel.app/api/auth/callback"
+  "https://closer-qq8c.vercel.app/api/auth/callback"
 ]

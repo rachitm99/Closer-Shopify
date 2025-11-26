@@ -55,7 +55,7 @@ function ThankYouExtension() {
         const token = await sessionToken.get();
         
         const response = await fetch(
-          `https://closer-shopify-qq8c.vercel.app/api/settings/session-token`,
+          `https://closer-qq8c.vercel.app/api/settings/session-token`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -136,10 +136,10 @@ function ThankYouExtension() {
     
     if (settings?.enabled && settings?.shop) {
       console.log('Thank You - CONDITIONS MET! Starting impression tracking for shop:', settings.shop);
-      console.log('Thank You - Making fetch request to:', 'https://closer-shopify-qq8c.vercel.app/api/analytics/impressions');
+      console.log('Thank You - Making fetch request to:', 'https://closer-qq8c.vercel.app/api/analytics/impressions');
       
       fetch(
-        `https://closer-shopify-qq8c.vercel.app/api/analytics/impressions`,
+        `https://closer-qq8c.vercel.app/api/analytics/impressions`,
         {
           method: 'POST',
           headers: {
@@ -185,7 +185,7 @@ function ThankYouExtension() {
       const token = await sessionToken.get();
 
       const response = await fetch(
-        `https://closer-shopify-qq8c.vercel.app/api/submissions/create`,
+        `https://closer-qq8c.vercel.app/api/submissions/create`,
         {
           method: 'POST',
           headers: {
