@@ -8,7 +8,7 @@ import {
   Button,
   Link,
   useApi,
-  useOrder,
+  useOrder, 
   // useCustomer
 } from '@shopify/ui-extensions-react/customer-account';
 import { useEffect, useState } from 'react';
