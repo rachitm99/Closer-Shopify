@@ -230,6 +230,7 @@ function OrderStatusExtension() {
       border="none"
       cornerRadius="large"
       padding="none"
+      
     >
       <BlockStack spacing="none">
         {/* Vibrant header section with gradient-like effect */}
@@ -339,6 +340,8 @@ function OrderStatusExtension() {
         </View>
       </BlockStack>
     </View>
+
+    
   );
 }
 
