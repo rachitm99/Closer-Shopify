@@ -38,6 +38,7 @@ function OrderStatusExtension() {
   const [submitted, setSubmitted] = useState(false);
   const [customerEmail, setCustomerEmail] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
+  const [customerId, setCustomerId] = useState('');
 
   useEffect(() => {
     async function fetchSettings() {
@@ -52,8 +53,17 @@ function OrderStatusExtension() {
         // console.log("order data", orderData);
         // console.log('Order Status Page - Order ID:', orderId);
         
-        // setCustomerEmail(customerEmailValue);
-        // setOrderNumber(orderId);
+        try {
+          const orderInfo: any = orderData as any;
+          const customerEmailValue = orderInfo?.email || orderInfo?.customer?.email || '';
+          const orderId = orderInfo?.id || orderInfo?.name || '';
+          const customerIdVal = orderInfo?.customer?.id || '';
+          setCustomerEmail(customerEmailValue);
+          setOrderNumber(orderId);
+          setCustomerId(customerIdVal);
+        } catch (err) {
+          // ignore if not available
+        }
         
         const token = await sessionToken.get();
         
@@ -125,6 +135,7 @@ function OrderStatusExtension() {
     }
 
     fetchSettings();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - run only on mount
 
   // Separate effect to track impressions whenever settings are loaded and enabled
@@ -171,7 +182,7 @@ function OrderStatusExtension() {
       console.log('Order Status - Reason - Settings enabled:', settings?.enabled, 'Shop present:', !!settings?.shop);
       console.log('Order Status - Full settings object:', JSON.stringify(settings));
     }
-  }, [settings?.enabled, settings?.shop]); // Run whenever settings change
+  }, [settings]); // Run whenever settings change
 
   const handleSubmit = async () => {
     if (!formValue.trim()) {
@@ -194,6 +205,7 @@ function OrderStatusExtension() {
             instaHandle: formValue,
             customerEmail: customerEmail,
             orderNumber: orderNumber,
+            customerId: customerId,
           }),
         }
       );

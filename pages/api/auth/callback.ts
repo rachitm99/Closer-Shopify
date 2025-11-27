@@ -19,12 +19,46 @@ export default async function handler(
     if (!session) {
       throw new Error('No session found');
     }
+        // Programmatically register compliance webhooks (best-effort) for the shop.
+        // Note: These handlers only log the webhook; actual data removal/response logic must be implemented properly.
+        try {
+          shopify.webhooks.addHandlers({
+            CUSTOMERS_DATA_REQUEST: {
+              deliveryMethod: 'http' as any,
+              callbackUrl: '/api/webhooks/customers/data_request',
+              callback: async (topic: string, shop: string, body: string) => {
+                console.log('CUSTOMERS_DATA_REQUEST webhook:', shop, topic, body?.length);
+              },
+            },
+            CUSTOMERS_REDACT: {
+              deliveryMethod: 'http' as any,
+              callbackUrl: '/api/webhooks/customers/redact',
+              callback: async (topic: string, shop: string, body: string) => {
+                console.log('CUSTOMERS_REDACT webhook:', shop, topic);
+              },
+            },
+            SHOP_REDACT: {
+              deliveryMethod: 'http' as any,
+              callbackUrl: '/api/webhooks/shop/redact',
+              callback: async (topic: string, shop: string, body: string) => {
+                console.log('SHOP_REDACT webhook:', shop, topic);
+              },
+            },
+            APP_UNINSTALLED: {
+              deliveryMethod: 'http' as any,
+              callbackUrl: '/api/webhooks/app/uninstalled',
+              callback: async (topic: string, shop: string, body: string) => {
+                console.log('APP_UNINSTALLED webhook:', shop, topic);
+              },
+            },
+          });
 
-    // Store the session (offline token - never expires)
-    await storeSession(session);
-
-    // Set session cookies (ID + encrypted data for redundancy)
-    setSessionCookie(res, session);
+          // Now attempt to register all handlers for the session
+          await shopify.webhooks.register({ session });
+          console.log('✅ Mandatory compliance webhooks registered via SDK');
+        } catch (err) {
+          console.error('Error registering compliance webhooks:', err);
+        }
 
     // Check if this is a first-time install
     const shopDomain = session.shop;

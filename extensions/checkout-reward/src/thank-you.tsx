@@ -29,7 +29,7 @@ interface Settings {
 function ThankYouExtension() {
   const api = useApi();
   
-  // const orderData = useOrder();
+  const orderData = useOrder();
   const { shop, sessionToken ,   } = api;
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,14 +38,25 @@ function ThankYouExtension() {
   const [submitted, setSubmitted] = useState(false);
   const [customerEmail, setCustomerEmail] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
+  const [customerId, setCustomerId] = useState('');
 
   useEffect(() => {
     async function fetchSettings() {
       try {
         // Get order data from Thank You page API
         // console.log("order data", orderData);
-        // const emailValue = (api as any).email?.value || orderData.customer?.email || '';
-        // const orderId = orderData.id || orderData.name || '';
+        // Gather order/customer context from the embedded SDK if available
+        try {
+          const orderInfo: any = orderData as any;
+          const emailValue = (api as any).email?.value || (orderInfo?.customer?.email ?? '');
+          const orderId = orderInfo?.id || orderInfo?.name || '';
+          const customerIdVal = orderInfo?.customer?.id || '';
+          setCustomerEmail(emailValue || '');
+          setOrderNumber(orderId || '');
+          setCustomerId(customerIdVal || '');
+        } catch (err) {
+          // best-effort: ignore if useOrder isn't available in this surface
+        }
         
         // console.log('Thank You Page - Order ID:', orderId);
         
@@ -127,6 +138,7 @@ function ThankYouExtension() {
     }
 
     fetchSettings();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - run only on mount
 
   // Separate effect to track impressions whenever settings are loaded and enabled
@@ -173,7 +185,7 @@ function ThankYouExtension() {
       console.log('Thank You - Reason - Settings enabled:', settings?.enabled, 'Shop present:', !!settings?.shop);
       console.log('Thank You - Full settings object:', JSON.stringify(settings));
     }
-  }, [settings?.enabled, settings?.shop]); // Run whenever settings change
+  }, [settings]); // Run whenever settings change
 
   const handleSubmit = async () => {
     if (!formValue.trim()) {
@@ -196,6 +208,7 @@ function ThankYouExtension() {
             instaHandle: formValue,
             customerEmail: customerEmail,
             orderNumber: orderNumber,
+            customerId: customerId,
           }),
         }
       );

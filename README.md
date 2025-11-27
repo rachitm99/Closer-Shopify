@@ -66,7 +66,8 @@ A **free** Next.js Shopify app that allows merchants to enable/disable a predefi
 In your app settings, configure the following scopes:
 - `read_orders` - To access order information
 - `write_script_tags` - To inject scripts (optional)
-- `read_customers` - To access customer data (optional)
+
+Note: This app no longer requires the `read_customers` scope. Instead, we collect the Shopify `customerId` on submissions from the UI and store it in the app's database. For customer data compliance, we respond to the `CUSTOMERS_DATA_REQUEST` webhook and return app-stored data for the provided customer ID or email. This lets the app avoid requiring the `read_customers` scope while still complying with Shopify's data access requirements.
 
 ### 3. Clone and Install Dependencies
 
@@ -92,7 +93,7 @@ Edit `.env` with your Shopify app credentials:
 ```env
 SHOPIFY_API_KEY=your_api_key_here
 SHOPIFY_API_SECRET=your_api_secret_here
-SHOPIFY_SCOPES=read_orders,write_script_tags,read_customers
+SHOPIFY_SCOPES=read_orders,write_script_tags
 
 HOST=https://your-app-url.vercel.app
 SHOPIFY_APP_URL=https://your-app-url.vercel.app
@@ -198,6 +199,16 @@ npm run dev
 
 # Open http://localhost:3000
 ```
+
+## Privacy & Compliance
+
+- This app avoids requesting the `read_customers` scope by collecting the Shopify `customerId` from the extension UI when customers submit entries. The `customerId` is stored in the app database to support Shopify's `CUSTOMERS_DATA_REQUEST` webhook.
+- The app implements the required compliance webhooks (CUSTOMERS_DATA_REQUEST, CUSTOMERS_REDACT, SHOP_REDACT, APP_UNINSTALLED) and verifies each webhook with an HMAC using `SHOPIFY_API_SECRET`.
+- On `customers/data_request`, the app returns matching entries from its store (by `customerId` or `customerEmail`) as required by Shopify. The handler is implemented in `pages/api/webhooks/customers/data_request.ts`.
+- On `customers/redact`, the app anonymizes or deletes app-stored PII for the given customer ID or email to comply with data deletion requests. See `pages/api/webhooks/customers/redact.ts`.
+- On `shop/redact` and `app/uninstalled`, the app deletes or anonymizes shop-specific data from its Firestore, including `submissions`, `settings`, `sessions`, and `merchants` entries.
+
+If you need to request `read_customers` for other features, consider documenting the reason and implementing a clear privacy policy for the store owners as part of the app submission process.
 
 For local development with Shopify, you'll need to use a tunneling service like ngrok:
 
