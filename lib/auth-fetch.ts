@@ -3,13 +3,19 @@
 // Attempt to require '@shopify/app-bridge-utils' (it is optional / may be deprecated).
 let getSessionToken: any = null;
 try {
-  // Use require at module load-time to provide the helper immediately if available.
-  // This is a best-effort load; if the module isn't installed, we'll gracefully fall back.
-  // @ts-ignore - require may fail if package is missing, which is the expected fallback.
-  const utils = require('@shopify/app-bridge-utils');
-  getSessionToken = utils.getSessionToken;
+  // Use eval('require') to avoid bundler static analysis. This prevents the build
+  // from attempting to resolve '@shopify/app-bridge-utils' when it isn't installed.
+  const req: any = eval('require');
+  const utils = req('@shopify/app-bridge-utils');
+  getSessionToken = utils?.getSessionToken;
 } catch (err) {
-  console.warn('@shopify/app-bridge-utils not available, falling back to cookies for authentication');
+  // Not available or failed to import — continue without tokens (cookie fallback)
+  // We intentionally only warn, to avoid noisy failures during builds where
+  // the optional module may be absent.
+  if (typeof window === 'undefined') {
+    // Server-side warn for admins to check environment if they expect tokens
+    console.warn('@shopify/app-bridge-utils not available; admin session token fetching disabled.');
+  }
 }
 type AppLike = any;
 
