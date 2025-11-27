@@ -324,6 +324,7 @@ export default function Onboarding() {
                           alt="Logo preview"
                           width={200}
                           height={100}
+                          unoptimized
                           style={{ objectFit: 'contain', borderRadius: 4 }}
                         />
                       </div>

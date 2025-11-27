@@ -213,6 +213,8 @@ npm run dev
 - The admin (embedded) UI is powered by Shopify App Bridge and loads the App Bridge script from Shopify's CDN in `pages/_document.tsx`.
 - All authenticated admin API calls are made using App Bridge session tokens (retrieved using `@shopify/app-bridge-utils`) and sent in the `Authorization: Bearer <token>` header. These are validated server-side using `shopify.session.decodeSessionToken`, and `lib/auth-helpers.ts` now supports both cookie-based sessions and bearer session tokens.
 
+Note: `@shopify/app-bridge-utils` may be deprecated. The app attempts to use App Bridge's token helper when available, and it gracefully falls back to cookie-based session authentication if that package isn't available or the environment doesn't provide it. When App Bridge token is available, `lib/auth-fetch.ts` uses the token to attach an `Authorization: Bearer` header.
+
 ### Verification Checklist for App Review
 
 To help ensure Shopify app review will pass, the following are implemented and tested:
@@ -220,7 +222,7 @@ To help ensure Shopify app review will pass, the following are implemented and t
 - Mandatory compliance webhooks are present in `shopify.app.toml` and programmatically registered at OAuth callback in `pages/api/auth/callback.ts`.
 - Each webhook endpoint checks the HMAC signature using `SHOPIFY_API_SECRET` (see `lib/webhook-verifier.ts`) and returns 200 when valid.
 - `pages/api/webhooks/customers/data_request.ts` returns the app-stored customer data array as `data` for the provided `customerId` or `customerEmail`, or a job id for large exports.
-- Session tokens are used for admin UI pages and are attached as `Authorization: Bearer <token>` via `lib/auth-fetch.ts` and `@shopify/app-bridge-utils`.
+- Session tokens are used for admin UI pages and are attached as `Authorization: Bearer <token>` via `lib/auth-fetch.ts`.
 - Embedded admin pages are using `@shopify/app-bridge-react` and load the App Bridge script from Shopify's CDN in `pages/_document.tsx`.
 
 If you want a one-page checklist to run before re-submitting the app for verification, I can add a `pages/debug` UI that shows registered webhooks and current `SHOPIFY_API_SECRET` presence (without exposing actual secret) so reviewers can validate connectivity.
