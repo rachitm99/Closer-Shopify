@@ -23,30 +23,45 @@ export interface MerchantSettings {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('🔷 API /settings/merchant - Request received');
+  console.log('🔷 API /settings/merchant - Method:', req.method);
+  console.log('🔷 API /settings/merchant - Headers auth:', req.headers.authorization ? 'Present' : 'Not present');
+  console.log('🔷 API /settings/merchant - Cookies:', req.headers.cookie ? 'Present' : 'Not present');
+  
   try {
+    console.log('🔷 API /settings/merchant - Getting session from request...');
     const session = await getSessionFromRequest(req);
+    console.log('🔷 API /settings/merchant - Session result:', session ? `Found for ${session.shop}` : 'Not found');
     
     if (!session) {
+      console.log('❌ API /settings/merchant - No session, returning 401');
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     const { shop } = session;
+    console.log('🔷 API /settings/merchant - Shop:', shop);
 
     if (req.method === 'GET') {
+      console.log('🔷 API /settings/merchant - GET request, fetching from Firestore...');
       // Get merchant settings
       try {
+        console.log('🔷 API /settings/merchant - Querying Firestore collection:', collections.users, 'doc:', shop);
         const doc = await db.collection(collections.users).doc(shop).get();
+        console.log('🔷 API /settings/merchant - Firestore query complete, exists:', doc.exists);
         
         if (doc.exists) {
           const data = doc.data();
+          console.log('✅ API /settings/merchant - Found existing data for shop');
           
           // Backward compatibility: convert old string format to array
           if (data && data.giveawayRules && typeof data.giveawayRules === 'string') {
             data.giveawayRules = [data.giveawayRules];
           }
           
+          console.log('✅ API /settings/merchant - Returning data');
           return res.status(200).json(data);
         } else {
+          console.log('⚠️ API /settings/merchant - No existing data, returning defaults');
           // Return default settings
           const defaultSettings: MerchantSettings = {
             shop,
@@ -70,7 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(200).json(defaultSettings);
         }
       } catch (error) {
-        console.error('Error fetching settings:', error);
+        console.error('💥 API /settings/merchant - Firestore error:', error);
         return res.status(500).json({ error: 'Failed to fetch settings' });
       }
     } else if (req.method === 'POST') {

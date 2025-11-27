@@ -44,11 +44,23 @@ function SettingsPage() {
   const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
+    console.log('⚙️ Settings Page - useEffect triggered');
+    console.log('⚙️ Settings Page - router.isReady:', router.isReady);
+    console.log('⚙️ Settings Page - router.query:', router.query);
+    
     const loadSettings = async () => {
+      console.log('📋 Settings Page - loadSettings() called');
+      console.log('📋 Settings Page - Current loading state:', loading);
+      
       try {
+        console.log('📋 Settings Page - About to call authFetch for /api/settings/merchant');
         const response = await authFetch('/api/settings/merchant');
+        console.log('📋 Settings Page - authFetch completed with status:', response.status);
+        
         if (response.ok) {
+          console.log('✅ Settings Page - Response OK, parsing JSON...');
           const data = await response.json();
+          console.log('✅ Settings Page - Data received:', data);
           
           // No need to check onboarding here - handled in _app.tsx
           
@@ -67,30 +79,41 @@ function SettingsPage() {
           setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
           setSubmitButtonText(data.submitButtonText || 'Follow Us on Instagram');
           setRedirectUrl(data.redirectUrl || '');
+          console.log('✅ Settings Page - All state updated successfully');
         } else if (response.status === 401) {
+          console.log('🔒 Settings Page - Unauthorized (401)');
           // Unauthorized - redirect to auth
           // Get shop from URL params
           const shop = router.query.shop as string || new URLSearchParams(window.location.search).get('shop');
+          console.log('🔒 Settings Page - Shop param for redirect:', shop);
           if (shop) {
+            console.log('🔒 Settings Page - Redirecting to auth...');
             window.location.href = `/api/auth?shop=${shop}`;
           } else {
+            console.log('🔒 Settings Page - No shop param found, showing error');
             setError('Session expired. Please reinstall the app from your Shopify admin.');
           }
         } else {
+          console.log('❌ Settings Page - Non-OK response:', response.status);
           const data = await response.json().catch(() => ({}));
+          console.log('❌ Settings Page - Error data:', data);
           setError(data.error || 'Failed to load settings');
         }
       } catch (error) {
-        console.error('Error loading settings:', error);
+        console.error('💥 Settings Page - Exception caught:', error);
         setError('Failed to load settings. Please check your connection and try again.');
       } finally {
+        console.log('🏁 Settings Page - Finally block, setting loading to false');
         setLoading(false);
       }
     };
 
     // Only load settings when router is ready
     if (router.isReady) {
+      console.log('✅ Settings Page - Router is ready, calling loadSettings()');
       loadSettings();
+    } else {
+      console.log('⏳ Settings Page - Router not ready yet, waiting...');
     }
   }, [authFetch, router.isReady, router.query.shop]);
 
