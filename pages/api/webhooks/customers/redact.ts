@@ -10,19 +10,26 @@ export const config = { api: { bodyParser: false } };
  * Must respond with 200 to acknowledge receipt
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('📥 customers/redact webhook received');
+  
   if (req.method !== 'POST') {
+    console.log('❌ customers/redact: Method not allowed:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const secret = process.env.SHOPIFY_API_SECRET || '';
+  console.log('🔐 customers/redact: Verifying HMAC signature...');
+  
   const raw = await readAndVerifyShopifyWebhook(req, secret);
   
   if (!raw) {
+    console.log('❌ customers/redact: HMAC verification failed');
     return res.status(401).send('Unauthorized');
   }
   
+  console.log('✅ customers/redact: HMAC verified');
   const body = JSON.parse(raw.toString('utf8'));
-  console.log('customers/redact payload:', body);
+  console.log('📦 customers/redact payload:', JSON.stringify(body, null, 2));
 
   const shop = (req.headers['x-shopify-shop-domain'] as string) || body?.shop_domain || null;
   const customerId = body?.customer?.id || null;

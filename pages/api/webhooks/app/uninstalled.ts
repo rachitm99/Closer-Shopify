@@ -10,19 +10,26 @@ export const config = { api: { bodyParser: false } };
  * Clean up sessions immediately, keep data for 48h (shop/redact will delete later)
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('📥 app/uninstalled webhook received');
+  
   if (req.method !== 'POST') {
+    console.log('❌ app/uninstalled: Method not allowed:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const secret = process.env.SHOPIFY_API_SECRET || '';
+  console.log('🔐 app/uninstalled: Verifying HMAC signature...');
+  
   const raw = await readAndVerifyShopifyWebhook(req, secret);
   
   if (!raw) {
+    console.log('❌ app/uninstalled: HMAC verification failed');
     return res.status(401).send('Unauthorized');
   }
   
+  console.log('✅ app/uninstalled: HMAC verified');
   const body = JSON.parse(raw.toString('utf8'));
-  console.log('app/uninstalled payload:', body);
+  console.log('📦 app/uninstalled payload:', JSON.stringify(body, null, 2));
 
   const shop = (req.headers['x-shopify-shop-domain'] as string) || body?.myshopify_domain || body?.domain || null;
 

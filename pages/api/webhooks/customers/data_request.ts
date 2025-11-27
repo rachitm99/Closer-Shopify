@@ -4,14 +4,31 @@ import { db, collections } from '../../../../lib/firestore';
 
 export const config = { api: { bodyParser: false } };
 
+/**
+ * CUSTOMERS_DATA_REQUEST webhook handler
+ * Called when a customer requests their data (GDPR)
+ * Must respond with 200 and any stored customer data
+ */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const secret = process.env.SHOPIFY_API_SECRET || '';
-  const raw = await readAndVerifyShopifyWebhook(req, secret);
-  if (!raw) return res.status(401).send('Unauthorized');
-  const body = JSON.parse(raw.toString('utf8'));
+  console.log('📥 customers/data_request webhook received');
+  
+  if (req.method !== 'POST') {
+    console.log('❌ customers/data_request: Method not allowed:', req.method);
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-  // According to Shopify: respond with a job id or an array of customer data. For compliance, 200 is required.
-  console.log('customers/data_request payload:', body);
+  const secret = process.env.SHOPIFY_API_SECRET || '';
+  console.log('🔐 customers/data_request: Verifying HMAC signature...');
+  
+  const raw = await readAndVerifyShopifyWebhook(req, secret);
+  if (!raw) {
+    console.log('❌ customers/data_request: HMAC verification failed');
+    return res.status(401).send('Unauthorized');
+  }
+  
+  console.log('✅ customers/data_request: HMAC verified');
+  const body = JSON.parse(raw.toString('utf8'));
+  console.log('📦 customers/data_request payload:', JSON.stringify(body, null, 2));
 
   // Determine shop from header or body
   const shop = (req.headers['x-shopify-shop-domain'] as string) || (body?.shop || body?.shop_domain || null);
