@@ -3,6 +3,7 @@ import { loadSession } from './session-storage';
 import cookie from 'cookie';
 import Cryptr from 'cryptr';
 import { Session } from '@shopify/shopify-api';
+import shopify from './shopify';
 
 const cryptr = new Cryptr(process.env.ENCRYPTION_SECRET || 'default-secret-key');
 
@@ -12,6 +13,30 @@ export async function getSessionFromRequest(req: NextApiRequest) {
     const sessionId = cookies.shopify_app_session;
 
     console.log('Looking for session:', sessionId ? 'found cookie' : 'no cookie');
+
+    // If we have an Authorization header with a session token, prefer that
+    const authHeader = (req.headers.authorization || req.headers.Authorization) as string | undefined;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const sessionToken = authHeader.replace('Bearer ', '');
+      try {
+        const payload = await shopify.session.decodeSessionToken(sessionToken);
+        const shop = (payload.dest || '').replace('https://', '');
+        if (shop) {
+          // Create a lightweight session object compatible with the `Session` interface
+          const sessionObj: any = new Session({
+            id: sessionToken,
+            shop,
+            state: '',
+            isOnline: false,
+            accessToken: '',
+            scope: process.env.SHOPIFY_SCOPES || '',
+          } as any);
+          return sessionObj;
+        }
+      } catch (e) {
+        console.error('Failed to decode session token from Authorization header', e);
+      }
+    }
 
     if (!sessionId) {
       return null;

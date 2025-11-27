@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
+import { useAppBridge } from '@shopify/app-bridge-react';
+import { createAuthenticatedFetch } from '../lib/auth-fetch';
 import {
   Page,
   Layout,
@@ -19,6 +22,8 @@ import {
 
 export default function Onboarding() {
   const router = useRouter();
+  const app = useAppBridge();
+  const authFetch = useMemo(() => createAuthenticatedFetch(app), [app]);
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -58,7 +63,7 @@ export default function Onboarding() {
         
         // Try to get shop from merchant API first
         try {
-          const response = await fetch('/api/settings/merchant');
+          const response = await authFetch('/api/settings/merchant');
           if (response.ok) {
             const data = await response.json();
             shopDomain = data.shop;
@@ -92,7 +97,7 @@ export default function Onboarding() {
         
         if (!alreadyTracked && shopDomain !== 'unknown') {
           console.log('📊 Tracking onboarding_started for shop:', shopDomain);
-          const trackResponse = await fetch('/api/analytics/track', {
+          const trackResponse = await authFetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -116,7 +121,7 @@ export default function Onboarding() {
     if (router.isReady) {
       initializeOnboarding();
     }
-  }, [router.isReady, router.query.shop]);
+  }, [router.isReady, router.query.shop, authFetch]);
 
   const handleSaveSettings = async () => {
     try {
@@ -130,7 +135,7 @@ export default function Onboarding() {
         return;
       }
       
-      const response = await fetch('/api/settings/merchant', {
+      const response = await authFetch('/api/settings/merchant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -183,7 +188,7 @@ export default function Onboarding() {
       const formData = new FormData();
       formData.append('logo', file);
 
-      const response = await fetch('/api/upload/logo', {
+      const response = await authFetch('/api/upload/logo', {
         method: 'POST',
         body: formData,
       });
@@ -208,7 +213,7 @@ export default function Onboarding() {
     try {
       console.log('📊 Tracking onboarding_completed for shop:', shop);
       
-      const trackResponse = await fetch('/api/analytics/track', {
+      const trackResponse = await authFetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -223,7 +228,7 @@ export default function Onboarding() {
       
       // Register user with all merchant details
       console.log('👤 Creating user registration...');
-      const userResponse = await fetch('/api/users/register', {
+      const userResponse = await authFetch('/api/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -245,7 +250,7 @@ export default function Onboarding() {
       
       // Mark onboarding as completed (preserving enabled state)
       console.log('💾 Updating onboarding status...');
-      const settingsResponse = await fetch('/api/settings/merchant', {
+      const settingsResponse = await authFetch('/api/settings/merchant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -312,23 +317,17 @@ export default function Onboarding() {
                   Logo Image
                 </Text>
                 <div style={{ marginTop: '8px' }}>
-                  {logoUrl && (
-                    <div style={{ marginBottom: '12px' }}>
-                      <img 
-                        src={logoUrl} 
-                        alt="Logo preview" 
-                        style={{ 
-                          maxWidth: '200px', 
-                          maxHeight: '100px', 
-                          objectFit: 'contain',
-                          border: '1px solid #ddd',
-                          borderRadius: '4px',
-                          padding: '8px',
-                          backgroundColor: '#f9f9f9'
-                        }} 
-                      />
-                    </div>
-                  )}
+                    {logoUrl && (
+                      <div style={{ marginBottom: '12px', maxWidth: 200 }}>
+                        <Image
+                          src={logoUrl}
+                          alt="Logo preview"
+                          width={200}
+                          height={100}
+                          style={{ objectFit: 'contain', borderRadius: 4 }}
+                        />
+                      </div>
+                    )}
                   <label
                     htmlFor="logo-upload"
                     style={{

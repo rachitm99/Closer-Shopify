@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
+import { useAppBridge } from '@shopify/app-bridge-react';
+import { createAuthenticatedFetch } from '../lib/auth-fetch';
 import {
   Page,
   Layout,
@@ -58,12 +60,14 @@ export default function Dashboard() {
   const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
   const [shop, setShop] = useState<string>('');
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const app = useAppBridge();
+  const authFetch = useMemo(() => createAuthenticatedFetch(app), [app]);
 
   useEffect(() => {
     const checkOnboardingAndLoadData = async () => {
       try {
-        // Fetch user data to check onboarding status
-        const settingsResponse = await fetch('/api/settings/merchant');
+        // Fetch user data to check onboarding status using App Bridge session token
+        const settingsResponse = await authFetch('/api/settings/merchant');
         if (settingsResponse.ok) {
           const settingsData = await settingsResponse.json();
           
@@ -85,7 +89,7 @@ export default function Dashboard() {
           setShop(shopDomain);
           
           // Load analytics data
-          const analyticsResponse = await fetch(`/api/analytics/submissions-timeline?shop=${shopDomain}`);
+          const analyticsResponse = await authFetch(`/api/analytics/submissions-timeline?shop=${shopDomain}`);
           if (analyticsResponse.ok) {
             const data = await analyticsResponse.json();
             setAnalytics(data);
@@ -94,14 +98,14 @@ export default function Dashboard() {
           }
           
           // Load impression data
-          const impressionsResponse = await fetch(`/api/analytics/impressions?shop=${shopDomain}`);
+          const impressionsResponse = await authFetch(`/api/analytics/impressions?shop=${shopDomain}`);
           if (impressionsResponse.ok) {
             const impressionData = await impressionsResponse.json();
             setImpressions(impressionData);
           }
           
           // Load submissions list
-          const submissionsResponse = await fetch('/api/submissions/list');
+          const submissionsResponse = await authFetch('/api/submissions/list');
           if (submissionsResponse.ok) {
             const submissionsData = await submissionsResponse.json();
             setSubmissions(submissionsData.submissions || []);
@@ -122,7 +126,7 @@ export default function Dashboard() {
     };
 
     checkOnboardingAndLoadData();
-  }, []);
+  }, [authFetch]);
 
   if (loading) {
     return (

@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import Image from 'next/image';
+import { useAppBridge } from '@shopify/app-bridge-react';
+import { createAuthenticatedFetch } from '../lib/auth-fetch';
 import { useRouter } from 'next/router';
 import {
   Page,
@@ -17,6 +20,8 @@ import {
 
 export default function Home() {
   const router = useRouter();
+  const app = useAppBridge();
+  const authFetch = useMemo(() => createAuthenticatedFetch(app), [app]);
   const [enabled, setEnabled] = useState(false);
   const [logoUrl, setLogoUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
@@ -43,7 +48,7 @@ export default function Home() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const response = await fetch('/api/settings/merchant');
+        const response = await authFetch('/api/settings/merchant');
         if (response.ok) {
           const data = await response.json();
           
@@ -77,7 +82,7 @@ export default function Home() {
     };
 
     loadSettings();
-  }, []);
+  }, [authFetch]);
 
   const handleToggle = async () => {
     try {
@@ -86,7 +91,7 @@ export default function Home() {
       
       const newEnabled = !enabled;
       
-      const response = await fetch('/api/settings/merchant', {
+      const response = await authFetch('/api/settings/merchant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -128,7 +133,7 @@ export default function Home() {
         return;
       }
       
-      const response = await fetch('/api/settings/merchant', {
+      const response = await authFetch('/api/settings/merchant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -182,7 +187,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append('logo', file);
 
-      const response = await fetch('/api/upload/logo', {
+      const response = await authFetch('/api/upload/logo', {
         method: 'POST',
         body: formData,
       });
@@ -277,19 +282,13 @@ export default function Home() {
                   </Text>
                   <div style={{ marginTop: '8px' }}>
                     {logoUrl && (
-                      <div style={{ marginBottom: '12px' }}>
-                        <img 
-                          src={logoUrl} 
-                          alt="Logo preview" 
-                          style={{ 
-                            maxWidth: '200px', 
-                            maxHeight: '100px', 
-                            objectFit: 'contain',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            padding: '8px',
-                            backgroundColor: '#f9f9f9'
-                          }} 
+                      <div style={{ marginBottom: '12px', maxWidth: 200 }}>
+                        <Image
+                          src={logoUrl}
+                          alt="Logo preview"
+                          width={200}
+                          height={100}
+                          style={{ objectFit: 'contain', borderRadius: 4 }}
                         />
                       </div>
                     )}

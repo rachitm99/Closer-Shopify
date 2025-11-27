@@ -46,7 +46,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    return res.status(200).json({ success: true, data: { submissions } });
+    // Shopify expects either a job id or an array of customer data objects
+    // Return the array of app-stored customer submissions directly under `data`.
+    return res.status(200).json({ data: submissions });
   } catch (err) {
     console.error('Failed to read submissions for data request:', err);
     return res.status(500).json({ success: false, error: 'Internal server error' });

@@ -38,9 +38,7 @@ describe('customers/data_request webhook', () => {
     await handler(req as any, res as any);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    // Check that the response has success true
-    expect(res.json.mock.calls[0][0].success).toBe(true);
-    // Check that data.submissions is an array
-    expect(Array.isArray(res.json.mock.calls[0][0].data.submissions)).toBe(true);
+    // Check that the response returns data array
+    expect(Array.isArray(res.json.mock.calls[0][0].data)).toBe(true);
   });
 });

@@ -12,12 +12,22 @@ export async function buffer(req: NextApiRequest): Promise<Buffer> {
 
 export async function readAndVerifyShopifyWebhook(req: NextApiRequest, secret: string): Promise<Buffer | null> {
   const rawBody = await buffer(req);
+  if (!secret) {
+    console.warn('SHOPIFY_API_SECRET is not set - webhook HMAC verification not possible');
+    return null;
+  }
   const hmacHeader = (req.headers['x-shopify-hmac-sha256'] || req.headers['X-Shopify-Hmac-Sha256']) as string | undefined;
   if (!hmacHeader) return null;
   const generatedHash = crypto
     .createHmac('sha256', secret)
     .update(rawBody)
     .digest('base64');
-  if (!crypto.timingSafeEqual(Buffer.from(generatedHash), Buffer.from(hmacHeader))) return null;
+  // Compare timing safe and log mismatch for debugging
+  const valid = (Buffer.from(generatedHash).length === Buffer.from(hmacHeader).length) &&
+    crypto.timingSafeEqual(Buffer.from(generatedHash), Buffer.from(hmacHeader));
+  if (!valid) {
+    console.warn('Webhook HMAC mismatch (computed vs header):', generatedHash.substring(0, 8), '!=', (hmacHeader || '').substring(0, 8));
+    return null;
+  }
   return rawBody;
 }
