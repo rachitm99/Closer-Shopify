@@ -111,20 +111,30 @@ function Dashboard() {
           }
         } else if (settingsResponse.status === 401) {
           // Unauthorized - redirect to auth
-          window.location.href = `/api/auth?shop=${window.location.hostname}`;
+          // Get shop from URL params
+          const shopParam = router.query.shop as string || new URLSearchParams(window.location.search).get('shop');
+          if (shopParam) {
+            window.location.href = `/api/auth?shop=${shopParam}`;
+          } else {
+            setError('Session expired. Please reinstall the app from your Shopify admin.');
+          }
         } else {
           // No settings found, redirect to onboarding
           window.location.href = '/onboarding';
         }
       } catch (error) {
         console.error('Error loading data:', error);
-        setError('Failed to load analytics data');
+        setError('Failed to load analytics data. Please check your connection and try again.');
       } finally {
         setLoading(false);
       }
     };
-    checkOnboardingAndLoadData();
-  }, [authFetch]);
+    
+    // Only load data when router is ready
+    if (router.isReady) {
+      checkOnboardingAndLoadData();
+    }
+  }, [authFetch, router.isReady, router.query.shop]);
 
   if (loading) {
     return (

@@ -3,6 +3,18 @@ import { Context as AppBridgeContext } from '@shopify/app-bridge-react';
 import { getSessionToken } from '@shopify/app-bridge/utilities';
 
 /**
+ * Helper function to add timeout to a promise
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('Session token request timed out')), timeoutMs)
+    ),
+  ]);
+}
+
+/**
  * Creates an authenticated fetch function.
  * Uses App Bridge getSessionToken utility for v3.x
  */
@@ -13,15 +25,17 @@ export function useAuthenticatedFetch() {
   const fetchWithAuth = useCallback(async (url: string, options: RequestInit = {}): Promise<Response> => {
     const headers = new Headers(options.headers);
     
-    // Try to get session token from App Bridge
+    // Try to get session token from App Bridge with a timeout
     if (app) {
       try {
-        const token = await getSessionToken(app);
+        // Add 5 second timeout to prevent hanging
+        const token = await withTimeout(getSessionToken(app), 5000);
         if (token) {
           headers.set('Authorization', `Bearer ${token}`);
         }
       } catch (error) {
         console.log('Could not get session token:', error);
+        // Continue without the token - will fall back to cookie-based auth
       }
     }
     

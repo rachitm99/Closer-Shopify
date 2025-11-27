@@ -69,18 +69,30 @@ function SettingsPage() {
           setRedirectUrl(data.redirectUrl || '');
         } else if (response.status === 401) {
           // Unauthorized - redirect to auth
-          window.location.href = `/api/auth?shop=${window.location.hostname}`;
+          // Get shop from URL params
+          const shop = router.query.shop as string || new URLSearchParams(window.location.search).get('shop');
+          if (shop) {
+            window.location.href = `/api/auth?shop=${shop}`;
+          } else {
+            setError('Session expired. Please reinstall the app from your Shopify admin.');
+          }
+        } else {
+          const data = await response.json().catch(() => ({}));
+          setError(data.error || 'Failed to load settings');
         }
       } catch (error) {
         console.error('Error loading settings:', error);
-        setError('Failed to load settings');
+        setError('Failed to load settings. Please check your connection and try again.');
       } finally {
         setLoading(false);
       }
     };
 
-    loadSettings();
-  }, [authFetch]);
+    // Only load settings when router is ready
+    if (router.isReady) {
+      loadSettings();
+    }
+  }, [authFetch, router.isReady, router.query.shop]);
 
   const handleToggle = async () => {
     try {
