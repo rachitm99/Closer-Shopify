@@ -7,25 +7,12 @@ embedded = true
 
 [webhooks]
 api_version = "2025-10"
-[[webhooks]]
-topic = "CUSTOMERS_DATA_REQUEST"
-address = "/api/webhooks/customers/data_request"
-format = "json"
-
-[[webhooks]]
-topic = "CUSTOMERS_REDACT"
-address = "/api/webhooks/customers/redact"
-format = "json"
-
-[[webhooks]]
-topic = "SHOP_REDACT"
-address = "/api/webhooks/shop/redact"
-format = "json"
-
-[[webhooks]]
-topic = "APP_UNINSTALLED"
-address = "/api/webhooks/app/uninstalled"
-format = "json"
+webhooks = [
+  { topic = "CUSTOMERS_DATA_REQUEST", address = "/api/webhooks/customers/data_request", format = "json" },
+  { topic = "CUSTOMERS_REDACT", address = "/api/webhooks/customers/redact", format = "json" },
+  { topic = "SHOP_REDACT", address = "/api/webhooks/shop/redact", format = "json" },
+  { topic = "APP_UNINSTALLED", address = "/api/webhooks/app/uninstalled", format = "json" },
+]
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
