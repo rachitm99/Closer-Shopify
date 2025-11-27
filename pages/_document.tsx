@@ -1,10 +1,12 @@
 import { Html, Head, Main, NextScript } from 'next/document';
-import Script from 'next/script';
 
 export default function Document() {
   return (
     <Html lang="en">
       <Head>
+        {/* App Bridge MUST be the first script, no async/defer/module */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
         <meta charSet="utf-8" />
         <link
           rel="stylesheet"
@@ -14,11 +16,6 @@ export default function Document() {
       <body>
         <Main />
         <NextScript />
-        {/* Load App Bridge from Shopify's CDN as required for embedded apps */}
-        <Script 
-          src="https://cdn.shopify.com/shopifycloud/app-bridge.js" 
-          strategy="beforeInteractive"
-        />
       </body>
     </Html>
   );
