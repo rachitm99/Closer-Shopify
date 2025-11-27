@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Use Rest client to fetch webhook registrations for the shop
     try {
-      const client = new shopify.api.clients.Rest({ session });
+      const client = new shopify.clients.Rest({ session });
       const response = await client.get({ path: 'webhooks' });
       const body = response.body || {};
       return res.status(200).json({ webhooks: body.webhooks || body });

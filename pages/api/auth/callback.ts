@@ -57,7 +57,7 @@ export default async function handler(
           await shopify.webhooks.register({ session });
           console.log('✅ Mandatory compliance webhooks registered via SDK');
           try {
-            const client = new (shopify as any).api.clients.Rest({ session });
+            const client = new shopify.clients.Rest({ session });
             const resList = await client.get({ path: 'webhooks' });
             console.log('Registered webhooks for shop:', session.shop, resList.body?.webhooks || resList.body);
           } catch (err) {
