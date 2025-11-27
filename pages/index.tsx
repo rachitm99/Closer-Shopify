@@ -77,7 +77,15 @@ function Dashboard() {
           if (!settingsData.onboardingCompleted) {
             console.log('❌ Dashboard - Onboarding not complete, redirecting...');
             if (typeof window !== 'undefined') {
-              window.location.href = '/onboarding';
+              // Preserve host and shop params
+              const params = new URLSearchParams(window.location.search);
+              const host = params.get('host') || router.query.host;
+              const shopParam = params.get('shop') || router.query.shop;
+              const queryString = new URLSearchParams();
+              if (host) queryString.set('host', host as string);
+              if (shopParam) queryString.set('shop', shopParam as string);
+              const query = queryString.toString();
+              window.location.href = `/onboarding${query ? `?${query}` : ''}`;
             }
             return;
           }
@@ -120,7 +128,14 @@ function Dashboard() {
           }
         } else {
           // No settings found, redirect to onboarding
-          window.location.href = '/onboarding';
+          const params = new URLSearchParams(window.location.search);
+          const host = params.get('host') || router.query.host;
+          const shopParam = params.get('shop') || router.query.shop;
+          const queryString = new URLSearchParams();
+          if (host) queryString.set('host', host as string);
+          if (shopParam) queryString.set('shop', shopParam as string);
+          const query = queryString.toString();
+          window.location.href = `/onboarding${query ? `?${query}` : ''}`;
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -216,7 +231,15 @@ function Dashboard() {
             content: 'Settings',
             onAction: () => {
               if (typeof window !== 'undefined') {
-                window.location.href = '/settings';
+                // Preserve host and shop params for App Bridge
+                const params = new URLSearchParams(window.location.search);
+                const host = params.get('host') || router.query.host;
+                const shopParam = params.get('shop') || router.query.shop;
+                const queryString = new URLSearchParams();
+                if (host) queryString.set('host', host as string);
+                if (shopParam) queryString.set('shop', shopParam as string);
+                const query = queryString.toString();
+                window.location.href = `/settings${query ? `?${query}` : ''}`;
               }
             },
           },
@@ -241,7 +264,18 @@ function Dashboard() {
                   <Text as="p" variant="bodyMd">
                     Your giveaway popup is active! Submissions will appear here as customers complete purchases and enter the giveaway.
                   </Text>
-                  <Button url="/settings">Configure Settings</Button>
+                  <Button 
+                    onClick={() => {
+                      const params = new URLSearchParams(window.location.search);
+                      const host = params.get('host') || router.query.host;
+                      const shopParam = params.get('shop') || router.query.shop;
+                      const queryString = new URLSearchParams();
+                      if (host) queryString.set('host', host as string);
+                      if (shopParam) queryString.set('shop', shopParam as string);
+                      const query = queryString.toString();
+                      window.location.href = `/settings${query ? `?${query}` : ''}`;
+                    }}
+                  >Configure Settings</Button>
                 </BlockStack>
               </Banner>
             </Layout.Section>

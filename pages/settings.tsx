@@ -264,7 +264,15 @@ function SettingsPage() {
           content: 'Dashboard',
           onAction: () => {
             if (typeof window !== 'undefined') {
-              window.location.href = '/';
+              // Preserve host and shop params for App Bridge
+              const params = new URLSearchParams(window.location.search);
+              const host = params.get('host') || router.query.host;
+              const shopParam = params.get('shop') || router.query.shop;
+              const queryString = new URLSearchParams();
+              if (host) queryString.set('host', host as string);
+              if (shopParam) queryString.set('shop', shopParam as string);
+              const query = queryString.toString();
+              window.location.href = `/${query ? `?${query}` : ''}`;
             }
           },
         }}

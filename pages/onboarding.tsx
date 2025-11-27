@@ -262,10 +262,17 @@ function Onboarding() {
         console.log('💾 Saved settings:', responseData);
       }
       
-      // Redirect to dashboard
+      // Redirect to dashboard with preserved URL params
       console.log('🔀 Redirecting to dashboard...');
       if (typeof window !== 'undefined') {
-        window.location.href = '/';
+        const params = new URLSearchParams(window.location.search);
+        const host = params.get('host') || router.query.host;
+        const shopParam = params.get('shop') || router.query.shop;
+        const queryString = new URLSearchParams();
+        if (host) queryString.set('host', host as string);
+        if (shopParam) queryString.set('shop', shopParam as string);
+        const query = queryString.toString();
+        window.location.href = `/${query ? `?${query}` : ''}`;
       }
     } catch (error) {
       console.error('❌ Error in completeOnboarding:', error);
