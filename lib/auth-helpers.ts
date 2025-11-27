@@ -13,33 +13,37 @@ export async function getSessionFromRequest(req: NextApiRequest) {
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
-      try {
-        // Verify and decode the session token
-        const payload = await shopify.session.decodeSessionToken(token);
-        if (payload && payload.dest) {
-          // Extract shop from the token's dest claim
-          const shopDomain = payload.dest.replace('https://', '');
-          
-          // Try to load existing session for this shop
-          const sessionId = `offline_${shopDomain}`;
-          let session = await loadSession(sessionId);
-          
-          if (session) {
-            console.log('Session loaded from token for shop:', shopDomain);
-            return session;
+      // Only try to decode if token is not empty/undefined
+      if (token && token !== 'undefined' && token.length > 10) {
+        try {
+          // Verify and decode the session token
+          const payload = await shopify.session.decodeSessionToken(token);
+          if (payload && payload.dest) {
+            // Extract shop from the token's dest claim
+            const shopDomain = payload.dest.replace('https://', '');
+            
+            // Try to load existing session for this shop
+            const sessionId = `offline_${shopDomain}`;
+            let session = await loadSession(sessionId);
+            
+            if (session) {
+              console.log('Session loaded from token for shop:', shopDomain);
+              return session;
+            }
+            
+            // If no stored session, create a minimal session from the token
+            console.log('Creating session from token for shop:', shopDomain);
+            return new Session({
+              id: sessionId,
+              shop: shopDomain,
+              state: '',
+              isOnline: false,
+            });
           }
-          
-          // If no stored session, create a minimal session from the token
-          console.log('Creating session from token for shop:', shopDomain);
-          return new Session({
-            id: sessionId,
-            shop: shopDomain,
-            state: '',
-            isOnline: false,
-          });
+        } catch (tokenError) {
+          // Token decode failed, fall through to cookie-based auth
+          console.log('Session token decode failed, trying cookie auth');
         }
-      } catch (tokenError) {
-        console.error('Error decoding session token:', tokenError);
       }
     }
 

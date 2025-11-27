@@ -4,6 +4,8 @@
  */
 export function createAuthenticatedFetch(app: any) {
   return async (url: string, options: RequestInit = {}): Promise<Response> => {
+    const headers = new Headers(options.headers);
+    
     try {
       // Get session token from App Bridge (idToken method for newer App Bridge)
       let token: string | undefined;
@@ -14,21 +16,19 @@ export function createAuthenticatedFetch(app: any) {
         token = await app.getSessionToken();
       }
       
-      const headers = new Headers(options.headers);
-      headers.set('Authorization', `Bearer ${token}`);
-      
-      return fetch(url, {
-        ...options,
-        headers,
-        credentials: 'include',
-      });
+      // Only set Authorization header if we got a valid token
+      if (token && token !== 'undefined') {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
     } catch (error) {
       console.error('Error getting session token:', error);
-      // Fallback to regular fetch with credentials
-      return fetch(url, {
-        ...options,
-        credentials: 'include',
-      });
+      // Continue without token - will fall back to cookie auth
     }
+    
+    return fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include',
+    });
   };
 }
