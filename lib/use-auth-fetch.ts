@@ -1,32 +1,42 @@
-import { useMemo } from 'react';
+import { useCallback, useContext } from 'react';
+import { Context as AppBridgeContext } from '@shopify/app-bridge-react';
 
 /**
  * Creates an authenticated fetch function.
- * Works both with and without App Bridge context.
+ * Tries to get session token from App Bridge, falls back to cookie auth.
  */
 export function useAuthenticatedFetch() {
-  return useMemo(() => {
-    return async (url: string, options: RequestInit = {}): Promise<Response> => {
-      const headers = new Headers(options.headers);
-      
-      // Try to get session token from global shopify app bridge if available
-      try {
-        if (typeof window !== 'undefined' && (window as any).shopify?.idToken) {
-          const token = await (window as any).shopify.idToken();
-          if (token && token !== 'undefined') {
-            headers.set('Authorization', `Bearer ${token}`);
-          }
+  // Get app from context - will be undefined if not in provider
+  const app = useContext(AppBridgeContext);
+
+  const fetchWithAuth = useCallback(async (url: string, options: RequestInit = {}): Promise<Response> => {
+    const headers = new Headers(options.headers);
+    
+    // Try to get session token from App Bridge
+    try {
+      if (app) {
+        // Try idToken (newer) or getSessionToken (older)
+        let token: string | undefined;
+        if (typeof (app as any).idToken === 'function') {
+          token = await (app as any).idToken();
+        } else if (typeof (app as any).getSessionToken === 'function') {
+          token = await (app as any).getSessionToken();
         }
-      } catch (error) {
-        // Continue without token - will fall back to cookie auth
-        console.log('Session token not available, using cookie auth');
+        
+        if (token && token !== 'undefined') {
+          headers.set('Authorization', `Bearer ${token}`);
+        }
       }
-      
-      return fetch(url, {
-        ...options,
-        headers,
-        credentials: 'include',
-      });
-    };
-  }, []);
+    } catch (error) {
+      console.log('Could not get session token, using cookie auth');
+    }
+    
+    return fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include',
+    });
+  }, [app]);
+
+  return fetchWithAuth;
 }
