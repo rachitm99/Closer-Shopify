@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import { createAuthenticatedFetch } from '../lib/auth-fetch';
+import { useAuthenticatedFetch } from '../lib/use-auth-fetch';
 import {
   Page,
   Layout,
@@ -23,8 +22,7 @@ import {
 
 function Onboarding() {
   const router = useRouter();
-  const app = useAppBridge();
-  const authFetch = useMemo(() => createAuthenticatedFetch(app), [app]);
+  const authFetch = useAuthenticatedFetch();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

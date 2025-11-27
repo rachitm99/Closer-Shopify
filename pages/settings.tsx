@@ -1,8 +1,7 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import { createAuthenticatedFetch } from '../lib/auth-fetch';
+import { useAuthenticatedFetch } from '../lib/use-auth-fetch';
 import { useRouter } from 'next/router';
 import {
   Page,
@@ -21,8 +20,7 @@ import {
 
 function SettingsPage() {
   const router = useRouter();
-  const app = useAppBridge();
-  const authFetch = useMemo(() => createAuthenticatedFetch(app), [app]);
+  const authFetch = useAuthenticatedFetch();
   const [enabled, setEnabled] = useState(false);
   const [logoUrl, setLogoUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');

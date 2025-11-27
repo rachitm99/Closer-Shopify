@@ -1,8 +1,7 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import { createAuthenticatedFetch } from '../lib/auth-fetch';
+import { useAuthenticatedFetch } from '../lib/use-auth-fetch';
 import {
   Page,
   Layout,
@@ -61,8 +60,7 @@ function Dashboard() {
   const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
   const [shop, setShop] = useState<string>('');
   const [onboardingComplete, setOnboardingComplete] = useState(false);
-  const app = useAppBridge();
-  const authFetch = useMemo(() => createAuthenticatedFetch(app), [app]);
+  const authFetch = useAuthenticatedFetch();
 
   useEffect(() => {
     const checkOnboardingAndLoadData = async () => {
