@@ -8,9 +8,23 @@ embedded = true
 [webhooks]
 api_version = "2025-10"
 
+# App lifecycle webhook
 [[webhooks.subscriptions]]
 topics = ["app/uninstalled"]
 uri = "/api/webhooks/app/uninstalled"
+
+# Mandatory GDPR compliance webhooks
+[[webhooks.subscriptions]]
+topics = ["customers/data_request"]
+uri = "/api/webhooks/customers/data_request"
+
+[[webhooks.subscriptions]]
+topics = ["customers/redact"]
+uri = "/api/webhooks/customers/redact"
+
+[[webhooks.subscriptions]]
+topics = ["shop/redact"]
+uri = "/api/webhooks/shop/redact"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
@@ -22,9 +36,3 @@ use_legacy_install_flow = false
 redirect_urls = [
   "https://closer-qq8c.vercel.app/api/auth/callback"
 ]
-
-# Mandatory GDPR compliance webhooks
-[privacy_compliance]
-customer_data_request_url = "https://closer-qq8c.vercel.app/api/webhooks/customers/data_request"
-customer_deletion_url = "https://closer-qq8c.vercel.app/api/webhooks/customers/redact"
-shop_deletion_url = "https://closer-qq8c.vercel.app/api/webhooks/shop/redact"
