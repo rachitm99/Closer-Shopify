@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { createAuthenticatedFetch } from '../lib/auth-fetch';
@@ -51,7 +52,7 @@ interface SubmissionData {
   submissionCount?: number;
 }
 
-export default function Dashboard() {
+function Dashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -124,7 +125,6 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-
     checkOnboardingAndLoadData();
   }, [authFetch]);
 
@@ -464,3 +464,5 @@ export default function Dashboard() {
     </Frame>
   );
 }
+
+export default dynamic(() => Promise.resolve(Dashboard), { ssr: false });

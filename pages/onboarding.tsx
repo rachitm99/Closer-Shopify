@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useAppBridge } from '@shopify/app-bridge-react';
@@ -20,7 +21,7 @@ import {
   TextContainer,
 } from '@shopify/polaris';
 
-export default function Onboarding() {
+function Onboarding() {
   const router = useRouter();
   const app = useAppBridge();
   const authFetch = useMemo(() => createAuthenticatedFetch(app), [app]);
@@ -33,9 +34,7 @@ export default function Onboarding() {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
-
-  // Settings state
-  const [enabled, setEnabled] = useState(true); // Default enabled for new users
+  const [enabled, setEnabled] = useState(true);
   const [logoUrl, setLogoUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
   const [rulesTitle, setRulesTitle] = useState('How to Enter:');
@@ -698,3 +697,5 @@ export default function Onboarding() {
     </Frame>
   );
 }
+
+export default dynamic(() => Promise.resolve(Onboarding), { ssr: false });

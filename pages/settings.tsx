@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { createAuthenticatedFetch } from '../lib/auth-fetch';
@@ -18,7 +19,7 @@ import {
   Text,
 } from '@shopify/polaris';
 
-export default function Home() {
+function SettingsPage() {
   const router = useRouter();
   const app = useAppBridge();
   const authFetch = useMemo(() => createAuthenticatedFetch(app), [app]);
@@ -44,7 +45,6 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
 
-  // Load current settings
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -505,3 +505,5 @@ export default function Home() {
     </Frame>
   );
 }
+
+export default dynamic(() => Promise.resolve(SettingsPage), { ssr: false });
