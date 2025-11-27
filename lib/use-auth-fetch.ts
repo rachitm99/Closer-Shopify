@@ -1,9 +1,10 @@
 import { useCallback, useContext } from 'react';
 import { Context as AppBridgeContext } from '@shopify/app-bridge-react';
+import { getSessionToken } from '@shopify/app-bridge/utilities';
 
 /**
  * Creates an authenticated fetch function.
- * Tries to get session token from App Bridge, falls back to cookie auth.
+ * Uses App Bridge getSessionToken utility for v3.x
  */
 export function useAuthenticatedFetch() {
   // Get app from context - will be undefined if not in provider
@@ -13,22 +14,15 @@ export function useAuthenticatedFetch() {
     const headers = new Headers(options.headers);
     
     // Try to get session token from App Bridge
-    try {
-      if (app) {
-        // Try idToken (newer) or getSessionToken (older)
-        let token: string | undefined;
-        if (typeof (app as any).idToken === 'function') {
-          token = await (app as any).idToken();
-        } else if (typeof (app as any).getSessionToken === 'function') {
-          token = await (app as any).getSessionToken();
-        }
-        
-        if (token && token !== 'undefined') {
+    if (app) {
+      try {
+        const token = await getSessionToken(app);
+        if (token) {
           headers.set('Authorization', `Bearer ${token}`);
         }
+      } catch (error) {
+        console.log('Could not get session token:', error);
       }
-    } catch (error) {
-      console.log('Could not get session token, using cookie auth');
     }
     
     return fetch(url, {
