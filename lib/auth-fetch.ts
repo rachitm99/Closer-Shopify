@@ -2,16 +2,14 @@
 // and avoid strongly typed `App` to keep this lightweight; callers can pass any AppBridge instance.
 // Attempt to require '@shopify/app-bridge-utils' (it is optional / may be deprecated).
 let getSessionToken: any = null;
-// Try a dynamic import. If the package is present it will be loaded, otherwise skip.
 try {
-  import('@shopify/app-bridge-utils').then((utils) => {
-    getSessionToken = utils.getSessionToken;
-  }).catch(() => {
-    console.warn('@shopify/app-bridge-utils not available, falling back to cookies for authentication');
-  });
+  // Use require at module load-time to provide the helper immediately if available.
+  // This is a best-effort load; if the module isn't installed, we'll gracefully fall back.
+  // @ts-ignore - require may fail if package is missing, which is the expected fallback.
+  const utils = require('@shopify/app-bridge-utils');
+  getSessionToken = utils.getSessionToken;
 } catch (err) {
-  // In rare environments dynamic import may throw synchronously
-  console.warn('@shopify/app-bridge-utils dynamic import failed, falling back to cookies');
+  console.warn('@shopify/app-bridge-utils not available, falling back to cookies for authentication');
 }
 type AppLike = any;
 
