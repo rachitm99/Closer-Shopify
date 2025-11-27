@@ -8,9 +8,15 @@ embedded = true
 [webhooks]
 api_version = "2025-10"
 
+# App lifecycle webhook
 [[webhooks.subscriptions]]
 topics = ["app/uninstalled"]
 uri = "/api/webhooks/app/uninstalled"
+
+# Mandatory GDPR compliance webhooks
+[[webhooks.subscriptions]]
+compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
+uri = "https://closer-qq8c.vercel.app/api/webhooks"
 
 [access_scopes]
 scopes = "read_orders"
