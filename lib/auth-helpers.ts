@@ -9,34 +9,45 @@ const cryptr = new Cryptr(process.env.ENCRYPTION_SECRET || 'default-secret-key')
 
 export async function getSessionFromRequest(req: NextApiRequest) {
   try {
+    // First, try to get session from Authorization header (session token)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      try {
+        // Verify and decode the session token
+        const payload = await shopify.session.decodeSessionToken(token);
+        if (payload && payload.dest) {
+          // Extract shop from the token's dest claim
+          const shopDomain = payload.dest.replace('https://', '');
+          
+          // Try to load existing session for this shop
+          const sessionId = `offline_${shopDomain}`;
+          let session = await loadSession(sessionId);
+          
+          if (session) {
+            console.log('Session loaded from token for shop:', shopDomain);
+            return session;
+          }
+          
+          // If no stored session, create a minimal session from the token
+          console.log('Creating session from token for shop:', shopDomain);
+          return new Session({
+            id: sessionId,
+            shop: shopDomain,
+            state: '',
+            isOnline: false,
+          });
+        }
+      } catch (tokenError) {
+        console.error('Error decoding session token:', tokenError);
+      }
+    }
+
+    // Fall back to cookie-based session
     const cookies = cookie.parse(req.headers.cookie || '');
     const sessionId = cookies.shopify_app_session;
 
     console.log('Looking for session:', sessionId ? 'found cookie' : 'no cookie');
-
-    // If we have an Authorization header with a session token, prefer that
-    const authHeader = (req.headers.authorization || req.headers.Authorization) as string | undefined;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const sessionToken = authHeader.replace('Bearer ', '');
-      try {
-        const payload = await shopify.session.decodeSessionToken(sessionToken);
-        const shop = (payload.dest || '').replace('https://', '');
-        if (shop) {
-          // Create a lightweight session object compatible with the `Session` interface
-          const sessionObj: any = new Session({
-            id: sessionToken,
-            shop,
-            state: '',
-            isOnline: false,
-            accessToken: '',
-            scope: process.env.SHOPIFY_SCOPES || '',
-          } as any);
-          return sessionObj;
-        }
-      } catch (e) {
-        console.error('Failed to decode session token from Authorization header', e);
-      }
-    }
 
     if (!sessionId) {
       return null;

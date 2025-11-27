@@ -4,60 +4,70 @@ import { db, collections } from '../../../../lib/firestore';
 
 export const config = { api: { bodyParser: false } };
 
+/**
+ * APP_UNINSTALLED webhook handler
+ * Called when a shop uninstalls the app
+ * Clean up sessions immediately, keep data for 48h (shop/redact will delete later)
+ */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   const secret = process.env.SHOPIFY_API_SECRET || '';
   const raw = await readAndVerifyShopifyWebhook(req, secret);
-  if (!raw) return res.status(401).send('Unauthorized');
+  
+  if (!raw) {
+    return res.status(401).send('Unauthorized');
+  }
+  
   const body = JSON.parse(raw.toString('utf8'));
-
   console.log('app/uninstalled payload:', body);
 
-  const shop = (req.headers['x-shopify-shop-domain'] as string) || (body?.shop_domain || body?.shop || null);
+  const shop = (req.headers['x-shopify-shop-domain'] as string) || body?.myshopify_domain || body?.domain || null;
+
   if (!shop) {
-    return res.status(400).json({ success: false, error: 'Missing shop identifier' });
+    console.error('app/uninstalled: Missing shop domain');
+    return res.status(200).json({ success: true });
   }
 
   try {
-    // Clean up data for this shop
-    const submissionsSnapshot = await db.collection(collections.submissions)
-      .where('shop', '==', shop)
-      .get();
-    if (!submissionsSnapshot.empty) {
-      const batch = db.batch();
-      submissionsSnapshot.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-    }
-
-    const settingsSnapshot = await db.collection(collections.settings)
-      .where('shop', '==', shop)
-      .get();
-    if (!settingsSnapshot.empty) {
-      const batch = db.batch();
-      settingsSnapshot.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-    }
-
+    // Delete sessions immediately (no need to keep them)
     const sessionsSnapshot = await db.collection(collections.sessions)
       .where('shop', '==', shop)
       .get();
+    
     if (!sessionsSnapshot.empty) {
       const batch = db.batch();
-      sessionsSnapshot.forEach((doc) => batch.delete(doc.ref));
+      sessionsSnapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
       await batch.commit();
+      console.log(`✅ Deleted ${sessionsSnapshot.size} sessions for uninstalled shop`);
     }
 
-    const merchantsSnapshot = await db.collection(collections.merchants)
+    // Mark the shop as uninstalled in settings (don't delete yet - shop/redact will handle it)
+    const settingsSnapshot = await db.collection(collections.settings)
       .where('shop', '==', shop)
       .get();
-    if (!merchantsSnapshot.empty) {
+    
+    if (!settingsSnapshot.empty) {
       const batch = db.batch();
-      merchantsSnapshot.forEach((doc) => batch.delete(doc.ref));
+      settingsSnapshot.forEach((doc) => {
+        batch.update(doc.ref, { 
+          uninstalledAt: new Date().toISOString(),
+          enabled: false 
+        });
+      });
       await batch.commit();
+      console.log(`✅ Marked shop ${shop} as uninstalled`);
     }
 
+    console.log(`✅ App uninstall processed for ${shop}`);
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Failed to clean up shop data after uninstall:', err);
-    return res.status(500).json({ success: false, error: 'Internal server error' });
+    console.error('Error processing app/uninstalled:', err);
+    // Still return 200 to acknowledge receipt
+    return res.status(200).json({ success: true });
   }
 }

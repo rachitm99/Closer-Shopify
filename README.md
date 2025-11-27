@@ -66,8 +66,7 @@ A **free** Next.js Shopify app that allows merchants to enable/disable a predefi
 In your app settings, configure the following scopes:
 - `read_orders` - To access order information
 - `write_script_tags` - To inject scripts (optional)
-
-Note: This app no longer requires the `read_customers` scope. Instead, we collect the Shopify `customerId` on submissions from the UI and store it in the app's database. For customer data compliance, we respond to the `CUSTOMERS_DATA_REQUEST` webhook and return app-stored data for the provided customer ID or email. This lets the app avoid requiring the `read_customers` scope while still complying with Shopify's data access requirements.
+- `read_customers` - To access customer data (optional)
 
 ### 3. Clone and Install Dependencies
 
@@ -93,7 +92,7 @@ Edit `.env` with your Shopify app credentials:
 ```env
 SHOPIFY_API_KEY=your_api_key_here
 SHOPIFY_API_SECRET=your_api_secret_here
-SHOPIFY_SCOPES=read_orders,write_script_tags
+SHOPIFY_SCOPES=read_orders,write_script_tags,read_customers
 
 HOST=https://your-app-url.vercel.app
 SHOPIFY_APP_URL=https://your-app-url.vercel.app
@@ -199,53 +198,6 @@ npm run dev
 
 # Open http://localhost:3000
 ```
-
-## Privacy & Compliance
-
-- This app avoids requesting the `read_customers` scope by collecting the Shopify `customerId` from the extension UI when customers submit entries. The `customerId` is stored in the app database to support Shopify's `CUSTOMERS_DATA_REQUEST` webhook.
-- The app implements the required compliance webhooks (CUSTOMERS_DATA_REQUEST, CUSTOMERS_REDACT, SHOP_REDACT, APP_UNINSTALLED) and verifies each webhook with an HMAC using `SHOPIFY_API_SECRET`.
-- On `customers/data_request`, the app returns matching entries from its store (by `customerId` or `customerEmail`) as required by Shopify. The handler is implemented in `pages/api/webhooks/customers/data_request.ts`.
-- On `customers/redact`, the app anonymizes or deletes app-stored PII for the given customer ID or email to comply with data deletion requests. See `pages/api/webhooks/customers/redact.ts`.
-- On `shop/redact` and `app/uninstalled`, the app deletes or anonymizes shop-specific data from its Firestore, including `submissions`, `settings`, `sessions`, and `merchants` entries.
-
-## App Bridge & Session Tokens
-
-- The admin (embedded) UI is powered by Shopify App Bridge and loads the App Bridge script from Shopify's CDN in `pages/_document.tsx`.
-- All authenticated admin API calls are made using App Bridge session tokens (retrieved using `@shopify/app-bridge-utils`) and sent in the `Authorization: Bearer <token>` header. These are validated server-side using `shopify.session.decodeSessionToken`, and `lib/auth-helpers.ts` now supports both cookie-based sessions and bearer session tokens.
-
-Note: `@shopify/app-bridge-utils` may be deprecated. The app attempts to use App Bridge's token helper when available, and it gracefully falls back to cookie-based session authentication if that package isn't available or the environment doesn't provide it. When App Bridge token is available, `lib/auth-fetch.ts` uses the token to attach an `Authorization: Bearer` header.
-
-### Verification Checklist for App Review
-
-To help ensure Shopify app review will pass, the following are implemented and tested:
-
-- Mandatory compliance webhooks are present in `shopify.app.toml` and programmatically registered at OAuth callback in `pages/api/auth/callback.ts`.
-- Each webhook endpoint checks the HMAC signature using `SHOPIFY_API_SECRET` (see `lib/webhook-verifier.ts`) and returns 200 when valid.
-- `pages/api/webhooks/customers/data_request.ts` returns the app-stored customer data array as `data` for the provided `customerId` or `customerEmail`, or a job id for large exports.
-- Session tokens are used for admin UI pages and are attached as `Authorization: Bearer <token>` via `lib/auth-fetch.ts`.
-- Embedded admin pages are using `@shopify/app-bridge-react` and load the App Bridge script from Shopify's CDN in `pages/_document.tsx`.
-
-If you want a one-page checklist to run before re-submitting the app for verification, I can add a `pages/debug` UI that shows registered webhooks and current `SHOPIFY_API_SECRET` presence (without exposing actual secret) so reviewers can validate connectivity.
-
-If you need to request `read_customers` for other features, consider documenting the reason and implementing a clear privacy policy for the store owners as part of the app submission process.
-
-### Verify Webhooks & HMAC
-
-If Shopify's review process indicates your app doesn't verify webhooks, ensure the following:
-- `SHOPIFY_API_SECRET` is set in your deployed environment (Vercel / host) and matches the app's secret.
-- Your webhook endpoints in `pages/api/webhooks/*` are configured with `export const config = { api: { bodyParser: false } };` so HMAC can be computed against the raw body.
-- Your endpoints verify HMAC with the `X-Shopify-Hmac-Sha256` request header using `SHOPIFY_API_SECRET`.
-
-You can test webhooks locally or on your deployed environment with the included script:
-```bash
-# Install dependencies
-npm install node-fetch
-
-# Example: send a test data_request
-node scripts/send-test-webhook.js https://your-app.vercel.app/api/webhooks/customers/data_request $SHOPIFY_API_SECRET CUSTOMERS_DATA_REQUEST
-```
-
-If your endpoint logs show `SHOPIFY_API_SECRET is not set` or `Webhook HMAC mismatch` your secret is incorrect or the payload differs from the signature calculation. Make sure the deployment env and the app's secret are consistent.
 
 For local development with Shopify, you'll need to use a tunneling service like ngrok:
 

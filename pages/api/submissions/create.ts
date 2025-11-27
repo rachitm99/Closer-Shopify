@@ -15,7 +15,6 @@ export interface FormSubmission {
   orderNumber?: string;
   customerEmail?: string;
   updatedAt?: FirebaseFirestore.Timestamp;
-  customerId?: string;
   submissionCount?: number;
   isFollowerChecked?: boolean;
   isFollowing?: boolean;
@@ -50,31 +49,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const payload = await shopify.session.decodeSessionToken(sessionToken);
       const shop = payload.dest.replace('https://', '');
 
-      const { instaHandle, orderNumber, customerEmail, customerId } = req.body;
+      const { instaHandle, orderNumber, customerEmail } = req.body;
 
       if (!instaHandle) {
         return res.status(400).json({ error: 'Instagram handle is required' });
       }
 
-      // Check for existing submission by customerId, otherwise by customer email
+      // Check for existing submission by customer email
       let existingSubmission = null;
       let submissionId = '';
       
-      if (customerId) {
-        // Try by customer id first
-        const existingQueryById = await db.collection(collections.submissions)
-          .where('shop', '==', shop)
-          .where('customerId', '==', customerId)
-          .limit(1)
-          .get();
-
-        if (!existingQueryById.empty) {
-          existingSubmission = existingQueryById.docs[0];
-          submissionId = existingSubmission.id;
-        }
-      }
-
-      if (!existingSubmission && customerEmail) {
+      if (customerEmail) {
         // Query for existing submission by email
         const existingQuery = await db.collection(collections.submissions)
           .where('shop', '==', shop)
@@ -95,7 +80,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ...existingData,
           instaHandle, // Update with latest Instagram handle
           orderNumber: orderNumber || existingData.orderNumber || '',
-          customerId: customerId || existingData.customerId || '',
           updatedAt: Timestamp.now(),
           submissionCount: (existingData.submissionCount || 1) + 1,
           isFollowerChecked: false,
@@ -105,7 +89,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await db.collection(collections.submissions).doc(submissionId).update({
           instaHandle,
           orderNumber: orderNumber || existingData.orderNumber || '',
-          customerId: customerId || existingData.customerId || '',
           updatedAt: FieldValue.serverTimestamp(),
           submissionCount: (existingData.submissionCount || 1) + 1,
           isFollowerChecked: false,
@@ -129,7 +112,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           instaHandle,
           orderNumber: orderNumber || '',
           customerEmail: customerEmail || '',
-          customerId: customerId || '',
           submittedAt: Timestamp.now(),
           submissionCount: 1,
           isFollowerChecked: false,

@@ -1,41 +1,34 @@
-// Use require for optional dependency to avoid TypeScript errors when not installed yet
-// and avoid strongly typed `App` to keep this lightweight; callers can pass any AppBridge instance.
-// Attempt to require '@shopify/app-bridge-utils' (it is optional / may be deprecated).
-let getSessionToken: any = null;
-try {
-  // Use eval('require') to avoid bundler static analysis. This prevents the build
-  // from attempting to resolve '@shopify/app-bridge-utils' when it isn't installed.
-  const req: any = eval('require');
-  const utils = req('@shopify/app-bridge-utils');
-  getSessionToken = utils?.getSessionToken;
-} catch (err) {
-  // Not available or failed to import — continue without tokens (cookie fallback)
-  // We intentionally only warn, to avoid noisy failures during builds where
-  // the optional module may be absent.
-  if (typeof window === 'undefined') {
-    // Server-side warn for admins to check environment if they expect tokens
-    console.warn('@shopify/app-bridge-utils not available; admin session token fetching disabled.');
-  }
-}
-type AppLike = any;
-
-export function createAuthenticatedFetch(app?: AppLike) {
-  return async (input: RequestInfo, init?: RequestInit) => {
-    // If the App Bridge instance is provided, fetch a session token
-    if (app && getSessionToken) {
-      try {
-          const token = await getSessionToken(app as any);
-        init = init || {};
-        init.headers = {
-          ...(init.headers || {}),
-          Authorization: `Bearer ${token}`,
-        } as any;
-      } catch (err) {
-        // Fall back to unauthenticated fetch
-        console.error('Failed to obtain session token from App Bridge:', err);
+/**
+ * Creates an authenticated fetch function that uses App Bridge session tokens.
+ * This is required for Shopify's embedded app authentication.
+ */
+export function createAuthenticatedFetch(app: any) {
+  return async (url: string, options: RequestInit = {}): Promise<Response> => {
+    try {
+      // Get session token from App Bridge (idToken method for newer App Bridge)
+      let token: string | undefined;
+      
+      if (typeof app?.idToken === 'function') {
+        token = await app.idToken();
+      } else if (typeof app?.getSessionToken === 'function') {
+        token = await app.getSessionToken();
       }
+      
+      const headers = new Headers(options.headers);
+      headers.set('Authorization', `Bearer ${token}`);
+      
+      return fetch(url, {
+        ...options,
+        headers,
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Error getting session token:', error);
+      // Fallback to regular fetch with credentials
+      return fetch(url, {
+        ...options,
+        credentials: 'include',
+      });
     }
-
-    return fetch(input, init);
   };
 }
