@@ -9,8 +9,8 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            // Only restrict frame-ancestors for Shopify embedding, allow everything else
-            value: "frame-ancestors https://*.myshopify.com https://admin.shopify.com;"
+            // Allow embedding in Shopify admin domains - CSP takes precedence over X-Frame-Options
+            value: "frame-ancestors https://*.myshopify.com https://admin.shopify.com https://*.admin.shopify.com;"
           },
         ],
       },
