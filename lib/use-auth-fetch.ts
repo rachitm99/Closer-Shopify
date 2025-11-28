@@ -16,25 +16,40 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 
 /**
  * Creates an authenticated fetch function.
- * Uses App Bridge npm package for session tokens (CDN script is also loaded for compliance)
+ * Primarily uses App Bridge CDN (window.shopify), falls back to npm package
  */
 export function useAuthenticatedFetch() {
-  // Get app from context - will be undefined if not in provider
+  // Get app from context for fallback
   const app = useContext(AppBridgeContext);
 
   const fetchWithAuth = useCallback(async (url: string, options: RequestInit = {}): Promise<Response> => {
     const headers = new Headers(options.headers);
+    let tokenObtained = false;
     
-    // Try to get session token from App Bridge npm package
-    if (app) {
+    // PRIMARY: Try to get token from App Bridge CDN (window.shopify)
+    const shopify = typeof window !== 'undefined' ? (window as any).shopify : null;
+    if (shopify && typeof shopify.idToken === 'function') {
       try {
-        // Add 5 second timeout to prevent hanging
-        const token = await withTimeout(getSessionToken(app), 5000);
+        const token = await withTimeout(shopify.idToken(), 3000);
         if (token) {
           headers.set('Authorization', `Bearer ${token}`);
+          tokenObtained = true;
         }
       } catch (error) {
-        console.log('Could not get session token, using cookie-based auth');
+        // CDN method failed, will try npm fallback
+      }
+    }
+    
+    // FALLBACK: Try npm package if CDN didn't work
+    if (!tokenObtained && app) {
+      try {
+        const token = await withTimeout(getSessionToken(app), 3000);
+        if (token) {
+          headers.set('Authorization', `Bearer ${token}`);
+          tokenObtained = true;
+        }
+      } catch (error) {
+        // npm method also failed
       }
     }
     
