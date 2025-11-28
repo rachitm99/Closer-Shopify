@@ -1,6 +1,14 @@
-import { useCallback, useContext } from 'react';
-import { Context as AppBridgeContext } from '@shopify/app-bridge-react';
-import { getSessionToken } from '@shopify/app-bridge/utilities';
+import { useCallback } from 'react';
+
+// Declare the global shopify object from CDN
+declare global {
+  interface Window {
+    shopify?: {
+      createApp: (config: { apiKey: string }) => any;
+      idToken: () => Promise<string>;
+    };
+  }
+}
 
 /**
  * Helper function to add timeout to a promise
@@ -16,36 +24,31 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 
 /**
  * Creates an authenticated fetch function.
- * Uses App Bridge getSessionToken utility for v3.x
+ * Uses App Bridge CDN's idToken() for session tokens
  */
 export function useAuthenticatedFetch() {
-  // Get app from context - will be undefined if not in provider
-  const app = useContext(AppBridgeContext);
-  
-  console.log('🔐 useAuthenticatedFetch - App Bridge context:', app ? '✅ Available' : '❌ Not available');
-
   const fetchWithAuth = useCallback(async (url: string, options: RequestInit = {}): Promise<Response> => {
     console.log(`🚀 AuthFetch - Starting request to: ${url}`);
     const headers = new Headers(options.headers);
     
-    // Try to get session token from App Bridge with a timeout
-    if (app) {
-      console.log('🔑 AuthFetch - Attempting to get session token from App Bridge...');
+    // Try to get session token from App Bridge CDN
+    if (typeof window !== 'undefined' && window.shopify?.idToken) {
+      console.log('🔑 AuthFetch - Attempting to get ID token from App Bridge CDN...');
       try {
         // Add 5 second timeout to prevent hanging
-        const token = await withTimeout(getSessionToken(app), 5000);
+        const token = await withTimeout(window.shopify.idToken(), 5000);
         if (token) {
-          console.log('✅ AuthFetch - Session token obtained successfully');
+          console.log('✅ AuthFetch - ID token obtained successfully from CDN');
           headers.set('Authorization', `Bearer ${token}`);
         } else {
-          console.log('⚠️ AuthFetch - Session token was empty/null');
+          console.log('⚠️ AuthFetch - ID token was empty/null');
         }
       } catch (error) {
-        console.log('❌ AuthFetch - Failed to get session token:', error);
+        console.log('❌ AuthFetch - Failed to get ID token:', error);
         console.log('🔄 AuthFetch - Will fall back to cookie-based auth');
       }
     } else {
-      console.log('⚠️ AuthFetch - No App Bridge context, using cookie-based auth only');
+      console.log('⚠️ AuthFetch - window.shopify.idToken not available, using cookie-based auth only');
     }
     
     console.log(`📡 AuthFetch - Making fetch request to: ${url}`);
@@ -57,7 +60,7 @@ export function useAuthenticatedFetch() {
     console.log(`📥 AuthFetch - Response received: ${response.status} ${response.statusText}`);
     
     return response;
-  }, [app]);
+  }, []);
 
   return fetchWithAuth;
 }
