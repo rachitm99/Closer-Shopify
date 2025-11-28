@@ -7,8 +7,12 @@ export default function Document() {
     <Html lang="en">
       <Head>
         <meta charSet="utf-8" />
+        {/* App Bridge API Key - meta tag (for compatibility) */}
+        {apiKey && (
+          <meta name="shopify-api-key" content={apiKey} />
+        )}
         {/* App Bridge MUST be the first script, no async/defer/module */}
-        {/* API key is passed via data-api-key attribute */}
+        {/* API key is also passed via data-api-key attribute */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script 
           src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
