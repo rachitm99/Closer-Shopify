@@ -1,47 +1,58 @@
 import '@shopify/polaris/build/esm/styles.css';
 import type { AppProps } from 'next/app';
 import { AppProvider } from '@shopify/polaris';
+import { Provider as AppBridgeProvider } from '@shopify/app-bridge-react';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import enTranslations from '@shopify/polaris/locales/en.json';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  const [isShopifyReady, setIsShopifyReady] = useState(false);
+  const [host, setHost] = useState<string | null>(null);
   
-  console.log('🏠 _app.tsx - Rendering MyApp');
-  console.log('🏠 _app.tsx - router.isReady:', router.isReady);
-  
-  // Check if App Bridge CDN is available (auto-initialized by Shopify)
+  // Get host from URL - handle both query param and URL search params
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // The CDN script auto-initializes when loaded in Shopify admin
-      // We just need to check if it's available
-      const checkShopify = () => {
-        if ((window as any).shopify) {
-          console.log('✅ _app.tsx - Shopify App Bridge CDN is available');
-          console.log('✅ _app.tsx - window.shopify:', (window as any).shopify);
-          setIsShopifyReady(true);
-        } else {
-          console.log('⚠️ _app.tsx - Waiting for Shopify App Bridge CDN...');
-        }
-      };
-      
-      // Check immediately
-      checkShopify();
-      
-      // Also check after a short delay in case script is still loading
-      const timer = setTimeout(checkShopify, 500);
-      return () => clearTimeout(timer);
+    // Try to get host from router query first
+    if (router.query.host) {
+      setHost(router.query.host as string);
+      return;
     }
-  }, []);
+    
+    // Fallback: try to get from URL search params directly
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const hostParam = params.get('host');
+      if (hostParam) {
+        setHost(hostParam);
+      }
+    }
+  }, [router.query.host, router.isReady]);
+  
+  const appBridgeConfig = useMemo(() => {
+    if (!host) return null;
+    
+    return {
+      apiKey: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY || '',
+      host: host,
+      forceRedirect: true,
+    };
+  }, [host]);
 
-  console.log('🏠 _app.tsx - Shopify ready:', isShopifyReady);
+  // If no host parameter or no API key, render without App Bridge
+  if (!appBridgeConfig || !process.env.NEXT_PUBLIC_SHOPIFY_API_KEY) {
+    return (
+      <AppProvider i18n={enTranslations}>
+        <Component {...pageProps} />
+      </AppProvider>
+    );
+  }
 
   return (
-    <AppProvider i18n={enTranslations}>
-      <Component {...pageProps} />
-    </AppProvider>
+    <AppBridgeProvider config={appBridgeConfig}>
+      <AppProvider i18n={enTranslations}>
+        <Component {...pageProps} />
+      </AppProvider>
+    </AppBridgeProvider>
   );
 }
 
