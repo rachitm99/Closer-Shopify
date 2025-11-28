@@ -25,30 +25,37 @@ export function useAuthenticatedFetch() {
     const shopify = typeof window !== 'undefined' ? (window as any).shopify : null;
     
     if (shopify) {
-      console.log('🔑 AuthFetch - Shopify object available:', Object.keys(shopify));
+      console.log('🔑 AuthFetch - Shopify object available');
+      console.log('🔑 AuthFetch - idToken type:', typeof shopify.idToken);
+      console.log('🔑 AuthFetch - idToken value:', shopify.idToken);
       
-      // Try idToken() method (App Bridge CDN)
-      if (typeof shopify.idToken === 'function') {
-        console.log('🔑 AuthFetch - Attempting to get ID token from App Bridge CDN...');
-        try {
-          const token = await withTimeout(shopify.idToken(), 5000);
-          if (token) {
-            console.log('✅ AuthFetch - ID token obtained successfully from CDN');
-            headers.set('Authorization', `Bearer ${token}`);
-          } else {
-            console.log('⚠️ AuthFetch - ID token was empty/null');
-          }
-        } catch (error) {
-          console.log('❌ AuthFetch - Failed to get ID token:', error);
-          console.log('🔄 AuthFetch - Will fall back to cookie-based auth');
+      try {
+        let token: string | null = null;
+        
+        // Try different ways to get the token
+        if (typeof shopify.idToken === 'function') {
+          console.log('🔑 AuthFetch - Calling shopify.idToken() as function...');
+          token = await withTimeout(shopify.idToken(), 5000);
+        } else if (shopify.idToken && typeof shopify.idToken.fetch === 'function') {
+          console.log('🔑 AuthFetch - Calling shopify.idToken.fetch()...');
+          token = await withTimeout(shopify.idToken.fetch(), 5000);
+        } else if (shopify.idToken && typeof shopify.idToken.get === 'function') {
+          console.log('🔑 AuthFetch - Calling shopify.idToken.get()...');
+          token = await withTimeout(shopify.idToken.get(), 5000);
         }
-      } else {
-        console.log('⚠️ AuthFetch - shopify.idToken is not a function');
-        console.log('⚠️ AuthFetch - Available methods:', shopify);
+        
+        if (token) {
+          console.log('✅ AuthFetch - ID token obtained successfully');
+          headers.set('Authorization', `Bearer ${token}`);
+        } else {
+          console.log('⚠️ AuthFetch - No token obtained, using cookie-based auth');
+        }
+      } catch (error) {
+        console.log('❌ AuthFetch - Failed to get ID token:', error);
+        console.log('🔄 AuthFetch - Will fall back to cookie-based auth');
       }
     } else {
       console.log('⚠️ AuthFetch - Not in Shopify admin (window.shopify not available)');
-      console.log('⚠️ AuthFetch - Using cookie-based auth only');
     }
     
     console.log(`📡 AuthFetch - Making fetch request to: ${url}`);
