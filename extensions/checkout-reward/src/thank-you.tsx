@@ -9,7 +9,6 @@ import {
   useApi,
   Link,
   useSubscription,
-  useOrder
 } from '@shopify/ui-extensions-react/checkout';
 import { use, useEffect, useState } from 'react';
 
@@ -29,8 +28,10 @@ interface Settings {
 function ThankYouExtension() {
   const api = useApi();
   
-  const orderData = useOrder();
-  const { shop, sessionToken ,   } = api;
+  // Note: useOrder() is NOT available for purchase.thank-you.block.render target
+  // We'll get order/customer data from API context or session token instead
+  
+  const { shop, sessionToken } = api;
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [formValue, setFormValue] = useState('');
@@ -43,19 +44,18 @@ function ThankYouExtension() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        // Get order data from Thank You page API
-        // console.log("order data", orderData);
-        // Gather order/customer context from the embedded SDK if available
+        // Get order/customer context from the API if available
+        // useOrder() is not available for purchase.thank-you.block.render target
         try {
-          const orderInfo: any = orderData as any;
-          const emailValue = (api as any).email?.value || (orderInfo?.customer?.email ?? '');
-          const orderId = orderInfo?.id || orderInfo?.name || '';
-          const customerIdVal = orderInfo?.customer?.id || '';
+          // Try to get data from API context
+          const emailValue = (api as any).email?.value || '';
+          const orderId = (api as any).order?.id || (api as any).order?.name || '';
+          const customerIdVal = (api as any).customer?.id || '';
           setCustomerEmail(emailValue || '');
           setOrderNumber(orderId || '');
           setCustomerId(customerIdVal || '');
         } catch (err) {
-          // best-effort: ignore if useOrder isn't available in this surface
+          // best-effort: ignore if data isn't available
         }
         
         // console.log('Thank You Page - Order ID:', orderId);

@@ -9,8 +9,9 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            // Allow embedding in Shopify admin domains - CSP takes precedence over X-Frame-Options
-            value: "frame-ancestors https://*.myshopify.com https://admin.shopify.com https://*.admin.shopify.com;"
+            // Allow embedding in Shopify admin domains
+            // Explicitly set to override any default 'self' values from Vercel
+            value: "frame-ancestors https://*.myshopify.com https://admin.shopify.com https://*.admin.shopify.com https://*.shopify.com;"
           },
         ],
       },
