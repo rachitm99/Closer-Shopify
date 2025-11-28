@@ -7,7 +7,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return Promise.race([
     promise,
     new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error('Session token request timed out')), timeoutMs)
+      setTimeout(() => reject(new Error('Request timed out')), timeoutMs)
     ),
   ]);
 }
@@ -26,29 +26,25 @@ export function useAuthenticatedFetch() {
     
     if (shopify) {
       console.log('🔑 AuthFetch - Shopify object available');
-      console.log('🔑 AuthFetch - idToken type:', typeof shopify.idToken);
-      console.log('🔑 AuthFetch - idToken value:', shopify.idToken);
       
       try {
-        let token: string | null = null;
-        
-        // Try different ways to get the token
-        if (typeof shopify.idToken === 'function') {
-          console.log('🔑 AuthFetch - Calling shopify.idToken() as function...');
-          token = await withTimeout(shopify.idToken(), 5000);
-        } else if (shopify.idToken && typeof shopify.idToken.fetch === 'function') {
-          console.log('🔑 AuthFetch - Calling shopify.idToken.fetch()...');
-          token = await withTimeout(shopify.idToken.fetch(), 5000);
-        } else if (shopify.idToken && typeof shopify.idToken.get === 'function') {
-          console.log('🔑 AuthFetch - Calling shopify.idToken.get()...');
-          token = await withTimeout(shopify.idToken.get(), 5000);
+        // Wait for Shopify App Bridge to be fully ready
+        if (typeof shopify.ready === 'function') {
+          console.log('🔑 AuthFetch - Waiting for shopify.ready()...');
+          await withTimeout(shopify.ready(), 5000);
+          console.log('✅ AuthFetch - Shopify is ready');
         }
         
-        if (token) {
-          console.log('✅ AuthFetch - ID token obtained successfully');
-          headers.set('Authorization', `Bearer ${token}`);
-        } else {
-          console.log('⚠️ AuthFetch - No token obtained, using cookie-based auth');
+        // Now get the ID token
+        if (typeof shopify.idToken === 'function') {
+          console.log('🔑 AuthFetch - Calling shopify.idToken()...');
+          const token = await withTimeout(shopify.idToken(), 5000);
+          if (token) {
+            console.log('✅ AuthFetch - ID token obtained successfully');
+            headers.set('Authorization', `Bearer ${token}`);
+          } else {
+            console.log('⚠️ AuthFetch - No token obtained');
+          }
         }
       } catch (error) {
         console.log('❌ AuthFetch - Failed to get ID token:', error);
