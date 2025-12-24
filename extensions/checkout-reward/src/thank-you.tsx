@@ -13,6 +13,7 @@ import {
   Icon,
 } from '@shopify/ui-extensions-react/checkout';
 import { useEffect, useState } from 'react';
+import './fonts.css';
 
 interface Settings {
   enabled: boolean;
@@ -47,6 +48,9 @@ function ThankYouExtension() {
   const [customerEmail, setCustomerEmail] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
   const [customerId, setCustomerId] = useState('');
+
+  // Font family for extension (sans stack)
+  const fontFamily = '"Canva Sans", Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
   // Countdown timer (always starts from 2 days, 11 hours, 22 minutes, 11 seconds)
   const initialCountdownMs = (((2 * 24 + 11) * 60 + 22) * 60 + 11) * 1000; // calculate ms
@@ -354,6 +358,7 @@ function ThankYouExtension() {
 
 <View
     padding="loose"
+    style={{ fontFamily }}
     cornerRadius="large"
     border="base"
   >
@@ -375,7 +380,7 @@ function ThankYouExtension() {
 
   {/* TITLE */}
   <BlockStack spacing="none" alignment="center">
-  <Text size="large" emphasis="bold" alignment="center">
+  <Text size="large" emphasis="bold" alignment="center" style={{ fontFamily }}>
     {settings.popupTitle}
   </Text>
 </BlockStack>
@@ -408,7 +413,7 @@ function ThankYouExtension() {
             const days = Math.floor(totalHours / 24);
             const pad = (n: number) => String(n).padStart(2, '0');
             const formatted = `${pad(days)}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
-            return <Text size="medium" emphasis="bold">⏱️ {formatted}</Text>;
+            return <Text size="medium" emphasis="bold" style={{ fontFamily }}>⏱️ {formatted}</Text>;
           })()}
         </BlockStack>
       </View>
@@ -417,7 +422,7 @@ function ThankYouExtension() {
 
       {console.log('Thank You - Banner source set to https://closer-qq8c.vercel.app/give-away-banner.jpg')}
       <BlockStack spacing="tight">
-        <Text size="medium" emphasis="bold">
+        <Text size="medium" emphasis="bold" style={{ fontFamily }}>
           {settings.rulesTitle}
         </Text>
 
@@ -430,7 +435,7 @@ function ThankYouExtension() {
               inlineAlignment="left"
             >
               {/* <Text size="large" emphasis="bold"></Text> */}
-              <Text size="base" >• {rule}</Text>
+              <Text size="base" style={{ fontFamily }}>• {rule}</Text>
             </InlineStack>
           ))}
         </BlockStack>
@@ -450,23 +455,23 @@ function ThankYouExtension() {
             onPress={handleSubmit}
             loading={submitting}
             disabled={submitting}
-            style={{ width: '100%' }}
+            style={{ width: '100%', fontFamily }}
           >
             {settings.submitButtonText}
           </Button>
         </BlockStack>
       ) : (
         <BlockStack spacing="base" inlineAlignment="center">
-          <Text size="large" emphasis="bold">
+          <Text size="large" emphasis="bold" style={{ fontFamily }}>
             ✅ Entry Submitted!
           </Text>
-          <Text size="medium" alignment="center">
+          <Text size="medium" alignment="center" style={{ fontFamily }}>
             Thank you for entering! Good luck! 🍀
           </Text>
 
           {settings.redirectUrl && (
             <Link to={settings.redirectUrl} external>
-              <Button kind="primary" style={{ width: '100%' }}>
+              <Button kind="primary" style={{ width: '100%', fontFamily }}>
                 Follow Us on Instagram
               </Button>
             </Link>
