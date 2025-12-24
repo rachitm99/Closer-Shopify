@@ -388,11 +388,11 @@ function SettingsPage() {
                 </div>
                 */}
 
-                <div>
+                {/* <div>
                   <Text as="p" variant="bodySm" tone="subdued">
                     Logo upload is temporarily disabled.
                   </Text>
-                </div>
+                </div> */}
 
                 <div>
                   <Text as="p" variant="bodyMd" fontWeight="semibold">
