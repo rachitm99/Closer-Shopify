@@ -2,15 +2,17 @@ import {
   reactExtension,
   View,
   BlockStack,
+  InlineStack,
   Image,
   Text,
   TextField,
   Button,
   useApi,
   Link,
-  useSubscription,
+  Divider,
+  Icon,
 } from '@shopify/ui-extensions-react/checkout';
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Settings {
   enabled: boolean;
@@ -58,11 +60,6 @@ function ThankYouExtension() {
           // best-effort: ignore if data isn't available
         }
         
-        // console.log('Thank You Page - Order ID:', orderId);
-        
-        // setCustomerEmail(emailValue);
-        // setOrderNumber(orderId);
-        
         const token = await sessionToken.get();
         
         const response = await fetch(
@@ -79,7 +76,6 @@ function ThankYouExtension() {
           
           console.log('Thank You - Settings loaded:', data);
           console.log('Thank You - Enabled status:', data.enabled);
-          
           
           // Backward compatibility: convert old string format to array
           if (data.giveawayRules && typeof data.giveawayRules === 'string') {
@@ -131,10 +127,6 @@ function ThankYouExtension() {
       } finally {
         setLoading(false);
       }
-      // console.log("going to fetch order data");
-      
-      //   console.log(orderData);
-      //   console.log("finished fetching order data");
     }
 
     fetchSettings();
@@ -148,7 +140,6 @@ function ThankYouExtension() {
     
     if (settings?.enabled && settings?.shop) {
       console.log('Thank You - CONDITIONS MET! Starting impression tracking for shop:', settings.shop);
-      console.log('Thank You - Making fetch request to:', 'https://closer-qq8c.vercel.app/api/analytics/impressions');
       
       fetch(
         `https://closer-qq8c.vercel.app/api/analytics/impressions`,
@@ -164,26 +155,15 @@ function ThankYouExtension() {
         }
       )
       .then(response => {
-        console.log('Thank You - Fetch completed! Response status:', response.status, 'OK:', response.ok);
-        console.log('Thank You - Response headers:', response.headers);
-        if (!response.ok) {
-          console.error('Thank You - Response not OK! Status:', response.status, response.statusText);
-        }
+        console.log('Thank You - ✅ Impression tracked, status:', response.status);
         return response.json();
       })
       .then(data => {
-        console.log('Thank You - ✅ SUCCESS! Impression tracked successfully:', data);
-        console.log('Thank You - Response data:', JSON.stringify(data));
+        console.log('Thank You - ✅ SUCCESS! Impression response:', data);
       })
       .catch((err) => {
         console.error('Thank You - ❌ FETCH FAILED! Error:', err);
-        console.error('Thank You - Error message:', err.message);
-        console.error('Thank You - Error stack:', err.stack);
       });
-    } else {
-      console.log('Thank You - ⚠️ NOT tracking impression!');
-      console.log('Thank You - Reason - Settings enabled:', settings?.enabled, 'Shop present:', !!settings?.shop);
-      console.log('Thank You - Full settings object:', JSON.stringify(settings));
     }
   }, [settings]); // Run whenever settings change
 
@@ -241,119 +221,195 @@ function ThankYouExtension() {
   console.log('Thank You - Rendering extension!');
   
   return (
-    <View
-      border="none"
-      cornerRadius="large"
-      padding="none"
-    >
-      <BlockStack spacing="none">
-        {/* Vibrant header section with gradient-like effect */}
-        <View
-          cornerRadius="large"
-          padding="large"
-          background="accent"
-        >
-          <BlockStack spacing="base" inlineAlignment="center">
-            {/* Logo with decorative border */}
-            {settings.logoUrl && (
-              <View
-                border="base"
-                cornerRadius="fullyRounded"
-                padding="base"
-                background="base"
-                maxInlineSize={150}
-              >
-                <Image
-                  source={settings.logoUrl}
-                  alt="Logo"
-                />
-              </View>
-            )}
+//    <View
+//   border="base"
+//   cornerRadius="large"
+//   padding="loose"
+// >
+//   <BlockStack spacing="loose">
 
-            {/* Eye-catching title */}
-            <BlockStack spacing="tight" inlineAlignment="center">
-              <Text size="extraLarge" emphasis="bold">
-                {settings.popupTitle}
-              </Text>
-            </BlockStack>
-          </BlockStack>
-        </View>
+//     {/* HEADER */}
+//     <BlockStack spacing="base" inlineAlignment="center">
+//       {settings.logoUrl && (
+//         <View cornerRadius="base" maxInlineSize={100}>
+//           <Image source={settings.logoUrl} alt="Logo" />
+//         </View>
+//       )}
 
-        {/* Main content area with white background */}
-        <View
-          padding="large"
-          background="base"
-        >
-          <BlockStack spacing="large">
-            {/* Rules section with title and bullet points */}
-            <View
-              border="base"
-              cornerRadius="base"
-              padding="base"
-            >
-              <BlockStack spacing="base">
-                <Text size="large" emphasis="bold">
-                  {settings.rulesTitle}
-                </Text>
-                <BlockStack spacing="base">
-                  {settings.giveawayRules.map((rule, index) => (
-                    <Text key={index} size="medium">• {rule}</Text>
-                  ))}
-                </BlockStack>
-              </BlockStack>
-            </View>
+//       <Text size="large" emphasis="bold">
+//         {settings.popupTitle}
+//       </Text>
+//     </BlockStack>
 
-            {!submitted ? (
-              <BlockStack spacing="base">
-                {/* Instagram username input */}
-                <TextField
-                  label="Instagram Handle"
-                  value={formValue}
-                  onChange={setFormValue}
-                  prefix="@"
-                />
+//     <Divider />
 
-                {/* Prominent button that handles long text */}
-                <Button
-                  kind="primary"
-                  onPress={handleSubmit}
-                  loading={submitting}
-                  disabled={submitting}
-                >
-                  {settings.submitButtonText}
-                </Button>
-              </BlockStack>
-            ) : (
-              <View
-                border="base"
-                cornerRadius="base"
-                padding="large"
-                background="accent"
-              >
-                <BlockStack spacing="base" inlineAlignment="center">
-                  <Text size="extraLarge" emphasis="bold">
-                    🎉 🎊 ✨
-                  </Text>
-                  <Text size="large" emphasis="bold">
-                    Thank you! Your entry has been submitted.
-                  </Text>
-                  <Text size="medium" emphasis="bold">
-                    Good luck! 🍀 ⭐ 💫
-                  </Text>
-                  {settings.redirectUrl && (
-                    <Link to={settings.redirectUrl} external>
-                      <Button kind="primary">
-                        Visit Our Instagram →
-                      </Button>
-                    </Link>
-                  )}
-                </BlockStack>
-              </View>
-            )}
-          </BlockStack>
-        </View>
-      </BlockStack>
+//     {/* MAIN CONTENT */}
+//     {!submitted ? (
+//       <BlockStack spacing="extraLoose">
+
+//         {/* RULES */}
+//         <BlockStack spacing="tight">
+//           <Text size="medium" emphasis="bold">
+//             {settings.rulesTitle}
+//           </Text>
+
+//           <BlockStack spacing="extraTight">
+//             {settings.giveawayRules.map((rule, index) => (
+//               <InlineStack
+//                 key={index}
+//                 spacing="tight"
+//                 blockAlignment="center"
+//               >
+//                 <Text size="small" appearance="succeed">
+//                   {index + 1}.
+//                 </Text>
+//                 <Text size="small">{rule}</Text>
+//               </InlineStack>
+//             ))}
+//           </BlockStack>
+//         </BlockStack>
+
+//         <Divider />
+
+//         {/* FORM */}
+//         <BlockStack spacing="base">
+//           <TextField
+//             label={settings.formFieldLabel}
+//             value={formValue}
+//             onChange={setFormValue}
+//             prefix="@"
+//           />
+
+//           <Button
+//             kind="primary"
+//             onPress={handleSubmit}
+//             loading={submitting}
+//             disabled={submitting}
+//           >
+//             {settings.submitButtonText}
+//           </Button>
+//         </BlockStack>
+//       </BlockStack>
+//     ) : (
+
+//       /* THANK YOU STATE */
+//       <BlockStack spacing="base" inlineAlignment="center">
+//         <Text size="large" emphasis="bold">
+//           🎉 Entry Submitted!
+//         </Text>
+
+//         <Text size="medium" appearance="subdued">
+//           Thank you for entering! Good luck! 🍀
+//         </Text>
+
+//         {settings.redirectUrl && (
+//           <Link to={settings.redirectUrl} external>
+//             <Button kind="secondary">Follow Us on Instagram</Button>
+//           </Link>
+//         )}
+//       </BlockStack>
+//     )}
+//   </BlockStack>
+// </View>
+
+
+
+<View
+    padding="loose"
+    cornerRadius="large"
+    border="base"
+  >
+    <BlockStack spacing="loose" >
+
+      {/* HEADER — SIDE-BY-SIDE LIKE YOUR IMAGE */}
+      <BlockStack blockAlignment="center" inlineAlignment="center" spacing="base">
+  {/* LOGO */}
+  {/* {settings.logoUrl && (
+    <View maxInlineSize="100px" minInlineSize="100px" cornerRadius="base">
+      <Image
+        source={settings.logoUrl}
+        alt="Logo"
+        fit="contain"
+        maxInlineSize="100%"
+      />
     </View>
+  )} */}
+
+  {/* TITLE */}
+  <BlockStack spacing="none" alignment="center">
+  <Text size="large" emphasis="bold" alignment="center">
+    {settings.popupTitle}
+  </Text>
+</BlockStack>
+</BlockStack>
+
+
+
+      <Divider />
+
+      {/* RULES SECTION */}
+      <BlockStack spacing="tight">
+        <Text size="medium" emphasis="bold">
+          {settings.rulesTitle}
+        </Text>
+
+        <BlockStack spacing="tight">
+          {settings.giveawayRules.map((rule, index) => (
+            <InlineStack
+              key={index}
+              spacing="tight"
+              blockAlignment="start"
+              inlineAlignment="left"
+            >
+              {/* <Text size="large" emphasis="bold"></Text> */}
+              <Text size="base" >• {rule}</Text>
+            </InlineStack>
+          ))}
+        </BlockStack>
+      </BlockStack>
+
+      <Divider />
+
+      {/* FORM */}
+      {!submitted ? (
+        <BlockStack spacing="loose">
+          <TextField
+            label={settings.formFieldLabel}
+            value={formValue}
+            onChange={setFormValue}
+            prefix="@"
+          />
+<Link to={settings.redirectUrl} external>
+          <Button
+            kind="primary"
+            onPress={handleSubmit}
+            loading={submitting}
+            disabled={submitting}
+            >
+            {settings.submitButtonText}
+          </Button>
+            </Link>
+        </BlockStack>
+      ) : (
+        <BlockStack spacing="base" inlineAlignment="center">
+          <Text size="large" emphasis="bold">
+            ✅ Entry Submitted!
+          </Text>
+          <Text size="medium" alignment="center">
+            Thank you for entering! Good luck! 🍀
+          </Text>
+
+          {settings.redirectUrl && (
+            <Link to={settings.redirectUrl} external>
+              <Button kind="primary">
+                Follow Us on Instagram
+              </Button>
+            </Link>
+          )}
+        </BlockStack>
+      )}
+    </BlockStack>
+  </View>
   );
 }
 
