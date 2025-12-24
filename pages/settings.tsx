@@ -340,6 +340,7 @@ function SettingsPage() {
                   Popup Configuration
                 </Text>
                 
+                {/* Logo Image upload temporarily disabled for now
                 <div>
                   <Text as="p" variant="bodyMd" fontWeight="semibold">
                     Logo Image
@@ -384,6 +385,13 @@ function SettingsPage() {
                       Upload your brand logo (JPEG, PNG, GIF, WebP - Max 5MB)
                     </Text>
                   </div>
+                </div>
+                */}
+
+                <div>
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Logo upload is temporarily disabled.
+                  </Text>
                 </div>
 
                 <div>
