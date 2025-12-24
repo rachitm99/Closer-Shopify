@@ -14,6 +14,11 @@ export interface MerchantSettings {
   formFieldLabel: string;
   submitButtonText: string;
   redirectUrl?: string;
+  bannerUrl?: string;
+  countdownDays?: number;
+  countdownHours?: number;
+  countdownMinutes?: number;
+  countdownSeconds?: number;
   updatedAt: FirebaseFirestore.Timestamp;
   onboardingCompleted?: boolean;
   onboardingCompletedAt?: FirebaseFirestore.Timestamp;
@@ -94,6 +99,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const { 
           enabled, 
           logoUrl, 
+          bannerUrl,
+          countdownDays,
+          countdownHours,
+          countdownMinutes,
+          countdownSeconds,
           popupTitle,
           rulesTitle,
           giveawayRules, 
@@ -122,6 +132,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (formFieldLabel !== undefined) updateData.formFieldLabel = formFieldLabel;
         if (submitButtonText !== undefined) updateData.submitButtonText = submitButtonText;
         if (redirectUrl !== undefined) updateData.redirectUrl = redirectUrl;
+        // Optional banner and countdown settings
+        if (bannerUrl !== undefined) updateData.bannerUrl = bannerUrl;
+        if (countdownDays !== undefined) updateData.countdownDays = countdownDays;
+        if (countdownHours !== undefined) updateData.countdownHours = countdownHours;
+        if (countdownMinutes !== undefined) updateData.countdownMinutes = countdownMinutes;
+        if (countdownSeconds !== undefined) updateData.countdownSeconds = countdownSeconds;
 
 
         // Merge with existing data to preserve analytics and other fields

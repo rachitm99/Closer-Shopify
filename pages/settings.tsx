@@ -40,8 +40,16 @@ function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+
+  // Banner and countdown settings
+  const [bannerUrl, setBannerUrl] = useState('');
+  const [countdownDays, setCountdownDays] = useState(2);
+  const [countdownHours, setCountdownHours] = useState(11);
+  const [countdownMinutes, setCountdownMinutes] = useState(22);
+  const [countdownSeconds, setCountdownSeconds] = useState(11);
 
   useEffect(() => {
     console.log('⚙️ Settings Page - useEffect triggered');
@@ -79,6 +87,11 @@ function SettingsPage() {
           setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
           setSubmitButtonText(data.submitButtonText || 'Follow Us on Instagram');
           setRedirectUrl(data.redirectUrl || '');
+          setBannerUrl(data.bannerUrl || '');
+          setCountdownDays(data.countdownDays !== undefined ? data.countdownDays : 2);
+          setCountdownHours(data.countdownHours !== undefined ? data.countdownHours : 11);
+          setCountdownMinutes(data.countdownMinutes !== undefined ? data.countdownMinutes : 22);
+          setCountdownSeconds(data.countdownSeconds !== undefined ? data.countdownSeconds : 11);
           console.log('✅ Settings Page - All state updated successfully');
         } else if (response.status === 401) {
           console.log('🔒 Settings Page - Unauthorized (401)');
@@ -130,6 +143,11 @@ function SettingsPage() {
         body: JSON.stringify({ 
           enabled: newEnabled, 
           logoUrl, 
+          bannerUrl,
+          countdownDays,
+          countdownHours,
+          countdownMinutes,
+          countdownSeconds,
           popupTitle,
           rulesTitle,
           giveawayRules, 
@@ -172,6 +190,11 @@ function SettingsPage() {
         body: JSON.stringify({ 
           enabled, 
           logoUrl, 
+          bannerUrl,
+          countdownDays,
+          countdownHours,
+          countdownMinutes,
+          countdownSeconds,
           popupTitle,
           rulesTitle,
           giveawayRules, 
@@ -363,6 +386,75 @@ function SettingsPage() {
                   </div>
                 </div>
 
+                <div>
+                  <Text as="p" variant="bodyMd" fontWeight="semibold">
+                    Banner Image
+                  </Text>
+                  <div style={{ marginTop: '8px' }}>
+                    {bannerUrl && (
+                      <div style={{ marginBottom: '12px', maxWidth: 400 }}>
+                        <Image
+                          src={bannerUrl}
+                          alt="Banner preview"
+                          width={400}
+                          height={150}
+                          unoptimized
+                          style={{ objectFit: 'cover', borderRadius: 4 }}
+                        />
+                      </div>
+                    )}
+                    <label
+                      htmlFor="banner-upload"
+                      style={{
+                        display: 'inline-block',
+                        padding: '8px 16px',
+                        backgroundColor: uploadingBanner ? '#ccc' : '#0050a0',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: uploadingBanner ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                      }}
+                    >
+                      {uploadingBanner ? 'Uploading...' : (bannerUrl ? 'Change Banner' : 'Upload Banner')}
+                    </label>
+                    <input
+                      id="banner-upload"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingBanner(true);
+                        setError(null);
+                        try {
+                          const formData = new FormData();
+                          formData.append('banner', file);
+                          const response = await authFetch('/api/upload/banner', { method: 'POST', body: formData });
+                          if (response.ok) {
+                            const data = await response.json();
+                            setBannerUrl(data.bannerUrl);
+                            setShowToast(true);
+                          } else {
+                            const data = await response.json();
+                            setError(data.error || 'Failed to upload banner');
+                          }
+                        } catch (err) {
+                          console.error('Error uploading banner:', err);
+                          setError('Failed to upload banner');
+                        } finally {
+                          setUploadingBanner(false);
+                        }
+                      }}
+                      disabled={uploadingBanner}
+                      style={{ display: 'none' }}
+                    />
+                    <Text as="p" variant="bodySm" tone="subdued" >
+                      Upload a banner image (JPEG, PNG, GIF, WebP - Max 5MB)
+                    </Text>
+                  </div>
+                </div>
+
                 <TextField
                   label="Popup Title"
                   value={popupTitle}
@@ -380,6 +472,55 @@ function SettingsPage() {
                   autoComplete="off"
                   maxLength={50}
                 />
+
+                <div>
+                  <Text as="p" variant="bodyMd" fontWeight="semibold">
+                    Countdown Timer (custom)
+                  </Text>
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Set the starting countdown time for the popup (defaults to 2d 11h 22m 11s)
+                  </Text>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' }}>
+                    <input
+                      type="number"
+                      min={0}
+                      value={countdownDays}
+                      onChange={(e) => setCountdownDays(Number(e.target.value))}
+                      style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
+                    />
+                    <div style={{ minWidth: 40 }}>days</div>
+
+                    <input
+                      type="number"
+                      min={0}
+                      max={23}
+                      value={countdownHours}
+                      onChange={(e) => setCountdownHours(Number(e.target.value))}
+                      style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
+                    />
+                    <div style={{ minWidth: 40 }}>hours</div>
+
+                    <input
+                      type="number"
+                      min={0}
+                      max={59}
+                      value={countdownMinutes}
+                      onChange={(e) => setCountdownMinutes(Number(e.target.value))}
+                      style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
+                    />
+                    <div style={{ minWidth: 40 }}>minutes</div>
+
+                    <input
+                      type="number"
+                      min={0}
+                      max={59}
+                      value={countdownSeconds}
+                      onChange={(e) => setCountdownSeconds(Number(e.target.value))}
+                      style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
+                    />
+                    <div style={{ minWidth: 40 }}>seconds</div>
+                  </div>
+                </div>
 
                 <div>
                   <Text as="p" variant="bodyMd" fontWeight="semibold">

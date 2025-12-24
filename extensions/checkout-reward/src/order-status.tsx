@@ -18,6 +18,11 @@ interface Settings {
   enabled: boolean;
   shop?: string;
   logoUrl?: string;
+  bannerUrl?: string;
+  countdownDays?: number;
+  countdownHours?: number;
+  countdownMinutes?: number;
+  countdownSeconds?: number;
   popupTitle: string;
   rulesTitle: string;
   giveawayRules: string[];
@@ -39,6 +44,25 @@ function OrderStatusExtension() {
   const [customerEmail, setCustomerEmail] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
   const [customerId, setCustomerId] = useState('');
+
+  // Countdown timer (always starts from 2 days, 11 hours, 22 minutes, 11 seconds)
+  const initialCountdownMs = (((2 * 24 + 11) * 60 + 22) * 60 + 11) * 1000; // calculate ms
+  const [remainingMs, setRemainingMs] = useState<number>(initialCountdownMs);
+
+  useEffect(() => {
+    console.log('⏱️ Order Status - Countdown timer started:', initialCountdownMs);
+    const id = setInterval(() => {
+      setRemainingMs(prev => {
+        const next = Math.max(0, prev - 1000);
+        return next;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(id);
+      console.log('⏱️ Order Status - Countdown timer stopped');
+    };
+  }, [initialCountdownMs]);
 
   useEffect(() => {
     async function fetchSettings() {
@@ -90,6 +114,20 @@ function OrderStatusExtension() {
           }
           
           setSettings(data);
+
+          // If merchant provided a custom countdown, update timer start
+          try {
+            const days = Number(data.countdownDays ?? 2);
+            const hours = Number(data.countdownHours ?? 11);
+            const minutes = Number(data.countdownMinutes ?? 22);
+            const seconds = Number(data.countdownSeconds ?? 11);
+            const ms = (((days * 24 + hours) * 60 + minutes) * 60 + seconds) * 1000;
+            setRemainingMs(ms);
+            console.log('Order Status - Custom countdown applied (ms):', ms);
+          } catch (err) {
+            // ignore if malformed
+            console.log('Order Status - No custom countdown or invalid values');
+          }
         } else {
           console.log('Order Status - Failed to load settings, response not OK');
           setSettings({
@@ -263,7 +301,37 @@ function OrderStatusExtension() {
 
       <Divider />
 
+      {/* Full width banner from public folder (absolute URL to app host) */}
+      <View cornerRadius="none" padding="none">
+        <Image
+          source={settings?.bannerUrl || "https://closer-qq8c.vercel.app/give-away-banner.jpg"}
+          alt="Giveaway Banner"
+          fit="cover"
+          maxInlineSize={1000}
+        />
+      </View>
+
+      {/* Countdown Timer */}
+      <View padding="tight" cornerRadius="base" background="surface">
+        <BlockStack spacing="tight" inlineAlignment="center">
+          {(() => {
+            const totalSeconds = Math.floor(remainingMs / 1000);
+            const seconds = totalSeconds % 60;
+            const totalMinutes = Math.floor(totalSeconds / 60);
+            const minutes = totalMinutes % 60;
+            const totalHours = Math.floor(totalMinutes / 60);
+            const hours = totalHours % 24;
+            const days = Math.floor(totalHours / 24);
+            const pad = (n: number) => String(n).padStart(2, '0');
+            const formatted = `${pad(days)}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+            return <Text size="medium" emphasis="bold">⏱️ {formatted}</Text>;
+          })()}
+        </BlockStack>
+      </View>
+
       {/* RULES SECTION */}
+
+      {console.log('Order Status - Banner source set to https://closer-qq8c.vercel.app/give-away-banner.jpg')}
       <BlockStack spacing="tight">
         <Text size="medium" emphasis="bold">
           {settings.rulesTitle}
@@ -284,8 +352,6 @@ function OrderStatusExtension() {
         </BlockStack>
       </BlockStack>
 
-      <Divider />
-
       {/* FORM */}
       {!submitted ? (
         <BlockStack spacing="loose">
@@ -295,16 +361,15 @@ function OrderStatusExtension() {
             onChange={setFormValue}
             prefix="@"
           />
-  <Link to={settings.redirectUrl} external>
           <Button
             kind="primary"
             onPress={handleSubmit}
             loading={submitting}
             disabled={submitting}
-            >
+            style={{ width: '100%' }}
+          >
             {settings.submitButtonText}
           </Button>
-            </Link>
         </BlockStack>
       ) : (
         <BlockStack spacing="base" inlineAlignment="center">
@@ -317,7 +382,7 @@ function OrderStatusExtension() {
 
           {settings.redirectUrl && (
             <Link to={settings.redirectUrl} external>
-              <Button kind="primary">
+              <Button kind="primary" style={{ width: '100%' }}>
                 Follow Us on Instagram
               </Button>
             </Link>
