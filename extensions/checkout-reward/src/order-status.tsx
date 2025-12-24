@@ -47,7 +47,7 @@ function OrderStatusExtension() {
   const [customerId, setCustomerId] = useState('');
 
   // Font family for extension (sans stack)
-  const fontFamily = '"Canva Sans", Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+  const fontFamily = '"Comic Sans", "Canva Sans", Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
   // Countdown timer (always starts from 2 days, 11 hours, 22 minutes, 11 seconds)
   const initialCountdownMs = (((2 * 24 + 11) * 60 + 22) * 60 + 11) * 1000; // calculate ms
