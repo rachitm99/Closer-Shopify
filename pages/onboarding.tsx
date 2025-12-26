@@ -48,6 +48,16 @@ function Onboarding() {
   const [rulesDescription, setRulesDescription] = useState('Follow us on Instagram & enter your handle below');
   const [submitButtonText, setSubmitButtonText] = useState('Follow Us on Instagram');
   const [redirectUrl, setRedirectUrl] = useState('');
+  // Additional settings from the Settings page
+  const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter');
+  const [subtitleBottom, setSubtitleBottom] = useState('Winner announced on Instagram');
+  const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
+
+  // Countdown defaults
+  const [countdownDays, setCountdownDays] = useState(2);
+  const [countdownHours, setCountdownHours] = useState(11);
+  const [countdownMinutes, setCountdownMinutes] = useState(22);
+  const [countdownSeconds, setCountdownSeconds] = useState(11);
 
   // Track if component is mounted (client-side only)
   useEffect(() => {
@@ -82,6 +92,15 @@ function Onboarding() {
             setRulesDescription(data.rulesDescription || 'Follow us on Instagram & enter your handle below');
             setSubmitButtonText(data.submitButtonText || 'Follow Us on Instagram');
             setRedirectUrl(data.redirectUrl || '');
+
+            // Additional fields from settings page
+            setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter');
+            setSubtitleBottom(data.subtitleBottom || 'Winner announced on Instagram');
+            setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
+            setCountdownDays(data.countdownDays !== undefined ? data.countdownDays : 2);
+            setCountdownHours(data.countdownHours !== undefined ? data.countdownHours : 11);
+            setCountdownMinutes(data.countdownMinutes !== undefined ? data.countdownMinutes : 22);
+            setCountdownSeconds(data.countdownSeconds !== undefined ? data.countdownSeconds : 11);
           } else if (shopFromQuery) {
             shopDomain = shopFromQuery;
           }
@@ -144,9 +163,16 @@ function Onboarding() {
           enabled, 
           bannerUrl, 
           popupTitle,
+          subtitleTop,
+          subtitleBottom,
           rulesTitle,
           rulesDescription,
-          submitButtonText, 
+          formFieldLabel,
+          submitButtonText,
+          countdownDays,
+          countdownHours,
+          countdownMinutes,
+          countdownSeconds,
           redirectUrl 
         }),
       });
@@ -237,9 +263,16 @@ function Onboarding() {
           shop: shop,
           bannerUrl: bannerUrl,
           popupTitle: popupTitle,
+          subtitleTop: subtitleTop,
+          subtitleBottom: subtitleBottom,
           rulesTitle: rulesTitle,
           rulesDescription: rulesDescription,
+          formFieldLabel: formFieldLabel,
           submitButtonText: submitButtonText,
+          countdownDays: countdownDays,
+          countdownHours: countdownHours,
+          countdownMinutes: countdownMinutes,
+          countdownSeconds: countdownSeconds,
           redirectUrl: redirectUrl,
         }),
       });
@@ -377,6 +410,82 @@ function Onboarding() {
                 autoComplete="off"
                 maxLength={100}
               />
+
+              <TextField
+                label="Popup Subtitle (under title)"
+                value={subtitleTop}
+                onChange={setSubtitleTop}
+                helpText="Small subtitle shown under the popup title"
+                autoComplete="off"
+                maxLength={150}
+              />
+
+              <TextField
+                label="Footer Subtitle (below Follow button)"
+                value={subtitleBottom}
+                onChange={setSubtitleBottom}
+                helpText="Small subtitle shown under the Follow button after submission"
+                autoComplete="off"
+                maxLength={150}
+              />
+
+              <TextField
+                label="Form Field Label"
+                value={formFieldLabel}
+                onChange={setFormFieldLabel}
+                helpText="Label for the input where customers enter their Instagram handle"
+                autoComplete="off"
+                maxLength={50}
+              />
+
+              <div>
+                <Text as="p" variant="bodyMd" fontWeight="semibold">
+                  Countdown Timer (custom)
+                </Text>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Set the starting countdown time for the popup (defaults to 2d 11h 22m 11s)
+                </Text>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    min={0}
+                    value={countdownDays}
+                    onChange={(e) => setCountdownDays(Number(e.target.value))}
+                    style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
+                  />
+                  <div style={{ minWidth: 40 }}>days</div>
+
+                  <input
+                    type="number"
+                    min={0}
+                    max={23}
+                    value={countdownHours}
+                    onChange={(e) => setCountdownHours(Number(e.target.value))}
+                    style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
+                  />
+                  <div style={{ minWidth: 40 }}>hours</div>
+
+                  <input
+                    type="number"
+                    min={0}
+                    max={59}
+                    value={countdownMinutes}
+                    onChange={(e) => setCountdownMinutes(Number(e.target.value))}
+                    style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
+                  />
+                  <div style={{ minWidth: 40 }}>minutes</div>
+
+                  <input
+                    type="number"
+                    min={0}
+                    max={59}
+                    value={countdownSeconds}
+                    onChange={(e) => setCountdownSeconds(Number(e.target.value))}
+                    style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
+                  />
+                  <div style={{ minWidth: 40 }}>seconds</div>
+                </div>
+              </div>
 
               <TextField
                 label="Rules Section Title"
