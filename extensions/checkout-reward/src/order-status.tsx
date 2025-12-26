@@ -301,7 +301,9 @@ function OrderStatusExtension() {
       {settings.popupTitle}
     </Text>
     {settings.subtitleTop && (
-      <Text size="small" appearance="subdued" alignment="left" style={{ marginTop: 6 }}>{settings.subtitleTop}</Text>
+      <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 6 }}>
+        <Text size="small" appearance="subdued" alignment="center">{settings.subtitleTop}</Text>
+      </View>
     )}
   </View>
 </InlineStack>
@@ -393,7 +395,9 @@ function OrderStatusExtension() {
             {settings.submitButtonText}
           </Button>
           {settings.subtitleBottom && (
-            <Text size="small" appearance="subdued" alignment="center" style={{ marginTop: 8 }}>{settings.subtitleBottom}</Text>
+            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
+              <Text size="small" appearance="subdued" alignment="center">{settings.subtitleBottom}</Text>
+            </View>
           )}
         </BlockStack>
       ) : (
@@ -413,7 +417,9 @@ function OrderStatusExtension() {
             </Link>
           )}
           {settings.subtitleBottom && (
-            <Text size="small" appearance="subdued" alignment="center" style={{ marginTop: 8 }}>{settings.subtitleBottom}</Text>
+            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
+              <Text size="small" appearance="subdued" alignment="center">{settings.subtitleBottom}</Text>
+            </View>
           )}
         </BlockStack>
       )}
