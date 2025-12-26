@@ -440,7 +440,7 @@ function ThankYouExtension() {
       {/* RULES SECTION */}
 
       {console.log('Thank You - Banner source set to https://closer-qq8c.vercel.app/give-away-banner.jpg')}
-      <BlockStack spacing="tight">
+        <BlockStack spacing="tight" blockAlignment="center" inlineAlignment="center"  alignment="center">
         <Text size="medium" emphasis="bold" alignment="center">
           {settings.rulesTitle}
         </Text>
