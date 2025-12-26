@@ -26,16 +26,18 @@ function SettingsPage() {
   const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
   const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter');
   const [subtitleBottom, setSubtitleBottom] = useState('Winner announced on Instagram');
-  const [rulesTitle, setRulesTitle] = useState('How to Enter:');
-  const [giveawayRules, setGiveawayRules] = useState([
-    'Follow us on Instagram',
-    'Like our latest post',
-    'Tag 2 friends in the comments',
-    'Share this post to your story',
-    'Turn on post notifications',
-    'Use our hashtag in your story'
-  ]);
-  const [newRule, setNewRule] = useState('');
+  const [rulesTitle, setRulesTitle] = useState('How it works');
+  // Giveaway rules editing disabled for now
+  // const [giveawayRules, setGiveawayRules] = useState([
+  //   'Follow us on Instagram',
+  //   'Like our latest post',
+  //   'Tag 2 friends in the comments',
+  //   'Share this post to your story',
+  //   'Turn on post notifications',
+  //   'Use our hashtag in your story'
+  // ]);
+  // const [newRule, setNewRule] = useState('');
+  const [rulesDescription, setRulesDescription] = useState('Follow us on Instagram & enter your handle below');
   const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
   const [submitButtonText, setSubmitButtonText] = useState('Follow Us on Instagram');
   const [redirectUrl, setRedirectUrl] = useState('');
@@ -79,15 +81,17 @@ function SettingsPage() {
           setPopupTitle(data.popupTitle || '🎉 Instagram Giveaway! 🎉');
           setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter');
           setSubtitleBottom(data.subtitleBottom || 'Winner announced on Instagram');
-          setRulesTitle(data.rulesTitle || 'How to Enter:');
-          setGiveawayRules(data.giveawayRules || [
-            'Follow us on Instagram',
-            'Like our latest post',
-            'Tag 2 friends in the comments',
-            'Share this post to your story',
-            'Turn on post notifications',
-            'Use our hashtag in your story'
-          ]);
+          setRulesTitle(data.rulesTitle || 'How it works');
+          // giveawayRules editing disabled for now
+          // setGiveawayRules(data.giveawayRules || [
+          //   'Follow us on Instagram',
+          //   'Like our latest post',
+          //   'Tag 2 friends in the comments',
+          //   'Share this post to your story',
+          //   'Turn on post notifications',
+          //   'Use our hashtag in your story'
+          // ]);
+          setRulesDescription(data.rulesDescription || 'Follow us on Instagram & enter your handle below');
           setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
           setSubmitButtonText(data.submitButtonText || 'Follow Us on Instagram');
           setRedirectUrl(data.redirectUrl || '');
@@ -156,7 +160,7 @@ function SettingsPage() {
           subtitleTop: subtitleTop,
           subtitleBottom: subtitleBottom,
           rulesTitle,
-          giveawayRules, 
+          rulesDescription,
           formFieldLabel,
           submitButtonText, 
           redirectUrl 
@@ -205,7 +209,7 @@ function SettingsPage() {
           subtitleTop: subtitleTop,
           subtitleBottom: subtitleBottom,
           rulesTitle,
-          giveawayRules, 
+          rulesDescription,
           formFieldLabel,
           submitButtonText, 
           redirectUrl 
@@ -219,11 +223,11 @@ function SettingsPage() {
         setShowToast(true);
       } else {
         const data = await response.json();
-        setError(data.error || 'Failed to save message');
+        setError(data.error || 'Failed to save settings');
       }
     } catch (error) {
-      console.error('Error saving message:', error);
-      setError('Failed to save message');
+      console.error('Error saving settings:', error);
+      setError('Failed to save settings');
     } finally {
       setSaving(false);
     }
@@ -550,6 +554,19 @@ function SettingsPage() {
                   </div>
                 </div>
 
+                {/* Giveaway rules editing disabled for now. Replaced with a single description */}
+                <TextField
+                  label="Rules Description"
+                  value={rulesDescription}
+                  onChange={setRulesDescription}
+                  helpText="Short centered description shown under the rules title in the popup"
+                  autoComplete="off"
+                  maxLength={200}
+                  multiline
+                />
+
+                {/* Original giveaway rules editor (commented out for now) */}
+                {/**
                 <div>
                   <Text as="p" variant="bodyMd" fontWeight="semibold">
                     Giveaway Rules (List Format)
@@ -638,6 +655,7 @@ function SettingsPage() {
                     </div>
                   </div>
                 </div>
+                */}
 
                 <TextField
                   label="Submit Button Text"
@@ -689,7 +707,8 @@ function SettingsPage() {
                 <div style={{ marginTop: 16, border: '1px solid #eee', borderRadius: 6, padding: 12, maxWidth: 420 }}>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>{popupTitle}</div>
-                    <div style={{ fontSize: 12, color: '#666', marginTop: 6 }}>{subtitleTop}</div> 
+                    <div style={{ fontSize: 14, color: '#333', marginTop: 8, fontWeight: 600 }}>{rulesTitle}</div>
+                    <div style={{ fontSize: 12, color: '#666', marginTop: 6 }}>{rulesDescription}</div>
 
                     <div style={{ marginTop: 12 }}>
                       <button style={{ padding: '8px 12px', background: '#008060', color: '#fff', border: 'none', borderRadius: 4 }}>{submitButtonText}</button>

@@ -393,6 +393,98 @@ function Onboarding() {
                 <div style={{ marginTop: 8, color: '#666' }}>{rulesDescription}</div>
               </div>
 
+              {/* Original giveaway rules editor (commented out for now) */}
+              {/**
+              <div>
+                <Text as="p" variant="bodyMd" fontWeight="semibold">
+                  Giveaway Rules (List Format)
+                </Text>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Add individual rule points that will be displayed as a bulleted list
+                </Text>
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {giveawayRules.map((rule, index) => (
+                    <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 'bold', minWidth: '20px' }}>•</span>
+                      <input
+                        type="text"
+                        value={rule}
+                        onChange={(e) => {
+                          const newRules = [...giveawayRules];
+                          newRules[index] = e.target.value;
+                          setGiveawayRules(newRules);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          fontSize: '14px'
+                        }}
+                      />
+                      <button
+                        onClick={() => {
+                          const newRules = giveawayRules.filter((_, i) => i !== index);
+                          setGiveawayRules(newRules);
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: '#e74c3c',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '14px'
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <input
+                      type="text"
+                      value={newRule}
+                      onChange={(e) => setNewRule(e.target.value)}
+                      placeholder="Add new rule..."
+                      style={{
+                        flex: 1,
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        borderRadius: '4px',
+                        fontSize: '14px'
+                      }}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && newRule.trim()) {
+                          setGiveawayRules([...giveawayRules, newRule.trim()]);
+                          setNewRule('');
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={() => {
+                        if (newRule.trim()) {
+                          setGiveawayRules([...giveawayRules, newRule.trim()]);
+                          setNewRule('');
+                        }
+                      }}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#008060',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}
+                    >
+                      Add Rule
+                    </button>
+                  </div>
+                </div>
+              </div>
+              */}
+
               <TextField
                 label="Submit Button Text"
                 value={submitButtonText}
