@@ -59,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log('🔷 API /settings/merchant - Firestore query complete, exists:', doc.exists);
         
         if (doc.exists) {
-          const data = doc.data();
+          let data: any = doc.data();
           console.log('✅ API /settings/merchant - Found existing data for shop');
 
           // Backward compatibility: convert old string format to array
@@ -80,6 +80,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             data.subtitleBottom = data.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026';
             // Add onboarding description default
             data.rulesDescription = data.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter';
+          }
+
+          // Migrate legacy default values saved on older installs to the new copy
+          const migration: any = {};
+          if (data?.popupTitle && (data.popupTitle.includes('Instagram Giveaway') || data.popupTitle === '🎉 Instagram Giveaway! 🎉')) {
+            migration.popupTitle = 'Win ₹1,000 worth of products';
+          }
+          if (data?.submitButtonText && data.submitButtonText === 'Follow Us on Instagram') {
+            migration.submitButtonText = 'Follow & Enter Giveaway 🎁';
+          }
+          if (data?.rulesDescription && data.rulesDescription === 'Follow us on Instagram & enter your handle below') {
+            migration.rulesDescription = 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter';
+          }
+          if (data?.subtitleTop && data.subtitleTop === 'Follow us on Instagram to enter') {
+            migration.subtitleTop = 'Follow us on Instagram to enter the giveaway';
+          }
+          if (data?.subtitleBottom && data.subtitleBottom === 'Winner announced on Instagram') {
+            migration.subtitleBottom = '3 lucky Winners announced on Instagram on 3rd Jan 2026';
+          }
+
+          if (Object.keys(migration).length) {
+            await db.collection(collections.users).doc(shop).set(migration, { merge: true });
+            data = { ...data, ...migration };
+            console.log('🔁 Migrated legacy default values for shop:', shop);
           }
 
           console.log('✅ API /settings/merchant - Returning data');
