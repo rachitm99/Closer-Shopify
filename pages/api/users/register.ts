@@ -20,10 +20,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       logoUrl,
       bannerUrl,
       popupTitle,
+      subtitleTop,
+      subtitleBottom,
       rulesTitle,
       rulesDescription,
+      formFieldLabel,
       giveawayRules,
       submitButtonText,
+      countdownDays,
+      countdownHours,
+      countdownMinutes,
       redirectUrl,
     } = req.body;
 
@@ -46,7 +52,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Store both bannerUrl and logoUrl (banner preferred)
       bannerUrl: bannerUrl || logoUrl || '',
       logoUrl: logoUrl || bannerUrl || '',
-      popupTitle: popupTitle || '🎉 Instagram Giveaway! 🎉',
+      popupTitle: popupTitle || 'Win ₹1,000 worth of products',
+      subtitleTop: subtitleTop || 'Follow us on Instagram to enter the giveaway',
+      subtitleBottom: subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026',
       rulesTitle: rulesTitle || 'How to Enter:',
       giveawayRules: giveawayRules || [
         'Follow us on Instagram',
@@ -54,9 +62,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         'Tag 2 friends in the comments',
         'Share this post to your story',
       ],
-      rulesDescription: rulesDescription || 'Follow us on Instagram & enter your handle below',
-      formFieldLabel: 'Instagram Username',
-      submitButtonText: submitButtonText || 'Follow Us on Instagram',
+      rulesDescription: rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
+      formFieldLabel: formFieldLabel || 'Instagram Username',
+      submitButtonText: submitButtonText || 'Follow & Enter Giveaway 🎁',
+      countdownDays: countdownDays || 2,
+      countdownHours: countdownHours || 11,
+      countdownMinutes: countdownMinutes || 22,
       redirectUrl: redirectUrl,
       onboardingCompleted: true, // Mark as complete
       onboardingCompletedAt: Timestamp.now(),

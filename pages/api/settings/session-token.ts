@@ -69,11 +69,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           enabled: data?.enabled || false,
           shop: shop, // Add shop domain for impression tracking
           logoUrl: data?.logoUrl,
-          popupTitle: data?.popupTitle || '🎉 Instagram Giveaway! 🎉',
-          subtitleTop: data?.subtitleTop || 'Follow us on Instagram to enter',
-          subtitleBottom: data?.subtitleBottom || 'Winner announced on Instagram',
+          popupTitle: data?.popupTitle || 'Win ₹1,000 worth of products',
+          subtitleTop: data?.subtitleTop || 'Follow us on Instagram to enter the giveaway',
+          subtitleBottom: data?.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026',
           rulesTitle: data?.rulesTitle || 'How it works',
-          rulesDescription: data?.rulesDescription || 'Follow us on Instagram & enter your handle below',
+          rulesDescription: data?.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
           giveawayRules: rules,
           formFieldLabel: data?.formFieldLabel || 'Instagram Username',
           submitButtonText: data?.submitButtonText || 'Follow Us on Instagram',
@@ -83,10 +83,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json({
           enabled: false,
           shop: shop, // Add shop domain for impression tracking
-          popupTitle: '🎉 Instagram Giveaway! 🎉',
-          subtitleTop: 'Follow us on Instagram to enter',
-          subtitleBottom: 'Winner announced on Instagram',
+          popupTitle: 'Win ₹1,000 worth of products',
+          subtitleTop: 'Follow us on Instagram to enter the giveaway',
+          subtitleBottom: '3 lucky Winners announced on Instagram on 3rd Jan 2026',
           rulesTitle: 'How to Enter:',
+          rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
           giveawayRules: [
             'Follow us on Instagram',
             'Like our latest post',
@@ -96,7 +97,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             'Use our hashtag in your story'
           ],
           formFieldLabel: 'Instagram Username',
-          submitButtonText: 'Follow Us on Instagram',
+          submitButtonText: 'Follow & Enter Giveaway 🎁',
         });
       }
     } catch (tokenError) {

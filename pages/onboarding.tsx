@@ -34,7 +34,7 @@ function Onboarding() {
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [enabled, setEnabled] = useState(true);
   const [bannerUrl, setBannerUrl] = useState('');
-  const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
+  const [popupTitle, setPopupTitle] = useState('Win ₹1,000 worth of products');
   const [rulesTitle, setRulesTitle] = useState('How it works');
   // Giveaway rules editing disabled for now
   // const [giveawayRules, setGiveawayRules] = useState([
@@ -45,19 +45,18 @@ function Onboarding() {
   // ]);
   // const [newRule, setNewRule] = useState('');
   // Single centered description for onboarding
-  const [rulesDescription, setRulesDescription] = useState('Follow us on Instagram & enter your handle below');
-  const [submitButtonText, setSubmitButtonText] = useState('Follow Us on Instagram');
+  const [rulesDescription, setRulesDescription] = useState('Enter your Instagram handle and follow @{{your instagram profile url}} to enter');
+  const [submitButtonText, setSubmitButtonText] = useState('Follow & Enter Giveaway 🎁');
   const [redirectUrl, setRedirectUrl] = useState('');
   // Additional settings from the Settings page
-  const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter');
-  const [subtitleBottom, setSubtitleBottom] = useState('Winner announced on Instagram');
+  const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter the giveaway');
+  const [subtitleBottom, setSubtitleBottom] = useState('3 lucky Winners announced on Instagram on 3rd Jan 2026');
   const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
 
   // Countdown defaults
   const [countdownDays, setCountdownDays] = useState(2);
   const [countdownHours, setCountdownHours] = useState(11);
   const [countdownMinutes, setCountdownMinutes] = useState(22);
-  const [countdownSeconds, setCountdownSeconds] = useState(11);
 
   // Track if component is mounted (client-side only)
   useEffect(() => {
@@ -100,7 +99,6 @@ function Onboarding() {
             setCountdownDays(data.countdownDays !== undefined ? data.countdownDays : 2);
             setCountdownHours(data.countdownHours !== undefined ? data.countdownHours : 11);
             setCountdownMinutes(data.countdownMinutes !== undefined ? data.countdownMinutes : 22);
-            setCountdownSeconds(data.countdownSeconds !== undefined ? data.countdownSeconds : 11);
           } else if (shopFromQuery) {
             shopDomain = shopFromQuery;
           }
@@ -172,7 +170,6 @@ function Onboarding() {
           countdownDays,
           countdownHours,
           countdownMinutes,
-          countdownSeconds,
           redirectUrl 
         }),
       });
@@ -272,7 +269,6 @@ function Onboarding() {
           countdownDays: countdownDays,
           countdownHours: countdownHours,
           countdownMinutes: countdownMinutes,
-          countdownSeconds: countdownSeconds,
           redirectUrl: redirectUrl,
         }),
       });
@@ -319,24 +315,31 @@ function Onboarding() {
 
   const steps = [
     {
-      title: 'Welcome to Instagram Giveaway App! 🎉',
+      title: 'Welcome to Follo 🎉',
       content: (
         <BlockStack gap="400">
           <Text as="p" variant="bodyLg">
-            Thank you for installing our app! This quick setup will help you configure your giveaway popup in minutes.
+            Thanks for installing Closer. This quick setup helps you launch a high-conversion Instagram giveaway on your thank-you page in just a few minutes.
           </Text>
+
           <Text as="p" variant="bodyMd">
-            Your customers will see a beautiful Instagram giveaway popup on the Thank You page and Order Status page after checkout, helping you:
+            Turn checkout customers into Instagram followers!
           </Text>
+
+          <Text as="p" variant="bodyMd">
+            After checkout, customers will see a simple giveaway popup on the thank-you page that helps you:
+          </Text>
+
           <BlockStack gap="200">
-            <Text as="p" variant="bodyMd">✅ Increase Instagram followers</Text>
-            <Text as="p" variant="bodyMd">✅ Boost engagement on your posts</Text>
-            <Text as="p" variant="bodyMd">✅ Collect customer Instagram handles</Text>
-            <Text as="p" variant="bodyMd">✅ Grow your brand awareness</Text>
+            <Text as="p" variant="bodyMd">✅ Grow Instagram followers post-purchase</Text>
+            <Text as="p" variant="bodyMd">✅ Convert happy customers into long-term followers</Text>
+            <Text as="p" variant="bodyMd">✅ Track real followers from each giveaway</Text>
+            <Text as="p" variant="bodyMd">✅ Drive repeat engagement organically</Text>
           </BlockStack>
+
           <div style={{ marginTop: '24px' }}>
             <Button variant="primary" onClick={() => setCurrentStep(1)} size="large">
-              Let's Get Started →
+              Set up your giveaway →
             </Button>
           </div>
         </BlockStack>
@@ -396,7 +399,7 @@ function Onboarding() {
                   />
                   <div style={{ marginTop: '4px' }}>
                     <Text as="p" variant="bodySm" tone="subdued">
-                      Upload your giveaway banner (JPEG, PNG, GIF, WebP - Max 5MB)
+                      Upload your giveaway banner (JPEG, PNG, GIF, WebP - Max 5MB) — Recommended: 360×90 px (4:1 ratio)
                     </Text>
                   </div>
                 </div>
@@ -443,7 +446,7 @@ function Onboarding() {
                   Countdown Timer (custom)
                 </Text>
                 <Text as="p" variant="bodySm" tone="subdued">
-                  Set the starting countdown time for the popup (defaults to 2d 11h 22m 11s)
+                  Set the starting countdown time for the popup (defaults to 2d 11h 22m)
                 </Text>
                 <div style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' }}>
                   <input
@@ -475,15 +478,7 @@ function Onboarding() {
                   />
                   <div style={{ minWidth: 40 }}>minutes</div>
 
-                  <input
-                    type="number"
-                    min={0}
-                    max={59}
-                    value={countdownSeconds}
-                    onChange={(e) => setCountdownSeconds(Number(e.target.value))}
-                    style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
-                  />
-                  <div style={{ minWidth: 40 }}>seconds</div>
+
                 </div>
               </div>
 
@@ -494,6 +489,16 @@ function Onboarding() {
                 helpText="Title for the rules section (e.g., 'How to Enter:', 'Rules:')"
                 autoComplete="off"
                 maxLength={50}
+              />
+
+              <TextField
+                label="Rules Description"
+                value={rulesDescription}
+                onChange={setRulesDescription}
+                helpText="Short centered description shown under the rules title in the popup"
+                autoComplete="off"
+                maxLength={200}
+                multiline
               />
 
               {/* Original giveaway rules editor (commented out for now) */}

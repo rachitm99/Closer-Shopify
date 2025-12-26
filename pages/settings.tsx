@@ -23,9 +23,9 @@ function SettingsPage() {
   const authFetch = useAuthenticatedFetch();
   const [enabled, setEnabled] = useState(false);
   const [logoUrl, setLogoUrl] = useState('');
-  const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
-  const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter');
-  const [subtitleBottom, setSubtitleBottom] = useState('Winner announced on Instagram');
+  const [popupTitle, setPopupTitle] = useState('Win ₹1,000 worth of products');
+  const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter the giveaway');
+  const [subtitleBottom, setSubtitleBottom] = useState('3 lucky Winners announced on Instagram on 3rd Jan 2026');
   const [rulesTitle, setRulesTitle] = useState('How it works');
   // Giveaway rules editing disabled for now
   // const [giveawayRules, setGiveawayRules] = useState([
@@ -37,9 +37,9 @@ function SettingsPage() {
   //   'Use our hashtag in your story'
   // ]);
   // const [newRule, setNewRule] = useState('');
-  const [rulesDescription, setRulesDescription] = useState('Follow us on Instagram & enter your handle below');
+  const [rulesDescription, setRulesDescription] = useState('Enter your Instagram handle and follow @{{your instagram profile url}} to enter');
   const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
-  const [submitButtonText, setSubmitButtonText] = useState('Follow Us on Instagram');
+  const [submitButtonText, setSubmitButtonText] = useState('Follow & Enter Giveaway 🎁');
   const [redirectUrl, setRedirectUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -53,7 +53,6 @@ function SettingsPage() {
   const [countdownDays, setCountdownDays] = useState(2);
   const [countdownHours, setCountdownHours] = useState(11);
   const [countdownMinutes, setCountdownMinutes] = useState(22);
-  const [countdownSeconds, setCountdownSeconds] = useState(11);
 
   useEffect(() => {
     console.log('⚙️ Settings Page - useEffect triggered');
@@ -99,7 +98,6 @@ function SettingsPage() {
           setCountdownDays(data.countdownDays !== undefined ? data.countdownDays : 2);
           setCountdownHours(data.countdownHours !== undefined ? data.countdownHours : 11);
           setCountdownMinutes(data.countdownMinutes !== undefined ? data.countdownMinutes : 22);
-          setCountdownSeconds(data.countdownSeconds !== undefined ? data.countdownSeconds : 11);
           console.log('✅ Settings Page - All state updated successfully');
         } else if (response.status === 401) {
           console.log('🔒 Settings Page - Unauthorized (401)');
@@ -155,7 +153,6 @@ function SettingsPage() {
           countdownDays,
           countdownHours,
           countdownMinutes,
-          countdownSeconds,
           popupTitle,
           subtitleTop: subtitleTop,
           subtitleBottom: subtitleBottom,
@@ -204,7 +201,6 @@ function SettingsPage() {
           countdownDays,
           countdownHours,
           countdownMinutes,
-          countdownSeconds,
           popupTitle,
           subtitleTop: subtitleTop,
           subtitleBottom: subtitleBottom,
@@ -473,7 +469,7 @@ function SettingsPage() {
                       style={{ display: 'none' }}
                     />
                     <Text as="p" variant="bodySm" tone="subdued" >
-                      Upload a banner image (JPEG, PNG, GIF, WebP - Max 5MB)
+                      Upload a banner image (JPEG, PNG, GIF, WebP - Max 5MB) — Recommended: 360×90 px (4:1 ratio)
                     </Text>
                   </div>
                 </div>
@@ -510,7 +506,7 @@ function SettingsPage() {
                     Countdown Timer (custom)
                   </Text>
                   <Text as="p" variant="bodySm" tone="subdued">
-                    Set the starting countdown time for the popup (defaults to 2d 11h 22m 11s)
+                  Set the starting countdown time for the popup (defaults to 2d 11h 22m)
                   </Text>
                   <div style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' }}>
                     <input
@@ -542,15 +538,7 @@ function SettingsPage() {
                     />
                     <div style={{ minWidth: 40 }}>minutes</div>
 
-                    <input
-                      type="number"
-                      min={0}
-                      max={59}
-                      value={countdownSeconds}
-                      onChange={(e) => setCountdownSeconds(Number(e.target.value))}
-                      style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
-                    />
-                    <div style={{ minWidth: 40 }}>seconds</div>
+  
                   </div>
                 </div>
 

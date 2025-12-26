@@ -76,10 +76,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               data.subtitleBottom = data.subtitle;
             }
             // Ensure both keys exist (even if empty) and provide sensible defaults
-            data.subtitleTop = data.subtitleTop || 'Follow us on Instagram to enter';
-            data.subtitleBottom = data.subtitleBottom || 'Winner announced on Instagram';
+            data.subtitleTop = data.subtitleTop || 'Follow us on Instagram to enter the giveaway';
+            data.subtitleBottom = data.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026';
             // Add onboarding description default
-            data.rulesDescription = data.rulesDescription || 'Follow us on Instagram & enter your handle below';
+            data.rulesDescription = data.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter';
           }
 
           console.log('✅ API /settings/merchant - Returning data');
@@ -91,11 +91,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             shop,
             enabled: false,
             logoUrl: '',
-            popupTitle: '🎉 Instagram Giveaway! 🎉',
-            subtitleTop: 'Follow us on Instagram to enter',
-            subtitleBottom: 'Winner announced on Instagram',
+            popupTitle: 'Win ₹1,000 worth of products',
+            subtitleTop: 'Follow us on Instagram to enter the giveaway',
+            subtitleBottom: '3 lucky Winners announced on Instagram on 3rd Jan 2026',
             rulesTitle: 'How it works',
-            rulesDescription: 'Follow us on Instagram & enter your handle below',
+            rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
             giveawayRules: [
               'Follow us on Instagram',
               'Like our latest post',
@@ -105,7 +105,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               'Use our hashtag in your story'
             ],
             formFieldLabel: 'Instagram Username',
-            submitButtonText: 'Follow Us on Instagram',
+            submitButtonText: 'Follow & Enter Giveaway 🎁',
             redirectUrl: '',
             updatedAt: Timestamp.now(),
           };
