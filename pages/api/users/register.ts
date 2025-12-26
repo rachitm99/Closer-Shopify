@@ -18,6 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const {
       shop,
       logoUrl,
+      bannerUrl,
       popupTitle,
       rulesTitle,
       rulesDescription,
@@ -42,7 +43,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userData = {
       shop: shop,
       enabled: true, // Extension enabled by default after onboarding
-      logoUrl: logoUrl || '',
+      // Store both bannerUrl and logoUrl (banner preferred)
+      bannerUrl: bannerUrl || logoUrl || '',
+      logoUrl: logoUrl || bannerUrl || '',
       popupTitle: popupTitle || '🎉 Instagram Giveaway! 🎉',
       rulesTitle: rulesTitle || 'How to Enter:',
       giveawayRules: giveawayRules || [

@@ -33,7 +33,7 @@ function Onboarding() {
   const [showToast, setShowToast] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [enabled, setEnabled] = useState(true);
-  const [logoUrl, setLogoUrl] = useState('');
+  const [bannerUrl, setBannerUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
   const [rulesTitle, setRulesTitle] = useState('How it works');
   // Giveaway rules editing disabled for now
@@ -69,7 +69,7 @@ function Onboarding() {
             shopDomain = data.shop;
             
             // Load existing settings if any
-            setLogoUrl(data.logoUrl || '');
+            setBannerUrl(data.bannerUrl || '');
             setPopupTitle(data.popupTitle || '🎉 Instagram Giveaway! 🎉');
             setRulesTitle(data.rulesTitle || 'How to Enter:');
             // giveawayRules editing disabled for now
@@ -142,7 +142,7 @@ function Onboarding() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           enabled, 
-          logoUrl, 
+          bannerUrl, 
           popupTitle,
           rulesTitle,
           rulesDescription,
@@ -167,7 +167,7 @@ function Onboarding() {
     }
   };
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -188,24 +188,24 @@ function Onboarding() {
       setError(null);
 
       const formData = new FormData();
-      formData.append('logo', file);
+      formData.append('banner', file);
 
-      const response = await authFetch('/api/upload/logo', {
+      const response = await authFetch('/api/upload/banner', {
         method: 'POST',
         body: formData,
       });
 
       if (response.ok) {
         const data = await response.json();
-        setLogoUrl(data.logoUrl);
+        setBannerUrl(data.bannerUrl);
         setShowToast(true);
       } else {
         const data = await response.json();
-        setError(data.error || 'Failed to upload logo');
+        setError(data.error || 'Failed to upload banner');
       }
     } catch (error) {
-      console.error('Error uploading logo:', error);
-      setError('Failed to upload logo');
+      console.error('Error uploading banner:', error);
+      setError('Failed to upload banner');
     } finally {
       setUploading(false);
     }
@@ -235,7 +235,7 @@ function Onboarding() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           shop: shop,
-          logoUrl: logoUrl,
+          bannerUrl: bannerUrl,
           popupTitle: popupTitle,
           rulesTitle: rulesTitle,
           rulesDescription: rulesDescription,
@@ -323,23 +323,23 @@ function Onboarding() {
             <BlockStack gap="400">
               <div>
                 <Text as="p" variant="bodyMd" fontWeight="semibold">
-                  Logo Image
+                  Banner Image
                 </Text>
                 <div style={{ marginTop: '8px' }}>
-                    {logoUrl && (
-                      <div style={{ marginBottom: '12px', maxWidth: 200 }}>
+                    {bannerUrl && (
+                      <div style={{ marginBottom: '12px', maxWidth: 360 }}>
                         <Image
-                          src={logoUrl}
-                          alt="Logo preview"
-                          width={200}
-                          height={100}
+                          src={bannerUrl}
+                          alt="Banner preview"
+                          width={360}
+                          height={90}
                           unoptimized
                           style={{ objectFit: 'contain', borderRadius: 4 }}
                         />
                       </div>
                     )}
                   <label
-                    htmlFor="logo-upload"
+                    htmlFor="banner-upload"
                     style={{
                       display: 'inline-block',
                       padding: '8px 16px',
@@ -351,19 +351,19 @@ function Onboarding() {
                       fontSize: '14px',
                     }}
                   >
-                    {uploading ? 'Uploading...' : (logoUrl ? 'Change Logo' : 'Upload Logo')}
+                    {uploading ? 'Uploading...' : (bannerUrl ? 'Change Banner' : 'Upload Banner')}
                   </label>
                   <input
-                    id="logo-upload"
+                    id="banner-upload"
                     type="file"
                     accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                    onChange={handleLogoUpload}
+                    onChange={handleBannerUpload}
                     disabled={uploading}
                     style={{ display: 'none' }}
                   />
                   <div style={{ marginTop: '4px' }}>
                     <Text as="p" variant="bodySm" tone="subdued">
-                      Upload your brand logo (JPEG, PNG, GIF, WebP - Max 5MB)
+                      Upload your giveaway banner (JPEG, PNG, GIF, WebP - Max 5MB)
                     </Text>
                   </div>
                 </div>
