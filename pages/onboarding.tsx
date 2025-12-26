@@ -667,7 +667,7 @@ function Onboarding() {
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <Text as="span" variant="bodyMd" fontWeight="bold">4.</Text>
                   <Text as="p" variant="bodyMd">
-                    Click <strong>"Add app block"</strong> and select <strong>"Instagram Giveaway Popup (Follo)"</strong>
+                    Click <strong>"Add app block"</strong> and select <strong>"reward-message"</strong>
                   </Text>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
