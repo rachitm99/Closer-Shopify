@@ -269,10 +269,10 @@ function OrderStatusExtension() {
     <BlockStack spacing="loose">
 
       {/* HEADER — SIDE-BY-SIDE LIKE YOUR IMAGE */}
-      <InlineStack
+      <BlockStack
   spacing="base"
   blockAlignment="center"
-  inlineAlignment="left"
+  inlineAlignment="center"
 >
   {/* LOGO */}
   {/* {settings.logoUrl && (
@@ -291,20 +291,26 @@ function OrderStatusExtension() {
   )} */}
 
   {/* TITLE WRAPPED SO IT DOES NOT FORCE A NEW LINE */}
-  <View minInlineSize={0}>
+  <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+
+  {/* <View minInlineSize={0}> */}
     <Text
       size="large"
       emphasis="bold"
-      alignment="left"
+      alignment="center"
       blockAlignment="center"
-    >
+      >
       {settings.popupTitle}
     </Text>
-    <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 6 }}>
-      <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleTop}</Text>
+    {/* <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}> */}
+
+    <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 6 }}>
+      <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
     </View>
-  </View>
-</InlineStack>
+    {/* </BlockStack> */}
+  {/* </View> */}
+      </BlockStack>
+</BlockStack>
 
 
       <Divider />
@@ -392,9 +398,11 @@ function OrderStatusExtension() {
           >
             {settings.submitButtonText}
           </Button>
-            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-              <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleBottom}</Text>
+          <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
+              <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
             </View>
+            </BlockStack>
         </BlockStack>
       ) : (
         <BlockStack spacing="base" inlineAlignment="center">
@@ -412,9 +420,11 @@ function OrderStatusExtension() {
               </Button>
             </Link>
           )}
-          <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-            <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleBottom}</Text>
+          <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+          <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
+            <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
           </View>
+          </BlockStack>
         </BlockStack>
       )}
     </BlockStack>

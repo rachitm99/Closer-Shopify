@@ -12,6 +12,8 @@ export interface MerchantSettings {
   subtitleTop?: string; // shown under the popup title
   subtitleBottom?: string; // shown below the follow/submit button
   rulesTitle: string;
+  // Short description displayed under the rules title (used in onboarding preview)
+  rulesDescription?: string;
   giveawayRules: string[];
   formFieldLabel: string;
   submitButtonText: string;
@@ -76,6 +78,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Ensure both keys exist (even if empty) and provide sensible defaults
             data.subtitleTop = data.subtitleTop || 'Follow us on Instagram to enter';
             data.subtitleBottom = data.subtitleBottom || 'Winner announced on Instagram';
+            // Add onboarding description default
+            data.rulesDescription = data.rulesDescription || 'Follow us on Instagram & enter your handle below';
           }
 
           console.log('✅ API /settings/merchant - Returning data');
@@ -90,7 +94,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             popupTitle: '🎉 Instagram Giveaway! 🎉',
             subtitleTop: 'Follow us on Instagram to enter',
             subtitleBottom: 'Winner announced on Instagram',
-            rulesTitle: 'How to Enter:',
+            rulesTitle: 'How it works',
+            rulesDescription: 'Follow us on Instagram & enter your handle below',
             giveawayRules: [
               'Follow us on Instagram',
               'Like our latest post',
@@ -125,6 +130,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           subtitleTop,
           subtitleBottom,
           rulesTitle,
+          rulesDescription,
           giveawayRules, 
           formFieldLabel,
           submitButtonText, 
@@ -149,6 +155,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (subtitleTop !== undefined) updateData.subtitleTop = subtitleTop;
         if (subtitleBottom !== undefined) updateData.subtitleBottom = subtitleBottom;
         if (rulesTitle !== undefined) updateData.rulesTitle = rulesTitle; 
+        if (rulesDescription !== undefined) updateData.rulesDescription = rulesDescription;
         if (giveawayRules !== undefined) updateData.giveawayRules = giveawayRules;
         if (formFieldLabel !== undefined) updateData.formFieldLabel = formFieldLabel;
         if (submitButtonText !== undefined) updateData.submitButtonText = submitButtonText;

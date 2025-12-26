@@ -377,13 +377,15 @@ function ThankYouExtension() {
   )} */}
 
   {/* TITLE */}
-  <BlockStack spacing="none" alignment="center">
+  <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center">
   <Text size="large" emphasis="bold" alignment="center">
     {settings.popupTitle}
   </Text>
-  <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 6 }}>
-    <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleTop}</Text>
+  {/* <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center" alignment="center" > */}
+  <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 6 }}>
+    <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
   </View>
+  {/* </BlockStack> */}
 </BlockStack>
 </BlockStack>
 
@@ -475,9 +477,9 @@ function ThankYouExtension() {
           >
             {settings.submitButtonText}
           </Button>
-            <BlockStack spacing="none" alignment="center">
-            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-              <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleBottom}</Text>
+          <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center" alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
+              <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
             </View>
           </BlockStack>
         </BlockStack>
@@ -497,9 +499,9 @@ function ThankYouExtension() {
               </Button>
             </Link>
           )}
-          <BlockStack spacing="none" alignment="center">
-            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-              <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleBottom}</Text>
+          <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
+              <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
             </View>
           </BlockStack>
         </BlockStack>
