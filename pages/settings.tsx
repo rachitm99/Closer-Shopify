@@ -703,19 +703,6 @@ function SettingsPage() {
                   </button>
                 </div>
 
-                {/* Live preview */}
-                <div style={{ marginTop: 16, border: '1px solid #eee', borderRadius: 6, padding: 12, maxWidth: 420 }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 18, fontWeight: 700 }}>{popupTitle}</div>
-                    <div style={{ fontSize: 14, color: '#333', marginTop: 8, fontWeight: 600 }}>{rulesTitle}</div>
-                    <div style={{ fontSize: 12, color: '#666', marginTop: 6 }}>{rulesDescription}</div>
-
-                    <div style={{ marginTop: 12 }}>
-                      <button style={{ padding: '8px 12px', background: '#008060', color: '#fff', border: 'none', borderRadius: 4 }}>{submitButtonText}</button>
-                    </div>
-                    <div style={{ fontSize: 12, color: '#666', marginTop: 8 }}>{subtitleBottom}</div>
-                  </div>
-                </div>
               </BlockStack>
             </Card>
           </Layout.Section>

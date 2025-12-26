@@ -496,12 +496,6 @@ function Onboarding() {
                 maxLength={50}
               />
 
-              {/* Giveaway rules editing disabled for now. Replaced with a centered description */}
-              <div style={{ textAlign: 'center', marginTop: 12 }}>
-                <div style={{ fontSize: 16, fontWeight: 600 }}>{rulesTitle}</div>
-                <div style={{ marginTop: 8, color: '#666' }}>{rulesDescription}</div>
-              </div>
-
               {/* Original giveaway rules editor (commented out for now) */}
               {/**
               <div>
