@@ -27,6 +27,7 @@ interface Settings {
   subtitleTop?: string;
   subtitleBottom?: string;
   rulesTitle: string;
+  rulesDescription?: string;
   giveawayRules: string[];
   formFieldLabel: string;
   submitButtonText: string;
@@ -361,10 +362,15 @@ function OrderStatusExtension() {
 
       {console.log('Order Status - Banner source set to https://closer-qq8c.vercel.app/give-away-banner.jpg')}
       <BlockStack spacing="tight">
-        <Text size="medium" emphasis="bold">
+        <Text size="medium" emphasis="bold" alignment="center">
           {settings.rulesTitle}
         </Text>
 
+        <Text size="small" appearance="subdued" alignment="center" style={{ marginTop: 8 }}>
+          {settings.rulesDescription}
+        </Text>
+
+        {/* Original rules list (commented out)
         <BlockStack spacing="tight">
           {settings.giveawayRules.map((rule, index) => (
             <InlineStack
@@ -373,11 +379,11 @@ function OrderStatusExtension() {
               blockAlignment="start"
               inlineAlignment="left"
             >
-              {/* <Text size="large" emphasis="bold"></Text> */}
               <Text size="base">• {rule}</Text>
             </InlineStack>
           ))}
         </BlockStack>
+        */}
       </BlockStack>
 
       {/* FORM */}
