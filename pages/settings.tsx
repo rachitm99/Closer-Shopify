@@ -24,6 +24,8 @@ function SettingsPage() {
   const [enabled, setEnabled] = useState(false);
   const [logoUrl, setLogoUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
+  const [subtitleTop, setSubtitleTop] = useState('');
+  const [subtitleBottom, setSubtitleBottom] = useState('');
   const [rulesTitle, setRulesTitle] = useState('How to Enter:');
   const [giveawayRules, setGiveawayRules] = useState([
     'Follow us on Instagram',
@@ -75,6 +77,8 @@ function SettingsPage() {
           setEnabled(data.enabled || false);
           setLogoUrl(data.logoUrl || '');
           setPopupTitle(data.popupTitle || '🎉 Instagram Giveaway! 🎉');
+          setSubtitleTop(data.subtitleTop || '');
+          setSubtitleBottom(data.subtitleBottom || '');
           setRulesTitle(data.rulesTitle || 'How to Enter:');
           setGiveawayRules(data.giveawayRules || [
             'Follow us on Instagram',
@@ -149,6 +153,8 @@ function SettingsPage() {
           countdownMinutes,
           countdownSeconds,
           popupTitle,
+          subtitleTop: subtitleTop,
+          subtitleBottom: subtitleBottom,
           rulesTitle,
           giveawayRules, 
           formFieldLabel,
@@ -196,6 +202,8 @@ function SettingsPage() {
           countdownMinutes,
           countdownSeconds,
           popupTitle,
+          subtitleTop: subtitleTop,
+          subtitleBottom: subtitleBottom,
           rulesTitle,
           giveawayRules, 
           formFieldLabel,
@@ -473,6 +481,15 @@ function SettingsPage() {
                 />
 
                 <TextField
+                  label="Popup Subtitle (under title)"
+                  value={subtitleTop}
+                  onChange={setSubtitleTop}
+                  helpText="Small subtitle shown under the popup title"
+                  autoComplete="off"
+                  maxLength={150}
+                />
+
+                <TextField
                   label="Rules Section Title"
                   value={rulesTitle}
                   onChange={setRulesTitle}
@@ -626,6 +643,15 @@ function SettingsPage() {
                   helpText="Text displayed on the submit button"
                   autoComplete="off"
                   maxLength={50}
+                />
+
+                <TextField
+                  label="Footer Subtitle (below Follow button)"
+                  value={subtitleBottom}
+                  onChange={setSubtitleBottom}
+                  helpText="Small subtitle shown under the Follow button after submission"
+                  autoComplete="off"
+                  maxLength={150}
                 />
 
                 <TextField

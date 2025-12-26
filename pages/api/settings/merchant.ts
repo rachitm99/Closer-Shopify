@@ -9,6 +9,8 @@ export interface MerchantSettings {
   // Popup configuration
   logoUrl?: string;
   popupTitle: string;
+  subtitleTop?: string; // shown under the popup title
+  subtitleBottom?: string; // shown below the follow/submit button
   rulesTitle: string;
   giveawayRules: string[];
   formFieldLabel: string;
@@ -25,7 +27,7 @@ export interface MerchantSettings {
   registeredAt?: FirebaseFirestore.Timestamp;
   lastActivity?: FirebaseFirestore.Timestamp;
   status?: string;
-}
+} 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log('🔷 API /settings/merchant - Request received');
@@ -73,6 +75,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             enabled: false,
             logoUrl: '',
             popupTitle: '🎉 Instagram Giveaway! 🎉',
+            subtitleTop: '',
+            subtitleBottom: '',
             rulesTitle: 'How to Enter:',
             giveawayRules: [
               'Follow us on Instagram',
@@ -105,6 +109,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           countdownMinutes,
           countdownSeconds,
           popupTitle,
+          subtitleTop,
+          subtitleBottom,
           rulesTitle,
           giveawayRules, 
           formFieldLabel,
@@ -127,7 +133,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (enabled !== undefined) updateData.enabled = enabled;
         if (logoUrl !== undefined) updateData.logoUrl = logoUrl;
         if (popupTitle !== undefined) updateData.popupTitle = popupTitle;
-        if (rulesTitle !== undefined) updateData.rulesTitle = rulesTitle;
+        if (subtitleTop !== undefined) updateData.subtitleTop = subtitleTop;
+        if (subtitleBottom !== undefined) updateData.subtitleBottom = subtitleBottom;
+        if (rulesTitle !== undefined) updateData.rulesTitle = rulesTitle; 
         if (giveawayRules !== undefined) updateData.giveawayRules = giveawayRules;
         if (formFieldLabel !== undefined) updateData.formFieldLabel = formFieldLabel;
         if (submitButtonText !== undefined) updateData.submitButtonText = submitButtonText;

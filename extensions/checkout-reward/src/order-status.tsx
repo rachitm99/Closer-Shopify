@@ -24,6 +24,8 @@ interface Settings {
   countdownMinutes?: number;
   countdownSeconds?: number;
   popupTitle: string;
+  subtitleTop?: string;
+  subtitleBottom?: string;
   rulesTitle: string;
   giveawayRules: string[];
   formFieldLabel: string;
@@ -133,6 +135,8 @@ function OrderStatusExtension() {
           setSettings({
             enabled: false,
             popupTitle: '🎉 Instagram Giveaway! 🎉',
+            subtitleTop: '',
+            subtitleBottom: '',
             rulesTitle: 'How to Enter:',
             giveawayRules: [
               'Follow us on Instagram',
@@ -295,19 +299,23 @@ function OrderStatusExtension() {
     >
       {settings.popupTitle}
     </Text>
+    {settings.subtitleTop && (
+      <Text size="small" appearance="subdued" alignment="left" style={{ marginTop: 6 }}>{settings.subtitleTop}</Text>
+    )}
   </View>
 </InlineStack>
 
 
       <Divider />
 
-      {/* Full width banner from public folder (absolute URL to app host) */}
-      <View cornerRadius="none" padding="none">
+      {/* Small centered banner */}
+      <View cornerRadius="none" padding="none" style={{ display: 'flex', justifyContent: 'center' }}>
         <Image
           source={settings?.bannerUrl || "https://closer-qq8c.vercel.app/give-away-banner.jpg"}
           alt="Giveaway Banner"
-          fit="cover"
-          maxInlineSize={1000}
+          fit="contain"
+          maxInlineSize={360}
+          maxBlockSize={90}
         />
       </View>
 
@@ -323,8 +331,21 @@ function OrderStatusExtension() {
             const hours = totalHours % 24;
             const days = Math.floor(totalHours / 24);
             const pad = (n: number) => String(n).padStart(2, '0');
-            const formatted = `${pad(days)}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
-            return <Text size="medium" emphasis="bold">⏳Giveaway ends in  {formatted}</Text>; 
+            const formatted = `${pad(days)}d : ${pad(hours)}h : ${pad(minutes)}m : ${pad(seconds)}s`;
+
+            return (
+              <View style={{ display: 'inline-block', textAlign: 'center' }}>
+                <View style={{ display: 'block', marginBottom: 6 }}>
+                  <View style={{ display: 'block', width: '100%', textAlign: 'center' }}>
+                    <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>⏳ Giveaway ends in ⏳</Text>
+                  </View>
+
+                  <View style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: 12 }}>
+                    <Text size="large" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{formatted}</Text>
+                  </View>
+                </View>
+              </View>
+            );
           })()}
         </BlockStack>
       </View>
@@ -370,6 +391,9 @@ function OrderStatusExtension() {
           >
             {settings.submitButtonText}
           </Button>
+          {settings.subtitleBottom && (
+            <Text size="small" appearance="subdued" alignment="center" style={{ marginTop: 8 }}>{settings.subtitleBottom}</Text>
+          )}
         </BlockStack>
       ) : (
         <BlockStack spacing="base" inlineAlignment="center">
@@ -386,6 +410,9 @@ function OrderStatusExtension() {
                 Follow Us on Instagram
               </Button>
             </Link>
+          )}
+          {settings.subtitleBottom && (
+            <Text size="small" appearance="subdued" alignment="center" style={{ marginTop: 8 }}>{settings.subtitleBottom}</Text>
           )}
         </BlockStack>
       )}
