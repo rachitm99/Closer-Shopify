@@ -213,6 +213,9 @@ function SettingsPage() {
       });
 
       if (response.ok) {
+        const respData = await response.json().catch(() => ({}));
+        console.log('Settings saved response:', respData);
+        console.log('Saved subtitles:', { subtitleTop, subtitleBottom });
         setShowToast(true);
       } else {
         const data = await response.json();
@@ -680,6 +683,18 @@ function SettingsPage() {
                   >
                     {saving ? 'Saving...' : 'Save All Settings'}
                   </button>
+                </div>
+
+                {/* Live preview */}
+                <div style={{ marginTop: 16, border: '1px solid #eee', borderRadius: 6, padding: 12, maxWidth: 420 }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 18, fontWeight: 700 }}>{popupTitle}</div>
+                    {subtitleTop && <div style={{ fontSize: 12, color: '#666', marginTop: 6 }}>{subtitleTop}</div>}
+                    <div style={{ marginTop: 12 }}>
+                      <button style={{ padding: '8px 12px', background: '#008060', color: '#fff', border: 'none', borderRadius: 4 }}>{submitButtonText}</button>
+                    </div>
+                    {subtitleBottom && <div style={{ fontSize: 12, color: '#666', marginTop: 8 }}>{subtitleBottom}</div>}
+                  </div>
                 </div>
               </BlockStack>
             </Card>

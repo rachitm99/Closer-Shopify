@@ -99,6 +99,7 @@ function OrderStatusExtension() {
           
           console.log('Order Status - Settings loaded:', data);
           console.log('Order Status - Enabled status:', data.enabled);
+          console.log('Order Status - subtitleTop/bottom:', data.subtitleTop, data.subtitleBottom);
           
           // Backward compatibility: convert old string format to array
           if (data.giveawayRules && typeof data.giveawayRules === 'string') {

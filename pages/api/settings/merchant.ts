@@ -59,12 +59,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (doc.exists) {
           const data = doc.data();
           console.log('✅ API /settings/merchant - Found existing data for shop');
-          
+
           // Backward compatibility: convert old string format to array
           if (data && data.giveawayRules && typeof data.giveawayRules === 'string') {
             data.giveawayRules = [data.giveawayRules];
           }
-          
+
+          // Backward compatibility for subtitle fields: older docs may use `subtitle`
+          if (data) {
+            if (!data.subtitleTop && data.subtitle) {
+              data.subtitleTop = data.subtitle;
+            }
+            if (!data.subtitleBottom && data.subtitle) {
+              data.subtitleBottom = data.subtitle;
+            }
+            // Ensure both keys exist (even if empty)
+            data.subtitleTop = data.subtitleTop || '';
+            data.subtitleBottom = data.subtitleBottom || '';
+          }
+
           console.log('✅ API /settings/merchant - Returning data');
           return res.status(200).json(data);
         } else {
