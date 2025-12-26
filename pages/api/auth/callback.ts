@@ -84,8 +84,11 @@ export default async function handler(
         enabled: false,
         onboardingCompleted: false, // Key flag to check if onboarding done
         logoUrl: '',
-        popupTitle: '🎉 Instagram Giveaway! 🎉',
+        popupTitle: 'Win ₹1,000 worth of products',
+        subtitleTop: 'Follow us on Instagram to enter the giveaway',
+        subtitleBottom: '3 lucky Winners announced on Instagram on 3rd Jan 2026',
         rulesTitle: 'How to Enter:',
+        rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
         giveawayRules: [
           'Follow us on Instagram',
           'Like our latest post',
@@ -93,7 +96,7 @@ export default async function handler(
           'Share this post to your story',
         ],
         formFieldLabel: 'Instagram Username',
-        submitButtonText: 'Follow Us on Instagram',
+        submitButtonText: 'Follow & Enter Giveaway 🎁',
         redirectUrl: '',
         installedAt: FieldValue.serverTimestamp(),
         registeredAt: FieldValue.serverTimestamp(),

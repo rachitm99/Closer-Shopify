@@ -79,7 +79,7 @@ function Onboarding() {
             
             // Load existing settings if any
             setBannerUrl(data.bannerUrl || '');
-            setPopupTitle(data.popupTitle || '🎉 Instagram Giveaway! 🎉');
+            setPopupTitle(data.popupTitle || 'Win ₹1,000 worth of products');
             setRulesTitle(data.rulesTitle || 'How to Enter:');
             // giveawayRules editing disabled for now
             // setGiveawayRules(data.giveawayRules || [
@@ -88,13 +88,13 @@ function Onboarding() {
             //   'Tag 2 friends in the comments',
             //   'Share this post to your story',
             // ]);
-            setRulesDescription(data.rulesDescription || 'Follow us on Instagram & enter your handle below');
-            setSubmitButtonText(data.submitButtonText || 'Follow Us on Instagram');
+            setRulesDescription(data.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter');
+            setSubmitButtonText(data.submitButtonText || 'Follow & Enter Giveaway 🎁');
             setRedirectUrl(data.redirectUrl || '');
 
             // Additional fields from settings page
-            setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter');
-            setSubtitleBottom(data.subtitleBottom || 'Winner announced on Instagram');
+            setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter the giveaway');
+            setSubtitleBottom(data.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026');
             setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
             setCountdownDays(data.countdownDays !== undefined ? data.countdownDays : 2);
             setCountdownHours(data.countdownHours !== undefined ? data.countdownHours : 11);
@@ -319,7 +319,7 @@ function Onboarding() {
       content: (
         <BlockStack gap="400">
           <Text as="p" variant="bodyLg">
-            Thanks for installing Closer. This quick setup helps you launch a high-conversion Instagram giveaway on your thank-you page in just a few minutes.
+            Thanks for installing Follo. This quick setup helps you launch a high-conversion Instagram giveaway on your thank-you page in just a few minutes.
           </Text>
 
           <Text as="p" variant="bodyMd">

@@ -152,10 +152,11 @@ function ThankYouExtension() {
         console.error('Thank You - Error fetching settings:', error);
         setSettings({
           enabled: false,
-          popupTitle: '🎉 Instagram Giveaway! 🎉',
-          subtitleTop: 'Follow us on Instagram to enter',
-          subtitleBottom: 'Winner announced on Instagram',
+          popupTitle: 'Win ₹1,000 worth of products',
+          subtitleTop: 'Follow us on Instagram to enter the giveaway',
+          subtitleBottom: '3 lucky Winners announced on Instagram on 3rd Jan 2026',
           rulesTitle: 'How to Enter:',
+          rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
           giveawayRules: [
             'Follow us on Instagram',
             'Like our latest post',
@@ -163,7 +164,7 @@ function ThankYouExtension() {
             'Share this post to your story'
           ],
           formFieldLabel: 'Instagram Username',
-          submitButtonText: 'Follow Us on Instagram',
+          submitButtonText: 'Follow & Enter Giveaway 🎁',
         });
       } finally {
         setLoading(false);

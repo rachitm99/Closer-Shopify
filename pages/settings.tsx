@@ -77,9 +77,9 @@ function SettingsPage() {
           
           setEnabled(data.enabled || false);
           setLogoUrl(data.logoUrl || '');
-          setPopupTitle(data.popupTitle || '🎉 Instagram Giveaway! 🎉');
-          setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter');
-          setSubtitleBottom(data.subtitleBottom || 'Winner announced on Instagram');
+          setPopupTitle(data.popupTitle || 'Win ₹1,000 worth of products');
+          setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter the giveaway');
+          setSubtitleBottom(data.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026');
           setRulesTitle(data.rulesTitle || 'How it works');
           // giveawayRules editing disabled for now
           // setGiveawayRules(data.giveawayRules || [
@@ -90,9 +90,9 @@ function SettingsPage() {
           //   'Turn on post notifications',
           //   'Use our hashtag in your story'
           // ]);
-          setRulesDescription(data.rulesDescription || 'Follow us on Instagram & enter your handle below');
+          setRulesDescription(data.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter');
           setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
-          setSubmitButtonText(data.submitButtonText || 'Follow Us on Instagram');
+          setSubmitButtonText(data.submitButtonText || 'Follow & Enter Giveaway 🎁');
           setRedirectUrl(data.redirectUrl || '');
           setBannerUrl(data.bannerUrl || '');
           setCountdownDays(data.countdownDays !== undefined ? data.countdownDays : 2);

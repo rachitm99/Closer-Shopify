@@ -76,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           rulesDescription: data?.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
           giveawayRules: rules,
           formFieldLabel: data?.formFieldLabel || 'Instagram Username',
-          submitButtonText: data?.submitButtonText || 'Follow Us on Instagram',
+          submitButtonText: data?.submitButtonText || 'Follow & Enter Giveaway 🎁',
           redirectUrl: data?.redirectUrl,
         });
       } else {
