@@ -70,8 +70,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           shop: shop, // Add shop domain for impression tracking
           logoUrl: data?.logoUrl,
           popupTitle: data?.popupTitle || '🎉 Instagram Giveaway! 🎉',
-          subtitleTop: data?.subtitleTop || '',
-          subtitleBottom: data?.subtitleBottom || '',
+          subtitleTop: data?.subtitleTop || 'Follow us on Instagram to enter',
+          subtitleBottom: data?.subtitleBottom || 'Winner announced on Instagram',
           rulesTitle: data?.rulesTitle || 'How to Enter:',
           giveawayRules: rules,
           formFieldLabel: data?.formFieldLabel || 'Instagram Username',
@@ -83,8 +83,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           enabled: false,
           shop: shop, // Add shop domain for impression tracking
           popupTitle: '🎉 Instagram Giveaway! 🎉',
-          subtitleTop: '',
-          subtitleBottom: '',
+          subtitleTop: 'Follow us on Instagram to enter',
+          subtitleBottom: 'Winner announced on Instagram',
           rulesTitle: 'How to Enter:',
           giveawayRules: [
             'Follow us on Instagram',

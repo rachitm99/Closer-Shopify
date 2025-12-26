@@ -134,8 +134,8 @@ function ThankYouExtension() {
           setSettings({
             enabled: false,
             popupTitle: '🎉 Instagram Giveaway! 🎉',
-            subtitleTop: '',
-            subtitleBottom: '',
+            subtitleTop: 'Follow us on Instagram to enter',
+            subtitleBottom: 'Winner announced on Instagram',
             rulesTitle: 'How to Enter:',
             giveawayRules: [
               'Follow us on Instagram',
@@ -152,6 +152,8 @@ function ThankYouExtension() {
         setSettings({
           enabled: false,
           popupTitle: '🎉 Instagram Giveaway! 🎉',
+          subtitleTop: 'Follow us on Instagram to enter',
+          subtitleBottom: 'Winner announced on Instagram',
           rulesTitle: 'How to Enter:',
           giveawayRules: [
             'Follow us on Instagram',
@@ -379,11 +381,9 @@ function ThankYouExtension() {
   <Text size="large" emphasis="bold" alignment="center">
     {settings.popupTitle}
   </Text>
-  {settings.subtitleTop && (
-    <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 6 }}>
-      <Text size="small" appearance="subdued" alignment="center">{settings.subtitleTop}</Text>
-    </View>
-  )}
+  <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 6 }}>
+    <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleTop}</Text>
+  </View>
 </BlockStack>
 </BlockStack>
 
@@ -459,7 +459,7 @@ function ThankYouExtension() {
 
       {/* FORM */}
       {!submitted ? (
-        <BlockStack spacing="loose">
+        <BlockStack spacing="loose" alignment="center">
           <TextField
             label={settings.formFieldLabel}
             value={formValue}
@@ -475,11 +475,11 @@ function ThankYouExtension() {
           >
             {settings.submitButtonText}
           </Button>
-          {settings.subtitleBottom && (
+            <BlockStack spacing="none" alignment="center">
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-              <Text size="small" appearance="subdued" alignment="center">{settings.subtitleBottom}</Text>
+              <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleBottom}</Text>
             </View>
-          )}
+          </BlockStack>
         </BlockStack>
       ) : (
         <BlockStack spacing="base" inlineAlignment="center">
@@ -497,11 +497,11 @@ function ThankYouExtension() {
               </Button>
             </Link>
           )}
-          {settings.subtitleBottom && (
+          <BlockStack spacing="none" alignment="center">
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-              <Text size="small" appearance="subdued" alignment="center">{settings.subtitleBottom}</Text>
+              <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleBottom}</Text>
             </View>
-          )}
+          </BlockStack>
         </BlockStack>
       )}
     </BlockStack>

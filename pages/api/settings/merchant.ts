@@ -73,9 +73,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!data.subtitleBottom && data.subtitle) {
               data.subtitleBottom = data.subtitle;
             }
-            // Ensure both keys exist (even if empty)
-            data.subtitleTop = data.subtitleTop || '';
-            data.subtitleBottom = data.subtitleBottom || '';
+            // Ensure both keys exist (even if empty) and provide sensible defaults
+            data.subtitleTop = data.subtitleTop || 'Follow us on Instagram to enter';
+            data.subtitleBottom = data.subtitleBottom || 'Winner announced on Instagram';
           }
 
           console.log('✅ API /settings/merchant - Returning data');
@@ -88,8 +88,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             enabled: false,
             logoUrl: '',
             popupTitle: '🎉 Instagram Giveaway! 🎉',
-            subtitleTop: '',
-            subtitleBottom: '',
+            subtitleTop: 'Follow us on Instagram to enter',
+            subtitleBottom: 'Winner announced on Instagram',
             rulesTitle: 'How to Enter:',
             giveawayRules: [
               'Follow us on Instagram',

@@ -136,8 +136,8 @@ function OrderStatusExtension() {
           setSettings({
             enabled: false,
             popupTitle: '🎉 Instagram Giveaway! 🎉',
-            subtitleTop: '',
-            subtitleBottom: '',
+            subtitleTop: 'Follow us on Instagram to enter',
+            subtitleBottom: 'Winner announced on Instagram',
             rulesTitle: 'How to Enter:',
             giveawayRules: [
               'Follow us on Instagram',
@@ -300,11 +300,9 @@ function OrderStatusExtension() {
     >
       {settings.popupTitle}
     </Text>
-    {settings.subtitleTop && (
-      <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 6 }}>
-        <Text size="small" appearance="subdued" alignment="center">{settings.subtitleTop}</Text>
-      </View>
-    )}
+    <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 6 }}>
+      <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleTop}</Text>
+    </View>
   </View>
 </InlineStack>
 
@@ -394,11 +392,9 @@ function OrderStatusExtension() {
           >
             {settings.submitButtonText}
           </Button>
-          {settings.subtitleBottom && (
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-              <Text size="small" appearance="subdued" alignment="center">{settings.subtitleBottom}</Text>
+              <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleBottom}</Text>
             </View>
-          )}
         </BlockStack>
       ) : (
         <BlockStack spacing="base" inlineAlignment="center">
@@ -416,11 +412,9 @@ function OrderStatusExtension() {
               </Button>
             </Link>
           )}
-          {settings.subtitleBottom && (
-            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-              <Text size="small" appearance="subdued" alignment="center">{settings.subtitleBottom}</Text>
-            </View>
-          )}
+          <View style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
+            <Text size="small" appearance="subdued" alignment="center" style={{ width: '100%', textAlign: 'center' }}>{settings.subtitleBottom}</Text>
+          </View>
         </BlockStack>
       )}
     </BlockStack>

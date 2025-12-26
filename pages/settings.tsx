@@ -24,8 +24,8 @@ function SettingsPage() {
   const [enabled, setEnabled] = useState(false);
   const [logoUrl, setLogoUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState('🎉 Instagram Giveaway! 🎉');
-  const [subtitleTop, setSubtitleTop] = useState('');
-  const [subtitleBottom, setSubtitleBottom] = useState('');
+  const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter');
+  const [subtitleBottom, setSubtitleBottom] = useState('Winner announced on Instagram');
   const [rulesTitle, setRulesTitle] = useState('How to Enter:');
   const [giveawayRules, setGiveawayRules] = useState([
     'Follow us on Instagram',
@@ -77,8 +77,8 @@ function SettingsPage() {
           setEnabled(data.enabled || false);
           setLogoUrl(data.logoUrl || '');
           setPopupTitle(data.popupTitle || '🎉 Instagram Giveaway! 🎉');
-          setSubtitleTop(data.subtitleTop || '');
-          setSubtitleBottom(data.subtitleBottom || '');
+          setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter');
+          setSubtitleBottom(data.subtitleBottom || 'Winner announced on Instagram');
           setRulesTitle(data.rulesTitle || 'How to Enter:');
           setGiveawayRules(data.giveawayRules || [
             'Follow us on Instagram',
@@ -689,11 +689,12 @@ function SettingsPage() {
                 <div style={{ marginTop: 16, border: '1px solid #eee', borderRadius: 6, padding: 12, maxWidth: 420 }}>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>{popupTitle}</div>
-                    {subtitleTop && <div style={{ fontSize: 12, color: '#666', marginTop: 6 }}>{subtitleTop}</div>}
+                    <div style={{ fontSize: 12, color: '#666', marginTop: 6 }}>{subtitleTop}</div> 
+
                     <div style={{ marginTop: 12 }}>
                       <button style={{ padding: '8px 12px', background: '#008060', color: '#fff', border: 'none', borderRadius: 4 }}>{submitButtonText}</button>
                     </div>
-                    {subtitleBottom && <div style={{ fontSize: 12, color: '#666', marginTop: 8 }}>{subtitleBottom}</div>}
+                    <div style={{ fontSize: 12, color: '#666', marginTop: 8 }}>{subtitleBottom}</div>
                   </div>
                 </div>
               </BlockStack>
