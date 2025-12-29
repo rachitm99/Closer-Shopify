@@ -36,7 +36,14 @@ interface Settings {
 
 // Order Status page component
 function OrderStatusExtension() {
-  const api = useApi();
+  // const api = useApi();
+   const api = useApi();
+  console.log("API object:", api);
+  console.log("Order confirmation:", api?.orderConfirmation);
+  console.log(
+    "Order ID:",
+    api?.orderConfirmation?.current?.order?.id
+  );
   const { sessionToken } = api;
   const orderData = useOrder();
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -48,24 +55,24 @@ function OrderStatusExtension() {
   const [orderNumber, setOrderNumber] = useState('');
   const [customerId, setCustomerId] = useState('');
 
-  // Countdown timer (always starts from 2 days, 11 hours, 22 minutes, 11 seconds)
-  const initialCountdownMs = (((2 * 24 + 11) * 60 + 22) * 60 + 11) * 1000; // calculate ms
+  // Countdown timer - updates every 60 seconds since we don't display seconds
+  const initialCountdownMs = (((2 * 24 + 11) * 60 + 22) * 60) * 1000; // No seconds
   const [remainingMs, setRemainingMs] = useState<number>(initialCountdownMs);
 
   useEffect(() => {
     console.log('⏱️ Order Status - Countdown timer started:', initialCountdownMs);
     const id = setInterval(() => {
       setRemainingMs(prev => {
-        const next = Math.max(0, prev - 1000);
+        const next = Math.max(0, prev - 60000); // Subtract 1 minute
         return next;
       });
-    }, 1000);
+    }, 60000); // Update every 60 seconds
 
     return () => {
       clearInterval(id);
       console.log('⏱️ Order Status - Countdown timer stopped');
     };
-  }, [initialCountdownMs]);
+  }, []);
 
   useEffect(() => {
     async function fetchSettings() {

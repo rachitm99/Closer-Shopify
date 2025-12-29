@@ -36,7 +36,14 @@ interface Settings {
 
 // Thank You page component
 function ThankYouExtension() {
+  // const api = useApi();
   const api = useApi();
+console.log("API object:", api);
+console.log("Order confirmation:", api?.orderConfirmation);
+console.log(
+  "Order ID:",
+  api?.orderConfirmation?.current?.order?.id
+);
   
   // Note: useOrder() is NOT available for purchase.thank-you.block.render target
   // We'll get order/customer data from API context or session token instead
