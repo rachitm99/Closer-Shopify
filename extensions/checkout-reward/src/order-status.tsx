@@ -211,7 +211,14 @@ function OrderStatusExtension() {
         });
 
         if (!response.ok) {
-          console.warn('Order GraphQL call failed with status', response.status);
+          const text = await response.text();
+          console.warn('Order GraphQL call failed with status', response.status, 'body:', text);
+          try {
+            const json = JSON.parse(text);
+            console.warn('Order GraphQL server error:', json);
+          } catch (e) {
+            // not JSON
+          }
           return;
         }
 
