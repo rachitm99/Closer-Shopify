@@ -12,6 +12,11 @@ import {
   useApi,
   useOrder,
 } from '@shopify/ui-extensions-react/customer-account';
+// import {
+  
+//   useOrder,
+// } from '@shopify/ui-extensions-react/checkout';
+
 import { useEffect, useState } from 'react';
 
 interface Settings {
@@ -38,6 +43,10 @@ interface Settings {
 function OrderStatusExtension() {
   // const api = useApi();
    const api = useApi();
+  //  const order = useOrder();
+
+  // console.log(order?.id);       // gid://shopify/Order/...
+  // console.log(order?.name);
   // console.log("API object:", api);
   // console.log("Order confirmation:", api?.orderConfirmation);
   // console.log(
@@ -77,7 +86,7 @@ function OrderStatusExtension() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        console.log(orderData);
+        console.log("this is orderdata"+orderData?.id);
         
         try {
           const orderInfo: any = orderData as any;
@@ -183,6 +192,36 @@ function OrderStatusExtension() {
     fetchSettings();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - run only on mount
+
+  // When we have an order id, fetch detailed order data from a secure server route
+  useEffect(() => {
+    if (!orderNumber) return;
+
+    (async () => {
+      try {
+        const token = await sessionToken.get();
+
+        const response = await fetch('https://closer-qq8c.vercel.app/api/shopify/order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ shop: settings?.shop || '', orderId: orderNumber }),
+        });
+
+        if (!response.ok) {
+          console.warn('Order GraphQL call failed with status', response.status);
+          return;
+        }
+
+        const data = await response.json();
+        console.log('Order GraphQL response:', data);
+      } catch (err) {
+        console.error('Order GraphQL error:', err);
+      }
+    })();
+  }, [orderNumber, settings?.shop, sessionToken]);
 
   // Separate effect to track impressions whenever settings are loaded and enabled
   useEffect(() => {
@@ -326,15 +365,16 @@ function OrderStatusExtension() {
 
       <Divider />
 
-      {/* Small centered banner */}
-      <View cornerRadius="none" padding="none" style={{ display: 'flex', justifyContent: 'center' }}>
+      {/* Banner - full width */}
+      <View cornerRadius="none" padding="none">
+        <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+
         <Image
           source={settings?.bannerUrl || "https://closer-qq8c.vercel.app/give-away-banner.jpg"}
           alt="Giveaway Banner"
-          fit="contain"
-          maxInlineSize={360}
-          maxBlockSize={90}
-        />
+          fit="cover"
+          />
+          </BlockStack>
       </View>
 
       {/* Countdown Timer */}

@@ -11,7 +11,10 @@ import {
   Link,
   Divider,
   Icon,
+  useOrder
 } from '@shopify/ui-extensions-react/checkout';
+
+
 import { useEffect, useState } from 'react';
 
 interface Settings {
@@ -38,6 +41,9 @@ interface Settings {
 function ThankYouExtension() {
   // const api = useApi();
   const api = useApi();
+  const orderData = useOrder();
+  console.log(" pased throug here");
+      // gid://shopify/Order/...
 console.log("API object:", api);
 console.log("Order confirmation:", api?.orderConfirmation);
 console.log(
@@ -63,6 +69,7 @@ console.log(
   const [remainingMs, setRemainingMs] = useState<number>(initialCountdownMs);
 
   useEffect(() => {
+     console.log(" This is order id"+orderData?.id);  
     console.log('⏱️ Thank You - Countdown timer started:', initialCountdownMs);
     const id = setInterval(() => {
       setRemainingMs(prev => {
@@ -402,15 +409,16 @@ console.log(
 
       <Divider />
 
-      {/* Small centered banner */}
-      <View cornerRadius="none" padding="none" style={{ display: 'flex', justifyContent: 'center' }}>
+      {/* Banner - full width */}
+      <View cornerRadius="none" padding="none">
+        <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+
         <Image
           source={settings?.bannerUrl || "https://closer-qq8c.vercel.app/give-away-banner.jpg"}
           alt="Giveaway Banner"
-          fit="contain"
-          maxInlineSize={360}
-          maxBlockSize={90}
-        />
+          fit="cover"
+          />
+          </BlockStack>
       </View>
 
       {/* Countdown Timer */}
