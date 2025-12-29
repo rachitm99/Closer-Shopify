@@ -46,15 +46,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ error: 'Unauthorized: invalid or missing session token' });
   }
 
-  const shop = session.shop || bodyShop;
+  let shop = session.shop || bodyShop;
+
+  // Try to canonicalize truncated shop names (e.g., 'closer-store-8820.my' -> 'closer-store-8820.myshopify.com')
+  if (shop && !shop.endsWith('.myshopify.com') && !shop.includes('.')) {
+    shop = `${shop}.myshopify.com`;
+    console.log('Shop domain canonicalized to', shop);
+  }
+
   if (!shop || !validateShopDomain(shop)) {
-    return res.status(400).json({ error: 'Invalid shop domain' });
+    console.error('Invalid shop domain:', shop);
+    return res.status(400).json({ error: 'Invalid shop domain', shop });
   }
 
   // Prefer using stored session access token if available; fall back to env admin token
   const accessToken = (session as any).accessToken || process.env.SHOPIFY_ADMIN_TOKEN;
   if (!accessToken) {
-    return res.status(500).json({ error: 'Server misconfiguration: missing access token' });
+    console.error('No access token found for shop:', shop, 'sessionAccessTokenPresent:', !!(session as any).accessToken, 'envAdminTokenPresent:', !!process.env.SHOPIFY_ADMIN_TOKEN);
+    return res.status(500).json({ error: 'No access token available for this shop. Set SHOPIFY_ADMIN_TOKEN or ensure an offline session with access token exists.', shop });
   }
 
   try {
