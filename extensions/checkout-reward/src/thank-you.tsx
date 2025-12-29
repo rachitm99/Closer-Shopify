@@ -69,7 +69,7 @@ console.log(
   const [remainingMs, setRemainingMs] = useState<number>(initialCountdownMs);
 
   useEffect(() => {
-     console.log(" This is order id"+orderData?.id);  
+    //  console.log(" This is order id"+orderData?.id);  
     console.log('⏱️ Thank You - Countdown timer started:', initialCountdownMs);
     const id = setInterval(() => {
       setRemainingMs(prev => {

@@ -8,8 +8,6 @@ const ORDER_QUERY = `query getOrder($id: ID!) {
     name
     processedAt
     email
-    financialStatus
-    fulfillmentStatus
     totalPriceSet { shopMoney { amount currencyCode } }
     customer { id email displayName }
     lineItems(first: 50) { edges { node { title quantity originalUnitPriceSet { shopMoney { amount currencyCode } } } } }
