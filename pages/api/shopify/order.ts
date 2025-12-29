@@ -9,7 +9,6 @@ const ORDER_QUERY = `query getOrder($id: ID!) {
     processedAt
     email
     totalPriceSet { shopMoney { amount currencyCode } }
-    customer { id email displayName }
     lineItems(first: 50) { edges { node { title quantity originalUnitPriceSet { shopMoney { amount currencyCode } } } } }
     fulfillments { trackingInfo { number company } }
   }
