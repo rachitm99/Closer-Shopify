@@ -38,12 +38,12 @@ interface Settings {
 function OrderStatusExtension() {
   // const api = useApi();
    const api = useApi();
-  console.log("API object:", api);
-  console.log("Order confirmation:", api?.orderConfirmation);
-  console.log(
-    "Order ID:",
-    api?.orderConfirmation?.current?.order?.id
-  );
+  // console.log("API object:", api);
+  // console.log("Order confirmation:", api?.orderConfirmation);
+  // console.log(
+  //   "Order ID:",
+  //   api?.orderConfirmation?.current?.order?.id
+  // );
   const { sessionToken } = api;
   const orderData = useOrder();
   const [settings, setSettings] = useState<Settings | null>(null);
