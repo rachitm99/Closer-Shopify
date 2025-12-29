@@ -63,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const accessToken = (session as any).accessToken || process.env.SHOPIFY_ADMIN_TOKEN;
   if (!accessToken) {
     console.error('No access token found for shop:', shop, 'sessionAccessTokenPresent:', !!(session as any).accessToken, 'envAdminTokenPresent:', !!process.env.SHOPIFY_ADMIN_TOKEN);
-    return res.status(500).json({ error: 'No access token available for this shop. Set SHOPIFY_ADMIN_TOKEN or ensure an offline session with access token exists.', shop });
+    return res.status(401).json({ error: 'Unauthorized: no access token available for this shop. Please reinstall the app or set SHOPIFY_ADMIN_TOKEN for development testing.', shop });
   }
 
   try {

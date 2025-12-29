@@ -11,7 +11,7 @@ import {
   Link,
   Divider,
   Icon,
-  useOrder
+  // useOrder
 } from '@shopify/ui-extensions-react/checkout';
 
 
@@ -41,7 +41,7 @@ interface Settings {
 function ThankYouExtension() {
   // const api = useApi();
   const api = useApi();
-  const orderData = useOrder();
+  // const orderData = useOrder();
   console.log(" pased throug here");
       // gid://shopify/Order/...
 console.log("API object:", api);

@@ -19,6 +19,35 @@ export default async function handler(
     if (!session) {
       throw new Error('No session found');
     }
+
+    console.log('🔍 Callback received session:', {
+      shop: session.shop,
+      id: session.id,
+      isOnline: session.isOnline,
+      hasAccessToken: !!session.accessToken,
+      accessTokenLength: session.accessToken?.length || 0,
+      scope: session.scope,
+    });
+
+    // Persist the session (store offline session and set cookie for subsequent requests)
+    try {
+      const stored = await storeSession(session);
+      if (stored) {
+        console.log('✅ Session persisted for shop:', session.shop, 'accessTokenPresent:', !!session.accessToken);
+      } else {
+        console.warn('⚠️ Session persistence returned false for shop:', session.shop);
+      }
+
+      // Set a session cookie so server can fall back to cookie-based auth if needed
+      try {
+        setSessionCookie(res, session);
+        console.log('✅ Session cookie set for shop:', session.shop);
+      } catch (cookieErr) {
+        console.warn('⚠️ Failed to set session cookie:', cookieErr);
+      }
+    } catch (err) {
+      console.error('Error persisting session:', err);
+    }
         // Programmatically register compliance webhooks (best-effort) for the shop.
         // Note: These handlers only log the webhook; actual data removal/response logic must be implemented properly.
         try {
