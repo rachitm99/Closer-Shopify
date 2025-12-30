@@ -19,7 +19,7 @@ compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"
 uri = "https://closer-qq8c.vercel.app/api/webhooks"
 
 [access_scopes]
-scopes = "read_orders,write_orders,read_products"
+scopes = "read_orders,write_orders,read_products,write_order_edits"
 optional_scopes = [ ]
 use_legacy_install_flow = false
 

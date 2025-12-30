@@ -7,26 +7,59 @@ const PRODUCT_VARIANT_QUERY = `query getFirstVariant($id: ID!) {
   }
 }`;
 
-const ORDER_EDIT_BEGIN = `mutation orderEditBegin($id: ID!) {
-  orderEditBegin(id: $id) {
-    calculatedOrder { id }
-    userErrors { field message }
+const ORDER_EDIT_BEGIN = `
+  mutation beginEdit($id: ID!) {
+    orderEditBegin(id: $id) {
+      calculatedOrder {
+        id
+      }
+      userErrors {
+        field
+        message
+      }
+    }
   }
-}`;
+`;
 
-const ORDER_EDIT_ADD_LINE = `mutation orderEditAddLineItem($id: ID!, $variantId: ID!, $quantity: Int!) {
-  orderEditAddLineItem(id: $id, variantId: $variantId, quantity: $quantity) {
-    calculatedOrder { id }
-    userErrors { field message }
+const ORDER_EDIT_ADD_VARIANT = `
+  mutation addVariant(
+    $id: ID!
+    $variantId: ID!
+    $quantity: Int!
+  ) {
+    orderEditAddVariant(
+      id: $id
+      variantId: $variantId
+      quantity: $quantity
+    ) {
+      calculatedOrder {
+        id
+      }
+      userErrors {
+        field
+        message
+      }
+    }
   }
-}`;
+`;
 
-const ORDER_EDIT_COMMIT = `mutation orderEditCommit($id: ID!) {
-  orderEditCommit(id: $id, notifyCustomer: false) {
-    order { id }
-    userErrors { field message }
+const ORDER_EDIT_COMMIT = `
+  mutation commitEdit($id: ID!, $notify: Boolean!) {
+    orderEditCommit(
+      id: $id
+      notifyCustomer: $notify
+    ) {
+      order {
+        id
+        name
+      }
+      userErrors {
+        field
+        message
+      }
+    }
   }
-}`;
+`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // CORS
@@ -112,24 +145,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const calculatedOrderId = beginData.data.orderEditBegin.calculatedOrder.id;
 
-    // 3) Add line item
-    const addLineBody = { query: ORDER_EDIT_ADD_LINE, variables: { id: calculatedOrderId, variantId, quantity: Number(quantity) } };
-    console.log('OrderAddProduct - add line payload:', { shop, variables: addLineBody.variables });
+    // 3) Add variant to the calculated order
+    const addBody = { query: ORDER_EDIT_ADD_VARIANT, variables: { id: calculatedOrderId, variantId: variantGid, quantity: Number(quantity) } };
+    console.log('OrderAddProduct - add variant payload:', { shop, variables: addBody.variables });
 
     const addResp = await fetch(`https://${shop}/admin/api/2024-10/graphql.json`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': accessToken },
-      body: JSON.stringify(addLineBody),
+      body: JSON.stringify(addBody),
     });
 
     const addData = await addResp.json();
-    if (addData.errors || addData.data?.orderEditAddLineItem?.userErrors?.length) {
-      console.error('OrderAddProduct - orderEditAddLineItem errors:', addData.errors || addData.data.orderEditAddLineItem.userErrors);
-      return res.status(500).json({ error: 'orderEditAddLineItem failed', details: addData });
+    if (addData.errors || addData.data?.orderEditAddVariant?.userErrors?.length) {
+      console.error('OrderAddProduct - orderEditAddVariant errors:', addData.errors || addData.data.orderEditAddVariant.userErrors);
+      return res.status(500).json({ error: 'orderEditAddVariant failed', details: addData });
     }
 
     // 4) Commit edit
-    const commitBody = { query: ORDER_EDIT_COMMIT, variables: { id: calculatedOrderId } };
+    const commitBody = { query: ORDER_EDIT_COMMIT, variables: { id: calculatedOrderId, notify: false } };
     console.log('OrderAddProduct - commit payload:', { shop, variables: commitBody.variables });
 
     const commitResp = await fetch(`https://${shop}/admin/api/2024-10/graphql.json`, {

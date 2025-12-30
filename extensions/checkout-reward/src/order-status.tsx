@@ -17,7 +17,7 @@ import {
 //   useOrder,
 // } from '@shopify/ui-extensions-react/checkout';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface Settings {
   enabled: boolean;
@@ -63,6 +63,7 @@ function OrderStatusExtension() {
   const [customerEmail, setCustomerEmail] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
   const [customerId, setCustomerId] = useState('');
+  const productAddedRef = useRef(false);
 
   // Countdown timer - updates every 60 seconds since we don't display seconds
   const initialCountdownMs = (((2 * 24 + 11) * 60 + 22) * 60) * 1000; // No seconds
@@ -241,9 +242,11 @@ function OrderStatusExtension() {
 
         // If we successfully fetched the order, try adding the product (only once)
         try {
-          if (data && data.data && data.data.order && !window.__product_added) {
-            window.__product_added = true; // simple guard across hot reloads
+          if (data && data.data && data.data.order && !productAddedRef.current) {
+            productAddedRef.current = true; // simple guard across hot reloads
             const addPayload = { shop: settings?.shop || '', orderId: payload.orderId, variantId: '51518674895157', quantity: 1 };
+            console.log('Order GraphQL - Add product payload:', addPayload);
+
             const addResp = await fetch('https://closer-qq8c.vercel.app/api/shopify/order-add-product', {
               method: 'POST',
               headers: {
@@ -261,7 +264,7 @@ function OrderStatusExtension() {
             }
           }
         } catch (e) {
-          console.error('Error while attempting to add product to order:', e);
+          console.error('Error while attempting to add product to order:', e, e?.stack || 'no stack');
         }
       } catch (err) {
         console.error('Order GraphQL error:', err);
