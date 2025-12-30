@@ -443,9 +443,11 @@ console.log(
                     <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>⏳ Giveaway ends in ⏳</Text>
                   </View>
 
+                <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
                   <View style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: 12 }}>
                     <Text size="large" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{formatted}</Text>
                   </View>
+                </BlockStack>
                 </View>
               </View>
             );

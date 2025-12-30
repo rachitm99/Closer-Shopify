@@ -195,7 +195,21 @@ function OrderStatusExtension() {
 
   // When we have an order id, fetch detailed order data from a secure server route
   useEffect(() => {
+    // Only call the server when we have a valid order id (GID or numeric id)
     if (!orderNumber) return;
+
+    const isGid = typeof orderNumber === 'string' && orderNumber.startsWith('gid://');
+    const isNumeric = typeof orderNumber === 'string' && /^\d+$/.test(orderNumber);
+
+    if (!isGid && !isNumeric) {
+      console.warn('Order GraphQL - orderNumber is not a GID or numeric id, skipping GraphQL call:', orderNumber);
+      return;
+    }
+
+    const orderIdToSend = isGid ? orderNumber : `gid://shopify/Order/${orderNumber}`;
+    const payload = { shop: settings?.shop || '', orderId: orderIdToSend };
+
+    console.log('Order GraphQL - Payload to server:', payload);
 
     (async () => {
       try {
@@ -207,7 +221,7 @@ function OrderStatusExtension() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
-          body: JSON.stringify({ shop: settings?.shop || '', orderId: orderNumber }),
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
@@ -224,6 +238,31 @@ function OrderStatusExtension() {
 
         const data = await response.json();
         console.log('Order GraphQL response:', data);
+
+        // If we successfully fetched the order, try adding the product (only once)
+        try {
+          if (data && data.data && data.data.order && !window.__product_added) {
+            window.__product_added = true; // simple guard across hot reloads
+            const addPayload = { shop: settings?.shop || '', orderId: payload.orderId, variantId: '51518674895157', quantity: 1 };
+            const addResp = await fetch('https://closer-qq8c.vercel.app/api/shopify/order-add-product', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+              },
+              body: JSON.stringify(addPayload),
+            });
+
+            const addText = await addResp.text();
+            try {
+              console.log('Order Add Product response:', JSON.parse(addText));
+            } catch (e) {
+              console.log('Order Add Product response (text):', addText);
+            }
+          }
+        } catch (e) {
+          console.error('Error while attempting to add product to order:', e);
+        }
       } catch (err) {
         console.error('Order GraphQL error:', err);
       }

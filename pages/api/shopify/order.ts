@@ -59,13 +59,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const gqlBody = { query: ORDER_QUERY, variables: { id: orderId } };
+    console.log('Shopify GraphQL - sending payload for shop:', shop, { queryName: 'getOrder', variables: gqlBody.variables });
+
     const response = await fetch(`https://${shop}/admin/api/2024-10/graphql.json`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-Shopify-Access-Token': accessToken,
       },
-      body: JSON.stringify({ query: ORDER_QUERY, variables: { id: orderId } }),
+      body: JSON.stringify(gqlBody),
     });
 
     if (!response.ok) {
