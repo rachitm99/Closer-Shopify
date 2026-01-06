@@ -399,7 +399,7 @@ function Onboarding() {
                   />
                   <div style={{ marginTop: '4px' }}>
                     <Text as="p" variant="bodySm" tone="subdued">
-                      Upload your giveaway banner (JPEG, PNG, GIF, WebP - Max 5MB) — Recommended: 360×90 px (4:1 ratio)
+                      Upload your giveaway banner (JPEG, PNG, GIF, WebP - Max 5MB) — Recommended: 360x90 px
                     </Text>
                   </div>
                 </div>
