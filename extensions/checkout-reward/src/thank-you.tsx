@@ -64,6 +64,7 @@ console.log(
   const [orderNumber, setOrderNumber] = useState('');
   const [customerId, setCustomerId] = useState('');
 
+
   // Countdown timer (always starts from 2 days, 11 hours, 22 minutes, 11 seconds)
   const initialCountdownMs = (((2 * 24 + 11) * 60 + 22) * 60 + 11) * 1000; // calculate ms
   const [remainingMs, setRemainingMs] = useState<number>(initialCountdownMs);
@@ -249,11 +250,17 @@ console.log(
         }
       );
 
+      const text = await response.text();
+      console.log('Thank You - submission response status:', response.status, 'body:', text);
+
       if (response.ok) {
         setSubmitted(true);
+        console.log('Thank You - Submission succeeded; showing follow link for manual redirect');
+      } else {
+        console.warn('Thank You - Submission failed:', response.status, text);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('Thank You - Error submitting form:', error);
     } finally {
       setSubmitting(false);
     }
@@ -492,15 +499,29 @@ console.log(
             onChange={setFormValue}
             prefix="@"
           />
-          <Button
-            kind="primary"
-            onPress={handleSubmit}
-            loading={submitting}
-            disabled={submitting}
-            style={{ width: '100%' }}
-          >
-            {settings.submitButtonText}
-          </Button>
+          {settings?.redirectUrl ? (
+            <Link to={settings.redirectUrl} external>
+              <Button
+                kind="primary"
+                onPress={handleSubmit}
+                loading={submitting}
+                disabled={submitting}
+                style={{ width: '100%' }}
+              >
+                {settings.submitButtonText}
+              </Button>
+            </Link>
+          ) : (
+            <Button
+              kind="primary"
+              onPress={handleSubmit}
+              loading={submitting}
+              disabled={submitting}
+              style={{ width: '100%' }}
+            >
+              {settings.submitButtonText}
+            </Button>
+          )}
           <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center" alignment="center" style={{ width: '100%', alignItems: 'center' }}>
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
               <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
@@ -516,7 +537,7 @@ console.log(
             Thank you for entering! Good luck! 🍀
           </Text>
 
-          {settings.redirectUrl && (
+          {submitted && settings?.redirectUrl && (
             <Link to={settings.redirectUrl} external>
               <Button kind="primary" style={{ width: '100%' }}>
                 Follow Us on Instagram

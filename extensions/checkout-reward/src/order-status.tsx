@@ -63,6 +63,7 @@ function OrderStatusExtension() {
   const [customerEmail, setCustomerEmail] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
   const [customerId, setCustomerId] = useState('');
+
   const productAddedRef = useRef(false);
 
   // Countdown timer - updates every 60 seconds since we don't display seconds
@@ -332,11 +333,17 @@ function OrderStatusExtension() {
         }
       );
 
+      const text = await response.text();
+      console.log('Order Status - submission response status:', response.status, 'body:', text);
+
       if (response.ok) {
         setSubmitted(true);
+        console.log('Order Status - Submission succeeded; showing follow link for manual redirect');
+      } else {
+        console.warn('Order Status - Submission failed:', response.status, text);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('Order Status - Error submitting form:', error);
     } finally {
       setSubmitting(false);
     }
@@ -497,16 +504,31 @@ function OrderStatusExtension() {
             onChange={setFormValue}
             prefix="@"
           />
-          <Button
-            kind="primary"
-            onPress={handleSubmit}
-            loading={submitting}
-            disabled={submitting}
-            style={{ width: '100%' }}
-          >
-            {settings.submitButtonText}
-          </Button>
-          <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+             <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+           
+          {settings?.redirectUrl ? (
+            <Link to={settings.redirectUrl} external>
+              <Button
+                kind="primary"
+                onPress={handleSubmit}
+                loading={submitting}
+                disabled={submitting}
+                style={{ width: '100%' }}
+              >
+                {settings.submitButtonText}
+              </Button>
+            </Link>
+          ) : (
+            <Button
+              kind="primary"
+              onPress={handleSubmit}
+              loading={submitting}
+              disabled={submitting}
+              style={{ width: '100%' }}
+            >
+              {settings.submitButtonText}
+            </Button>
+          )}
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
               <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
             </View>
@@ -521,7 +543,7 @@ function OrderStatusExtension() {
             Thank you for entering! Good luck! 🍀
           </Text>
 
-          {settings.redirectUrl && (
+          {submitted && settings?.redirectUrl && (
             <Link to={settings.redirectUrl} external>
               <Button kind="primary" style={{ width: '100%' }}>
                 Follow Us on Instagram
