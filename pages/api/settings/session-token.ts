@@ -69,6 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           enabled: data?.enabled || false,
           shop: shop, // Add shop domain for impression tracking
           logoUrl: data?.logoUrl,
+          bannerUrl: data?.bannerUrl,
           popupTitle: data?.popupTitle || 'Win ₹1,000 worth of products',
           subtitleTop: data?.subtitleTop || 'Follow us on Instagram to enter the giveaway',
           subtitleBottom: data?.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026',
@@ -83,6 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json({
           enabled: false,
           shop: shop, // Add shop domain for impression tracking
+          bannerUrl: '',
           popupTitle: 'Win ₹1,000 worth of products',
           subtitleTop: 'Follow us on Instagram to enter the giveaway',
           subtitleBottom: '3 lucky Winners announced on Instagram on 3rd Jan 2026',

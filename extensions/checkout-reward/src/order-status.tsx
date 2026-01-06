@@ -404,7 +404,7 @@ function OrderStatusExtension() {
     {/* <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}> */}
 
     <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 6 }}>
-      <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
+      <Text size="small" appearance="subdued" inlineAlignment="center" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
     </View>
     {/* </BlockStack> */}
   {/* </View> */}
@@ -446,10 +446,13 @@ function OrderStatusExtension() {
                   <View style={{ display: 'block', width: '100%', textAlign: 'center' }}>
                     <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>⏳ Giveaway ends in ⏳</Text>
                   </View>
+                  <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+                 
 
                   <View style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: 12 }}>
                     <Text size="large" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{formatted}</Text>
                   </View>
+                  </BlockStack>
                 </View>
               </View>
             );
@@ -460,7 +463,7 @@ function OrderStatusExtension() {
       {/* RULES SECTION */}
 
       {console.log('Order Status - Banner source set to https://closer-qq8c.vercel.app/give-away-banner.jpg')}
-      <BlockStack spacing="tight">
+      <BlockStack spacing="tight" blockAlignment="center" inlineAlignment="center"  alignment="center">
         <Text size="medium" emphasis="bold" alignment="center">
           {settings.rulesTitle}
         </Text>
