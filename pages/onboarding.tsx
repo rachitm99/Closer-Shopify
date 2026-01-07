@@ -53,10 +53,13 @@ function Onboarding() {
   const [subtitleBottom, setSubtitleBottom] = useState('3 lucky Winners announced on Instagram on 3rd Jan 2026');
   const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
 
-  // Countdown defaults
-  const [countdownDays, setCountdownDays] = useState(2);
-  const [countdownHours, setCountdownHours] = useState(11);
-  const [countdownMinutes, setCountdownMinutes] = useState(22);
+  // Countdown end date (default to 7 days from now)
+  const getDefaultEndDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().slice(0, 16); // Format for datetime-local input
+  };
+  const [countdownEndDate, setCountdownEndDate] = useState(getDefaultEndDate());
 
   // Track if component is mounted (client-side only)
   useEffect(() => {
@@ -96,8 +99,7 @@ function Onboarding() {
             setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter the giveaway');
             setSubtitleBottom(data.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026');
             setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
-            setCountdownDays(data.countdownDays !== undefined ? data.countdownDays : 2);
-            setCountdownHours(data.countdownHours !== undefined ? data.countdownHours : 11);
+            setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
             setCountdownMinutes(data.countdownMinutes !== undefined ? data.countdownMinutes : 22);
           } else if (shopFromQuery) {
             shopDomain = shopFromQuery;
@@ -167,9 +169,7 @@ function Onboarding() {
           rulesDescription,
           formFieldLabel,
           submitButtonText,
-          countdownDays,
-          countdownHours,
-          countdownMinutes,
+          countdownEndDate,
           redirectUrl 
         }),
       });
@@ -266,9 +266,7 @@ function Onboarding() {
           rulesDescription: rulesDescription,
           formFieldLabel: formFieldLabel,
           submitButtonText: submitButtonText,
-          countdownDays: countdownDays,
-          countdownHours: countdownHours,
-          countdownMinutes: countdownMinutes,
+          countdownEndDate: countdownEndDate,
           redirectUrl: redirectUrl,
         }),
       });
@@ -443,42 +441,18 @@ function Onboarding() {
 
               <div>
                 <Text as="p" variant="bodyMd" fontWeight="semibold">
-                  Countdown Timer (custom)
+                  Countdown End Date & Time
                 </Text>
                 <Text as="p" variant="bodySm" tone="subdued">
-                  Set the starting countdown time for the popup (defaults to 2d 11h 22m)
+                  Set when the giveaway ends (countdown will show time remaining)
                 </Text>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' }}>
+                <div style={{ marginTop: '8px' }}>
                   <input
-                    type="number"
-                    min={0}
-                    value={countdownDays}
-                    onChange={(e) => setCountdownDays(Number(e.target.value))}
-                    style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
+                    type="datetime-local"
+                    value={countdownEndDate}
+                    onChange={(e) => setCountdownEndDate(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: 4, border: '1px solid #ddd', fontSize: '14px' }}
                   />
-                  <div style={{ minWidth: 40 }}>days</div>
-
-                  <input
-                    type="number"
-                    min={0}
-                    max={23}
-                    value={countdownHours}
-                    onChange={(e) => setCountdownHours(Number(e.target.value))}
-                    style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
-                  />
-                  <div style={{ minWidth: 40 }}>hours</div>
-
-                  <input
-                    type="number"
-                    min={0}
-                    max={59}
-                    value={countdownMinutes}
-                    onChange={(e) => setCountdownMinutes(Number(e.target.value))}
-                    style={{ width: 80, padding: '8px', borderRadius: 4, border: '1px solid #ddd' }}
-                  />
-                  <div style={{ minWidth: 40 }}>minutes</div>
-
-
                 </div>
               </div>
 

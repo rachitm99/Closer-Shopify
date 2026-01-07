@@ -79,6 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           formFieldLabel: data?.formFieldLabel || 'Instagram Username',
           submitButtonText: data?.submitButtonText || 'Follow & Enter Giveaway 🎁',
           redirectUrl: data?.redirectUrl,
+          countdownEndDate: data?.countdownEndDate,
         });
       } else {
         return res.status(200).json({

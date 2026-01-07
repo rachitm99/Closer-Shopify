@@ -24,10 +24,7 @@ interface Settings {
   shop?: string;
   logoUrl?: string;
   bannerUrl?: string;
-  countdownDays?: number;
-  countdownHours?: number;
-  countdownMinutes?: number;
-  countdownSeconds?: number;
+  countdownEndDate?: string;
   popupTitle: string;
   subtitleTop?: string;
   subtitleBottom?: string;
@@ -137,17 +134,17 @@ function OrderStatusExtension() {
           
           setSettings(data);
 
-          // If merchant provided a custom countdown, update timer start
+          // If merchant provided a custom countdown end date, calculate remaining time
           try {
-            const days = Number(data.countdownDays ?? 2);
-            const hours = Number(data.countdownHours ?? 11);
-            const minutes = Number(data.countdownMinutes ?? 22);
-            const ms = (((days * 24 + hours) * 60 + minutes) * 60) * 1000; // seconds are hidden by default
-            setRemainingMs(ms);
-            console.log('Order Status - Custom countdown applied (ms):', ms);
+            if (data.countdownEndDate) {
+              const endDate = new Date(data.countdownEndDate);
+              const now = new Date();
+              const ms = Math.max(0, endDate.getTime() - now.getTime());
+              setRemainingMs(ms);
+              console.log('Order Status - Custom countdown end date applied:', data.countdownEndDate, 'Remaining ms:', ms);
+            }
           } catch (err) {
-            // ignore if malformed
-            console.log('Order Status - No custom countdown or invalid values');
+            console.log('Order Status - No custom countdown end date or invalid value');
           }
         } else {
           console.log('Order Status - Failed to load settings, response not OK');
