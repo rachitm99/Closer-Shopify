@@ -100,7 +100,6 @@ function Onboarding() {
             setSubtitleBottom(data.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026');
             setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
             setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
-            setCountdownMinutes(data.countdownMinutes !== undefined ? data.countdownMinutes : 22);
           } else if (shopFromQuery) {
             shopDomain = shopFromQuery;
           }
