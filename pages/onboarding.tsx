@@ -80,6 +80,20 @@ function Onboarding() {
             const data = await response.json();
             shopDomain = data.shop;
             
+            // Check if onboarding is already completed
+            if (data.onboardingCompleted) {
+              console.log('✅ Onboarding already completed, redirecting to dashboard...');
+              // Preserve host and shop params
+              const params = new URLSearchParams(window.location.search);
+              const host = params.get('host') || router.query.host;
+              const queryString = new URLSearchParams();
+              if (host) queryString.set('host', host as string);
+              if (shopDomain) queryString.set('shop', shopDomain);
+              const query = queryString.toString();
+              window.location.href = `/${query ? `?${query}` : ''}`;
+              return;
+            }
+            
             // Load existing settings if any
             setBannerUrl(data.bannerUrl || '');
             setPopupTitle(data.popupTitle || 'Win ₹1,000 worth of products');
