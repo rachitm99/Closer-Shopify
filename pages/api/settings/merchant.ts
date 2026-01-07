@@ -20,6 +20,7 @@ export interface MerchantSettings {
   redirectUrl?: string;
   bannerUrl?: string;
   countdownEndDate?: string;
+  countdownTitle?: string;
   updatedAt: FirebaseFirestore.Timestamp;
   onboardingCompleted?: boolean;
   onboardingCompletedAt?: FirebaseFirestore.Timestamp;
@@ -144,6 +145,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           logoUrl, 
           bannerUrl,
           countdownEndDate,
+          countdownTitle,
           popupTitle,
           subtitleTop,
           subtitleBottom,
@@ -181,6 +183,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Optional banner and countdown settings
         if (bannerUrl !== undefined) updateData.bannerUrl = bannerUrl;
         if (countdownEndDate !== undefined) updateData.countdownEndDate = countdownEndDate;
+        if (countdownTitle !== undefined) updateData.countdownTitle = countdownTitle;
 
 
         // Merge with existing data to preserve analytics and other fields

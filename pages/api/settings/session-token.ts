@@ -80,6 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           submitButtonText: data?.submitButtonText || 'Follow & Enter Giveaway 🎁',
           redirectUrl: data?.redirectUrl,
           countdownEndDate: data?.countdownEndDate,
+          countdownTitle: data?.countdownTitle || '⏳ Giveaway ends in ⏳',
         });
       } else {
         return res.status(200).json({

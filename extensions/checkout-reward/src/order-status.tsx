@@ -25,6 +25,7 @@ interface Settings {
   logoUrl?: string;
   bannerUrl?: string;
   countdownEndDate?: string;
+  countdownTitle?: string;
   popupTitle: string;
   subtitleTop?: string;
   subtitleBottom?: string;
@@ -448,7 +449,7 @@ function OrderStatusExtension() {
               <View style={{ display: 'inline-block', textAlign: 'center' }}>
                 <View style={{ display: 'block', marginBottom: 6 }}>
                   <View style={{ display: 'block', width: '100%', textAlign: 'center' }}>
-                    <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>⏳ Giveaway ends in ⏳</Text>
+                    <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{settings.countdownTitle || '⏳ Giveaway ends in ⏳'}</Text>
                   </View>
                   <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
                  

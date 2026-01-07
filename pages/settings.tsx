@@ -57,6 +57,7 @@ function SettingsPage() {
     return date.toISOString().slice(0, 16); // Format for datetime-local input
   };
   const [countdownEndDate, setCountdownEndDate] = useState(getDefaultEndDate());
+  const [countdownTitle, setCountdownTitle] = useState('⏳ Giveaway ends in ⏳');
 
   useEffect(() => {
     console.log('⚙️ Settings Page - useEffect triggered');
@@ -100,6 +101,7 @@ function SettingsPage() {
           setRedirectUrl(data.redirectUrl || '');
           setBannerUrl(data.bannerUrl || '');
           setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
+          setCountdownTitle(data.countdownTitle || '⏳ Giveaway ends in ⏳');
           console.log('✅ Settings Page - All state updated successfully');
         } else if (response.status === 401) {
           console.log('🔒 Settings Page - Unauthorized (401)');
@@ -153,6 +155,7 @@ function SettingsPage() {
           logoUrl, 
           bannerUrl,
           countdownEndDate,
+          countdownTitle,
           popupTitle,
           subtitleTop: subtitleTop,
           subtitleBottom: subtitleBottom,
@@ -199,6 +202,7 @@ function SettingsPage() {
           logoUrl, 
           bannerUrl,
           countdownEndDate,
+          countdownTitle,
           popupTitle,
           subtitleTop: subtitleTop,
           subtitleBottom: subtitleBottom,
@@ -515,6 +519,15 @@ function SettingsPage() {
                     />
                   </div>
                 </div>
+
+                <TextField
+                  label="Countdown Title"
+                  value={countdownTitle}
+                  onChange={setCountdownTitle}
+                  helpText="Text shown above the countdown timer (e.g., '⏳ Giveaway ends in ⏳')"
+                  autoComplete="off"
+                  maxLength={50}
+                />
 
                 {/* Giveaway rules editing disabled for now. Replaced with a single description */}
                 <TextField

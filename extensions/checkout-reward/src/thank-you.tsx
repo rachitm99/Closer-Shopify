@@ -23,6 +23,7 @@ interface Settings {
   logoUrl?: string;
   bannerUrl?: string;
   countdownEndDate?: string;
+  countdownTitle?: string;
   popupTitle: string;
   subtitleTop?: string;
   subtitleBottom?: string;
@@ -444,7 +445,7 @@ console.log(
               <View style={{ display: 'inline-block', textAlign: 'center' }}>
                 <View style={{ display: 'block', marginBottom: 6 }}>
                   <View style={{ display: 'block', width: '100%', textAlign: 'center' }}>
-                    <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>⏳ Giveaway ends in ⏳</Text>
+                    <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{settings.countdownTitle || '⏳ Giveaway ends in ⏳'}</Text>
                   </View>
 
                 <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
@@ -495,7 +496,9 @@ console.log(
             value={formValue}
             onChange={setFormValue}
             prefix="@"
+            
           />
+          <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center" alignment="center" style={{ width: '100%', alignItems: 'center' }}>
           {settings?.redirectUrl ? (
             <Link to={settings.redirectUrl} external>
               <Button
@@ -519,7 +522,6 @@ console.log(
               {settings.submitButtonText}
             </Button>
           )}
-          <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center" alignment="center" style={{ width: '100%', alignItems: 'center' }}>
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
               <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
             </View>

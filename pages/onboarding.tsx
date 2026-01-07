@@ -60,6 +60,7 @@ function Onboarding() {
     return date.toISOString().slice(0, 16); // Format for datetime-local input
   };
   const [countdownEndDate, setCountdownEndDate] = useState(getDefaultEndDate());
+  const [countdownTitle, setCountdownTitle] = useState('⏳ Giveaway ends in ⏳');
 
   // Track if component is mounted (client-side only)
   useEffect(() => {
@@ -114,6 +115,7 @@ function Onboarding() {
             setSubtitleBottom(data.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026');
             setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
             setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
+            setCountdownTitle(data.countdownTitle || '⏳ Giveaway ends in ⏳');
           } else if (shopFromQuery) {
             shopDomain = shopFromQuery;
           }
@@ -280,6 +282,7 @@ function Onboarding() {
           formFieldLabel: formFieldLabel,
           submitButtonText: submitButtonText,
           countdownEndDate: countdownEndDate,
+          countdownTitle: countdownTitle,
           redirectUrl: redirectUrl,
         }),
       });
@@ -468,6 +471,15 @@ function Onboarding() {
                   />
                 </div>
               </div>
+
+              <TextField
+                label="Countdown Title"
+                value={countdownTitle}
+                onChange={setCountdownTitle}
+                helpText="Text shown above the countdown timer (e.g., '⏳ Giveaway ends in ⏳')"
+                autoComplete="off"
+                maxLength={50}
+              />
 
               <TextField
                 label="Rules Section Title"

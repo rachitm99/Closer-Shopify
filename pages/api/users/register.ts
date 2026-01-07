@@ -28,6 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       giveawayRules,
       submitButtonText,
       countdownEndDate,
+      countdownTitle,
       redirectUrl,
     } = req.body;
 
@@ -64,6 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       formFieldLabel: formFieldLabel || 'Instagram Username',
       submitButtonText: submitButtonText || 'Follow & Enter Giveaway 🎁',
       countdownEndDate: countdownEndDate,
+      countdownTitle: countdownTitle || '⏳ Giveaway ends in ⏳',
       redirectUrl: redirectUrl,
       onboardingCompleted: true, // Mark as complete
       onboardingCompletedAt: Timestamp.now(),
