@@ -4,7 +4,6 @@ import { AppProvider } from '@shopify/polaris';
 import { Provider as AppBridgeProvider } from '@shopify/app-bridge-react';
 import { useRouter } from 'next/router';
 import { useMemo, useState, useEffect } from 'react';
-import enTranslations from '@shopify/polaris/locales/en.json';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -63,7 +62,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     console.log('   - appBridgeConfig:', !!appBridgeConfig);
     console.log('   - API key:', !!process.env.NEXT_PUBLIC_SHOPIFY_API_KEY);
     return (
-      <AppProvider i18n={enTranslations}>
+      <AppProvider i18n={{}}>
         <Component {...pageProps} />
       </AppProvider>
     );
@@ -72,7 +71,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   console.log('✅ _app.tsx - Rendering WITH App Bridge Provider');
   return (
     <AppBridgeProvider config={appBridgeConfig}>
-      <AppProvider i18n={enTranslations}>
+      <AppProvider i18n={{}}>
         <Component {...pageProps} />
       </AppProvider>
     </AppBridgeProvider>

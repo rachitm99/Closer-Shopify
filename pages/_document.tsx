@@ -7,6 +7,11 @@ export default function Document() {
     <Html lang="en">
       <Head>
         <meta charSet="utf-8" />
+        {/* Preconnect to improve loading performance */}
+        <link rel="preconnect" href="https://cdn.shopify.com" />
+        <link rel="preconnect" href="https://unpkg.com" />
+        <link rel="dns-prefetch" href="https://cdn.shopify.com" />
+        <link rel="dns-prefetch" href="https://unpkg.com" />
         {/* App Bridge API Key - meta tag (for compatibility) */}
         {apiKey && (
           <meta name="shopify-api-key" content={apiKey} />
@@ -17,6 +22,12 @@ export default function Document() {
         <script 
           src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
           data-api-key={apiKey}
+        />
+        {/* Preload critical CSS */}
+        <link
+          rel="preload"
+          href="https://unpkg.com/@shopify/polaris@12.0.0/build/esm/styles.css"
+          as="style"
         />
         <link
           rel="stylesheet"

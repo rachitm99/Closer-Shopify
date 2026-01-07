@@ -14,7 +14,22 @@ const nextConfig = {
     minimumCacheTTL: 60,
   },
   // Optimize chunks
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    // Remove console.logs in production
+    if (!dev && !isServer) {
+      config.optimization.minimizer = config.optimization.minimizer || [];
+      const TerserPlugin = require('terser-webpack-plugin');
+      config.optimization.minimizer.push(
+        new TerserPlugin({
+          terserOptions: {
+            compress: {
+              drop_console: true,
+            },
+          },
+        })
+      );
+    }
+
     if (!isServer) {
       // Optimize client-side bundle splitting
       config.optimization = {
@@ -70,6 +85,14 @@ const nextConfig = {
             // Explicitly set to override any default 'self' values from Vercel
             value: "frame-ancestors https://*.myshopify.com https://admin.shopify.com https://*.admin.shopify.com https://*.shopify.com;"
           },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN'
+          },
         ],
       },
       {
@@ -79,6 +102,15 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT' },
           { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version' },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
         ],
       },
     ];
