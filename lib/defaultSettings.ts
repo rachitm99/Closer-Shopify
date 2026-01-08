@@ -1,14 +1,14 @@
 export interface DefaultSettings {
   popupTitle: string;
-  subtitleTop?: string;
-  subtitleBottom?: string;
-  socialProofSubtitle?: string;
-  rulesTitle?: string;
-  rulesDescription?: string;
-  formFieldLabel?: string;
-  submitButtonText?: string;
-  countdownTitle?: string;
-  giveawayRules?: string[];
+  subtitleTop: string;
+  subtitleBottom: string;
+  socialProofSubtitle: string;
+  rulesTitle: string;
+  rulesDescription: string;
+  formFieldLabel: string;
+  submitButtonText: string;
+  countdownTitle: string;
+  giveawayRules: string[];
 }
 
 export const DEFAULT_SETTINGS: DefaultSettings = {

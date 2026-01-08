@@ -123,12 +123,7 @@ console.log(
           
           // Ensure giveawayRules is always an array
           if (!Array.isArray(data.giveawayRules)) {
-            data.giveawayRules = [
-              'Follow us on Instagram',
-              'Like our latest post',
-              'Tag 2 friends in the comments',
-              'Share this post to your story'
-            ];
+            data.giveawayRules = DEFAULT_SETTINGS.giveawayRules;
           }
           
           setSettings(data);

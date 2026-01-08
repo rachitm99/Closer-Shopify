@@ -3,6 +3,7 @@ import shopify from '../../../lib/shopify';
 import { storeSession } from '../../../lib/session-storage';
 import { setSessionCookie } from '../../../lib/auth-helpers';
 import { db, collections, FieldValue } from '../../../lib/firestore';
+import { DEFAULT_SETTINGS } from '../../../lib/defaultSettings';
 
 export default async function handler(
   req: NextApiRequest,
@@ -113,19 +114,14 @@ export default async function handler(
         enabled: false,
         onboardingCompleted: false, // Key flag to check if onboarding done
         logoUrl: '',
-        popupTitle: 'Win ₹1,000 worth of products',
-        subtitleTop: 'Follow us on Instagram to enter the giveaway',
-        subtitleBottom: '3 lucky Winners announced on Instagram on 3rd Jan 2026',
-        rulesTitle: 'How to Enter:',
-        rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
-        giveawayRules: [
-          'Follow us on Instagram',
-          'Like our latest post',
-          'Tag 2 friends in the comments',
-          'Share this post to your story',
-        ],
-        formFieldLabel: 'Instagram Username',
-        submitButtonText: 'Follow & Enter Giveaway 🎁',
+        popupTitle: DEFAULT_SETTINGS.popupTitle,
+        subtitleTop: DEFAULT_SETTINGS.subtitleTop,
+        subtitleBottom: DEFAULT_SETTINGS.subtitleBottom,
+        rulesTitle: DEFAULT_SETTINGS.rulesTitle,
+        rulesDescription: DEFAULT_SETTINGS.rulesDescription,
+        giveawayRules: DEFAULT_SETTINGS.giveawayRules,
+        formFieldLabel: DEFAULT_SETTINGS.formFieldLabel,
+        submitButtonText: DEFAULT_SETTINGS.submitButtonText,
         redirectUrl: '',
         installedAt: FieldValue.serverTimestamp(),
         registeredAt: FieldValue.serverTimestamp(),

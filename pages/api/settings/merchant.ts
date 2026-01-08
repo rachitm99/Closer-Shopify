@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSessionFromRequest } from '../../../lib/auth-helpers';
 import { db, collections, FieldValue, Timestamp } from '../../../lib/firestore';
 import axios from 'axios';
+import { DEFAULT_SETTINGS } from '../../../lib/defaultSettings';
 
 export interface MerchantSettings {
   shop: string;
@@ -73,29 +74,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!data.subtitleBottom && data.subtitle) {
               data.subtitleBottom = data.subtitle;
             }
-            // Ensure both keys exist (even if empty) and provide sensible defaults
-            data.subtitleTop = data.subtitleTop || 'Follow us on Instagram to enter the giveaway';
-            data.subtitleBottom = data.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026';
+            // Ensure both keys exist (even if empty) and provide sensible defaults from centralized defaults
+            data.subtitleTop = data.subtitleTop || DEFAULT_SETTINGS.subtitleTop;
+            data.subtitleBottom = data.subtitleBottom || DEFAULT_SETTINGS.subtitleBottom;
             // Add onboarding description default
-            data.rulesDescription = data.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter';
+            data.rulesDescription = data.rulesDescription || DEFAULT_SETTINGS.rulesDescription;
           }
 
           // Migrate legacy default values saved on older installs to the new copy
           const migration: any = {};
           if (data?.popupTitle && (data.popupTitle.includes('Instagram Giveaway') || data.popupTitle === '🎉 Instagram Giveaway! 🎉')) {
-            migration.popupTitle = 'Win ₹1,000 worth of products';
+            migration.popupTitle = DEFAULT_SETTINGS.popupTitle;
           }
           if (data?.submitButtonText && data.submitButtonText === 'Follow Us on Instagram') {
-            migration.submitButtonText = 'Follow & Enter Giveaway 🎁';
+            migration.submitButtonText = DEFAULT_SETTINGS.submitButtonText;
           }
           if (data?.rulesDescription && data.rulesDescription === 'Follow us on Instagram & enter your handle below') {
-            migration.rulesDescription = 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter';
+            migration.rulesDescription = DEFAULT_SETTINGS.rulesDescription;
           }
           if (data?.subtitleTop && data.subtitleTop === 'Follow us on Instagram to enter') {
-            migration.subtitleTop = 'Follow us on Instagram to enter the giveaway';
+            migration.subtitleTop = DEFAULT_SETTINGS.subtitleTop;
           }
           if (data?.subtitleBottom && data.subtitleBottom === 'Winner announced on Instagram') {
-            migration.subtitleBottom = '3 lucky Winners announced on Instagram on 3rd Jan 2026';
+            migration.subtitleBottom = DEFAULT_SETTINGS.subtitleBottom;
           }
 
           if (Object.keys(migration).length) {
@@ -113,21 +114,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             shop,
             enabled: false,
             logoUrl: '',
-            popupTitle: 'Win ₹1,000 worth of products',
-            subtitleTop: 'Follow us on Instagram to enter the giveaway',
-            subtitleBottom: '3 lucky Winners announced on Instagram on 3rd Jan 2026',
-            rulesTitle: 'How it works',
-            rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
-            giveawayRules: [
-              'Follow us on Instagram',
-              'Like our latest post',
-              'Tag 2 friends in the comments',
-              'Share this post to your story',
-              'Turn on post notifications',
-              'Use our hashtag in your story'
-            ],
-            formFieldLabel: 'Instagram Username',
-            submitButtonText: 'Follow & Enter Giveaway 🎁',
+            popupTitle: DEFAULT_SETTINGS.popupTitle,
+            subtitleTop: DEFAULT_SETTINGS.subtitleTop,
+            subtitleBottom: DEFAULT_SETTINGS.subtitleBottom,
+            rulesTitle: DEFAULT_SETTINGS.rulesTitle,
+            rulesDescription: DEFAULT_SETTINGS.rulesDescription,
+            giveawayRules: DEFAULT_SETTINGS.giveawayRules,
+            formFieldLabel: DEFAULT_SETTINGS.formFieldLabel,
+            submitButtonText: DEFAULT_SETTINGS.submitButtonText,
             redirectUrl: '',
             updatedAt: Timestamp.now(),
           };

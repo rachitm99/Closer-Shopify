@@ -53,14 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const data = doc.data();
         
         // Backward compatibility: convert old string format to array
-        let rules = data?.giveawayRules || [
-          'Follow us on Instagram',
-          'Like our latest post',
-          'Tag 2 friends in the comments',
-          'Share this post to your story',
-          'Turn on post notifications',
-          'Use our hashtag in your story'
-        ];
+        let rules = data?.giveawayRules || DEFAULT_SETTINGS.giveawayRules;
         
         if (typeof rules === 'string') {
           rules = [rules];
@@ -89,23 +82,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           enabled: false,
           shop: shop, // Add shop domain for impression tracking
           bannerUrl: '',
-          popupTitle: '🎉Win Products worth ₹1,000',
-          subtitleTop: 'Follow us on Instagram to enter the Giveaway',
-          subtitleBottom: 'Winners will be announced on 23rd Jan 2026',
-          socialProofSubtitle: '1248 Entries submitted already!',
-          rulesTitle: 'How to Enter:',
-          rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
-          giveawayRules: [
-            'Follow us on Instagram',
-            'Like our latest post',
-            'Tag 2 friends in the comments',
-            'Share this post to your story',
-            'Turn on post notifications',
-            'Use our hashtag in your story'
-          ],
-          formFieldLabel: 'Instagram Username',
-          submitButtonText: 'Follow & Enter Giveaway 🎁',
-          countdownTitle: '⏰ Giveaway ends in ',
+          popupTitle: DEFAULT_SETTINGS.popupTitle,
+          subtitleTop: DEFAULT_SETTINGS.subtitleTop,
+          subtitleBottom: DEFAULT_SETTINGS.subtitleBottom,
+          socialProofSubtitle: DEFAULT_SETTINGS.socialProofSubtitle,
+          rulesTitle: DEFAULT_SETTINGS.rulesTitle,
+          rulesDescription: DEFAULT_SETTINGS.rulesDescription,
+          giveawayRules: DEFAULT_SETTINGS.giveawayRules,
+          formFieldLabel: DEFAULT_SETTINGS.formFieldLabel,
+          submitButtonText: DEFAULT_SETTINGS.submitButtonText,
+          countdownTitle: DEFAULT_SETTINGS.countdownTitle,
         });
       }
     } catch (tokenError) {

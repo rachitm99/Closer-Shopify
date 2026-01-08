@@ -37,7 +37,7 @@ function Onboarding() {
   const [enabled, setEnabled] = useState(true);
   const [bannerUrl, setBannerUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState(DEFAULT_SETTINGS.popupTitle);
-  const [rulesTitle, setRulesTitle] = useState(DEFAULT_SETTINGS.rulesTitle || 'How to Enter:');
+  const [rulesTitle, setRulesTitle] = useState(DEFAULT_SETTINGS.rulesTitle);
   // Giveaway rules editing disabled for now
   // const [giveawayRules, setGiveawayRules] = useState([
   //   ...DEFAULT_SETTINGS.giveawayRules || [
@@ -50,13 +50,13 @@ function Onboarding() {
   // const [newRule, setNewRule] = useState('');
   // Single centered description for onboarding
   const [rulesDescription, setRulesDescription] = useState(DEFAULT_SETTINGS.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter');
-  const [submitButtonText, setSubmitButtonText] = useState(DEFAULT_SETTINGS.submitButtonText || 'Follow & Enter Giveaway 🎁');
+  const [submitButtonText, setSubmitButtonText] = useState(DEFAULT_SETTINGS.submitButtonText);
   const [redirectUrl, setRedirectUrl] = useState('');
   // Additional settings from the Settings page
-  const [subtitleTop, setSubtitleTop] = useState(DEFAULT_SETTINGS.subtitleTop || 'Follow us on Instagram to enter the Giveaway');
-  const [subtitleBottom, setSubtitleBottom] = useState(DEFAULT_SETTINGS.subtitleBottom || 'Winners will be announced on 23rd Jan 2026');
-  const [socialProofSubtitle, setSocialProofSubtitle] = useState(DEFAULT_SETTINGS.socialProofSubtitle || '1248 Entries submitted already!');
-  const [formFieldLabel, setFormFieldLabel] = useState(DEFAULT_SETTINGS.formFieldLabel || 'Instagram Username');
+  const [subtitleTop, setSubtitleTop] = useState(DEFAULT_SETTINGS.subtitleTop);
+  const [subtitleBottom, setSubtitleBottom] = useState(DEFAULT_SETTINGS.subtitleBottom);
+  const [socialProofSubtitle, setSocialProofSubtitle] = useState(DEFAULT_SETTINGS.socialProofSubtitle);
+  const [formFieldLabel, setFormFieldLabel] = useState(DEFAULT_SETTINGS.formFieldLabel);
 
   // Countdown end date (default to 7 days from now)
   const getDefaultEndDate = () => {
@@ -65,7 +65,7 @@ function Onboarding() {
     return date.toISOString().slice(0, 16); // Format for datetime-local input
   };
   const [countdownEndDate, setCountdownEndDate] = useState(getDefaultEndDate());
-  const [countdownTitle, setCountdownTitle] = useState('⏰ Giveaway ends in ');
+  const [countdownTitle, setCountdownTitle] = useState(DEFAULT_SETTINGS.countdownTitle);
 
   // Track if component is mounted (client-side only)
   useEffect(() => {
@@ -102,8 +102,8 @@ function Onboarding() {
             
             // Load existing settings if any
             setBannerUrl(data.bannerUrl || '');
-            setPopupTitle(data.popupTitle || '🎉Win Products worth ₹1,000');
-            setRulesTitle(data.rulesTitle || 'How to Enter:');
+            setPopupTitle(data.popupTitle || DEFAULT_SETTINGS.popupTitle);
+            setRulesTitle(data.rulesTitle || DEFAULT_SETTINGS.rulesTitle);
             // giveawayRules editing disabled for now
             // setGiveawayRules(data.giveawayRules || [
             //   'Follow us on Instagram',
@@ -111,17 +111,17 @@ function Onboarding() {
             //   'Tag 2 friends in the comments',
             //   'Share this post to your story',
             // ]);
-            setRulesDescription(data.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter');
-            setSubmitButtonText(data.submitButtonText || 'Follow & Enter Giveaway 🎁');
+            setRulesDescription(data.rulesDescription || DEFAULT_SETTINGS.rulesDescription);
+            setSubmitButtonText(data.submitButtonText || DEFAULT_SETTINGS.submitButtonText);
             setRedirectUrl(data.redirectUrl || '');
 
             // Additional fields from settings page
-            setSubtitleTop(data.subtitleTop || DEFAULT_SETTINGS.subtitleTop || 'Follow us on Instagram to enter the Giveaway');
-            setSubtitleBottom(data.subtitleBottom || DEFAULT_SETTINGS.subtitleBottom || 'Winners will be announced on 23rd Jan 2026');
-            setSocialProofSubtitle(data.socialProofSubtitle || DEFAULT_SETTINGS.socialProofSubtitle || '1248 Entries submitted already!');
-            setFormFieldLabel(data.formFieldLabel || DEFAULT_SETTINGS.formFieldLabel || 'Instagram Username');
+            setSubtitleTop(data.subtitleTop || DEFAULT_SETTINGS.subtitleTop);
+            setSubtitleBottom(data.subtitleBottom || DEFAULT_SETTINGS.subtitleBottom);
+            setSocialProofSubtitle(data.socialProofSubtitle || DEFAULT_SETTINGS.socialProofSubtitle);
+            setFormFieldLabel(data.formFieldLabel || DEFAULT_SETTINGS.formFieldLabel);
             setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
-            setCountdownTitle(data.countdownTitle || DEFAULT_SETTINGS.countdownTitle || '⏰ Giveaway ends in ');
+            setCountdownTitle(data.countdownTitle || DEFAULT_SETTINGS.countdownTitle);
           } else if (shopFromQuery) {
             shopDomain = shopFromQuery;
           }
@@ -457,7 +457,7 @@ function Onboarding() {
                 label="Social Proof Subtitle"
                 value={socialProofSubtitle}
                 onChange={setSocialProofSubtitle}
-                helpText="Text shown below the footer subtitle (e.g., '1248 Entries submitted already!')"
+                helpText={`Text shown below the footer subtitle (e.g., '${DEFAULT_SETTINGS.socialProofSubtitle}')`}
                 autoComplete="off"
                 maxLength={100}
               />
