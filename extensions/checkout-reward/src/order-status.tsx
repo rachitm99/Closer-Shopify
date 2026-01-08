@@ -19,24 +19,7 @@ import {
 
 import { useEffect, useState, useRef } from 'react';
 
-// Centralized default settings - Edit these values to change defaults across the extension
-const DEFAULT_SETTINGS = {
-  popupTitle: '🎉Win Products worth ₹1,000',
-  subtitleTop: 'Follow us on Instagram to enter the Giveaway',
-  subtitleBottom: 'Winners will be announced on 23rd Jan 2026',
-  socialProofSubtitle: '1248 Entries submitted already!',
-  rulesTitle: 'How to Enter:',
-  rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
-  formFieldLabel: 'Instagram Username',
-  submitButtonText: 'Follow & Enter Giveaway 🎁',
-  countdownTitle: '⏰ Giveaway ends in ',
-  giveawayRules: [
-    'Follow us on Instagram',
-    'Like our latest post',
-    'Tag 2 friends in the comments',
-    'Share this post to your story',
-  ],
-};
+import { DEFAULT_SETTINGS } from '../../../lib/defaultSettings';
 
 interface Settings {
   enabled: boolean;

@@ -20,6 +20,8 @@ import {
   TextContainer,
 } from '@shopify/polaris';
 
+import { DEFAULT_SETTINGS } from '../lib/defaultSettings';
+
 function Onboarding() {
   const router = useRouter();
   const authFetch = useAuthenticatedFetch();
@@ -34,25 +36,27 @@ function Onboarding() {
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [enabled, setEnabled] = useState(true);
   const [bannerUrl, setBannerUrl] = useState('');
-  const [popupTitle, setPopupTitle] = useState('🎉Win Products worth ₹1,000');
-  const [rulesTitle, setRulesTitle] = useState('How to Enter:');
+  const [popupTitle, setPopupTitle] = useState(DEFAULT_SETTINGS.popupTitle);
+  const [rulesTitle, setRulesTitle] = useState(DEFAULT_SETTINGS.rulesTitle || 'How to Enter:');
   // Giveaway rules editing disabled for now
   // const [giveawayRules, setGiveawayRules] = useState([
-  //   'Follow us on Instagram',
-  //   'Like our latest post',
-  //   'Tag 2 friends in the comments',
-  //   'Share this post to your story',
+  //   ...DEFAULT_SETTINGS.giveawayRules || [
+  //     'Follow us on Instagram',
+  //     'Like our latest post',
+  //     'Tag 2 friends in the comments',
+  //     'Share this post to your story',
+  //   ]
   // ]);
   // const [newRule, setNewRule] = useState('');
   // Single centered description for onboarding
-  const [rulesDescription, setRulesDescription] = useState('Enter your Instagram handle and follow @{{your instagram profile url}} to enter');
-  const [submitButtonText, setSubmitButtonText] = useState('Follow & Enter Giveaway 🎁');
+  const [rulesDescription, setRulesDescription] = useState(DEFAULT_SETTINGS.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter');
+  const [submitButtonText, setSubmitButtonText] = useState(DEFAULT_SETTINGS.submitButtonText || 'Follow & Enter Giveaway 🎁');
   const [redirectUrl, setRedirectUrl] = useState('');
   // Additional settings from the Settings page
-  const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter the Giveaway');
-  const [subtitleBottom, setSubtitleBottom] = useState('Winners will be announced on 23rd Jan 2026');
-  const [socialProofSubtitle, setSocialProofSubtitle] = useState('1248 Entries submitted already!');
-  const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
+  const [subtitleTop, setSubtitleTop] = useState(DEFAULT_SETTINGS.subtitleTop || 'Follow us on Instagram to enter the Giveaway');
+  const [subtitleBottom, setSubtitleBottom] = useState(DEFAULT_SETTINGS.subtitleBottom || 'Winners will be announced on 23rd Jan 2026');
+  const [socialProofSubtitle, setSocialProofSubtitle] = useState(DEFAULT_SETTINGS.socialProofSubtitle || '1248 Entries submitted already!');
+  const [formFieldLabel, setFormFieldLabel] = useState(DEFAULT_SETTINGS.formFieldLabel || 'Instagram Username');
 
   // Countdown end date (default to 7 days from now)
   const getDefaultEndDate = () => {
@@ -112,12 +116,12 @@ function Onboarding() {
             setRedirectUrl(data.redirectUrl || '');
 
             // Additional fields from settings page
-            setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter the Giveaway');
-            setSubtitleBottom(data.subtitleBottom || 'Winners will be announced on 23rd Jan 2026');
-            setSocialProofSubtitle(data.socialProofSubtitle || '1248 Entries submitted already!');
-            setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
+            setSubtitleTop(data.subtitleTop || DEFAULT_SETTINGS.subtitleTop || 'Follow us on Instagram to enter the Giveaway');
+            setSubtitleBottom(data.subtitleBottom || DEFAULT_SETTINGS.subtitleBottom || 'Winners will be announced on 23rd Jan 2026');
+            setSocialProofSubtitle(data.socialProofSubtitle || DEFAULT_SETTINGS.socialProofSubtitle || '1248 Entries submitted already!');
+            setFormFieldLabel(data.formFieldLabel || DEFAULT_SETTINGS.formFieldLabel || 'Instagram Username');
             setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
-            setCountdownTitle(data.countdownTitle || '⏰ Giveaway ends in ');
+            setCountdownTitle(data.countdownTitle || DEFAULT_SETTINGS.countdownTitle || '⏰ Giveaway ends in ');
           } else if (shopFromQuery) {
             shopDomain = shopFromQuery;
           }

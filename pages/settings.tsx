@@ -18,16 +18,19 @@ import {
   Text,
 } from '@shopify/polaris';
 
+import { DEFAULT_SETTINGS } from '../lib/defaultSettings';
+
 function SettingsPage() {
   const router = useRouter();
   const authFetch = useAuthenticatedFetch();
   const [enabled, setEnabled] = useState(false);
+
   const [logoUrl, setLogoUrl] = useState('');
-  const [popupTitle, setPopupTitle] = useState('🎉Win Products worth ₹1,000');
-  const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter the Giveaway');
-  const [subtitleBottom, setSubtitleBottom] = useState('Winners will be announced on 23rd Jan 2026');
-  const [socialProofSubtitle, setSocialProofSubtitle] = useState('1248 Entries submitted already!');
-  const [rulesTitle, setRulesTitle] = useState('How to Enter:');
+  const [popupTitle, setPopupTitle] = useState(DEFAULT_SETTINGS.popupTitle);
+  const [subtitleTop, setSubtitleTop] = useState(DEFAULT_SETTINGS.subtitleTop || 'Follow us on Instagram to enter the Giveaway');
+  const [subtitleBottom, setSubtitleBottom] = useState(DEFAULT_SETTINGS.subtitleBottom || 'Winners will be announced on 23rd Jan 2026');
+  const [socialProofSubtitle, setSocialProofSubtitle] = useState(DEFAULT_SETTINGS.socialProofSubtitle || '1248 Entries submitted already!');
+  const [rulesTitle, setRulesTitle] = useState(DEFAULT_SETTINGS.rulesTitle || 'How to Enter:');
   // Giveaway rules editing disabled for now
   // const [giveawayRules, setGiveawayRules] = useState([
   //   'Follow us on Instagram',

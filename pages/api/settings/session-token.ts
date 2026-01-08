@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import shopify from '../../../lib/shopify';
 import { db, collections } from '../../../lib/firestore';
+import { DEFAULT_SETTINGS } from '../../../lib/defaultSettings';
 
 /**
  * Session Token Authentication (for embedded UI extension requests)
@@ -70,18 +71,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           shop: shop, // Add shop domain for impression tracking
           logoUrl: data?.logoUrl,
           bannerUrl: data?.bannerUrl,
-          popupTitle: data?.popupTitle,
-          subtitleTop: data?.subtitleTop,
-          subtitleBottom: data?.subtitleBottom,
-          socialProofSubtitle: data?.socialProofSubtitle,
-          rulesTitle: data?.rulesTitle,
-          rulesDescription: data?.rulesDescription,
+          popupTitle: data?.popupTitle || DEFAULT_SETTINGS.popupTitle,
+          subtitleTop: data?.subtitleTop || DEFAULT_SETTINGS.subtitleTop,
+          subtitleBottom: data?.subtitleBottom || DEFAULT_SETTINGS.subtitleBottom,
+          socialProofSubtitle: data?.socialProofSubtitle || DEFAULT_SETTINGS.socialProofSubtitle,
+          rulesTitle: data?.rulesTitle || DEFAULT_SETTINGS.rulesTitle,
+          rulesDescription: data?.rulesDescription || DEFAULT_SETTINGS.rulesDescription,
           giveawayRules: rules,
-          formFieldLabel: data?.formFieldLabel,
-          submitButtonText: data?.submitButtonText,
+          formFieldLabel: data?.formFieldLabel || DEFAULT_SETTINGS.formFieldLabel,
+          submitButtonText: data?.submitButtonText || DEFAULT_SETTINGS.submitButtonText,
           redirectUrl: data?.redirectUrl,
           countdownEndDate: data?.countdownEndDate,
-          countdownTitle: data?.countdownTitle,
+          countdownTitle: data?.countdownTitle || DEFAULT_SETTINGS.countdownTitle,
         });
       } else {
         return res.status(200).json({

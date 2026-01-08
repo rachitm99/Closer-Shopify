@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db, collections, Timestamp } from '../../../lib/firestore';
+import { DEFAULT_SETTINGS } from '../../../lib/defaultSettings';
 import axios from 'axios';
 import { use } from 'react';
 
@@ -52,22 +53,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Store both bannerUrl and logoUrl (banner preferred)
       bannerUrl: bannerUrl || logoUrl || '',
       logoUrl: logoUrl || bannerUrl || '',
-      popupTitle: popupTitle || 'Win ₹1,000 worth of products',
-      subtitleTop: subtitleTop || 'Follow us on Instagram to enter the giveaway',
-      subtitleBottom: subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026',
-      socialProofSubtitle: socialProofSubtitle || '1248 Entries submitted already!',
-      rulesTitle: rulesTitle || 'How to Enter:',
-      giveawayRules: giveawayRules || [
-        'Follow us on Instagram',
-        'Like our latest post',
-        'Tag 2 friends in the comments',
-        'Share this post to your story',
-      ],
-      rulesDescription: rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
-      formFieldLabel: formFieldLabel || 'Instagram Username',
-      submitButtonText: submitButtonText || 'Follow & Enter Giveaway 🎁',
+      popupTitle: popupTitle || DEFAULT_SETTINGS.popupTitle,
+      subtitleTop: subtitleTop || DEFAULT_SETTINGS.subtitleTop,
+      subtitleBottom: subtitleBottom || DEFAULT_SETTINGS.subtitleBottom,
+      socialProofSubtitle: socialProofSubtitle || DEFAULT_SETTINGS.socialProofSubtitle,
+      rulesTitle: rulesTitle || DEFAULT_SETTINGS.rulesTitle,
+      giveawayRules: giveawayRules || DEFAULT_SETTINGS.giveawayRules,
+      rulesDescription: rulesDescription || DEFAULT_SETTINGS.rulesDescription,
+      formFieldLabel: formFieldLabel || DEFAULT_SETTINGS.formFieldLabel,
+      submitButtonText: submitButtonText || DEFAULT_SETTINGS.submitButtonText,
       countdownEndDate: countdownEndDate,
-      countdownTitle: countdownTitle || '⏳ Giveaway ends in ⏳',
+      countdownTitle: countdownTitle || DEFAULT_SETTINGS.countdownTitle,
       redirectUrl: redirectUrl,
       onboardingCompleted: true, // Mark as complete
       onboardingCompletedAt: Timestamp.now(),
