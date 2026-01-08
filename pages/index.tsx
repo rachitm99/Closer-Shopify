@@ -16,7 +16,7 @@ import {
   Button,
   DataTable,
   Badge,
-  Switch,
+  Checkbox,
 } from '@shopify/polaris';
 
 // Lazy load Recharts to reduce initial bundle size
@@ -391,12 +391,12 @@ function Dashboard() {
                         </Text>
                         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Switch
+                            <Checkbox
                               label="Following only"
                               checked={followingOnly}
-                              onChange={async (val: boolean) => {
-                                setFollowingOnly(val);
-                                if (shop) await loadAnalytics(shop, val);
+                              onChange={async (checked: boolean) => {
+                                setFollowingOnly(checked);
+                                if (shop) await loadAnalytics(shop, checked);
                               }}
                             />
                           </div>
