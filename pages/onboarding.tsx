@@ -35,7 +35,7 @@ function Onboarding() {
   const [enabled, setEnabled] = useState(true);
   const [bannerUrl, setBannerUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState('🎉Win Products worth ₹1,000');
-  const [rulesTitle, setRulesTitle] = useState('How it works');
+  const [rulesTitle, setRulesTitle] = useState('How to Enter:');
   // Giveaway rules editing disabled for now
   // const [giveawayRules, setGiveawayRules] = useState([
   //   'Follow us on Instagram',
