@@ -41,15 +41,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const submissionsSnapshot = await db.collection(collections.submissions).get();
     const totalSubmissions = submissionsSnapshot.size;
     
-    const uniqueEmails = new Set();
+    const uniqueHandles = new Set<string>();
     let repeatSubmissions = 0;
     
     submissionsSnapshot.forEach((doc) => {
       const data = doc.data();
-      const email = data.customerEmail || '';
-      
-      if (email) {
-        uniqueEmails.add(email);
+      // Prefer instaHandle; fall back to customerEmail only if needed elsewhere
+      const handle = (data.instaHandle || '').trim().toLowerCase();
+
+      if (handle) {
+        uniqueHandles.add(handle);
       }
       
       if (data.submissionCount && data.submissionCount > 1) {
@@ -57,7 +58,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
-    const uniqueCustomers = uniqueEmails.size || totalSubmissions;
+    // Count unique Instagram handles, otherwise fall back to total submissions
+    const uniqueCustomers = uniqueHandles.size || totalSubmissions;
     
     // Calculate rates
     const completionRate = totalInstalls > 0 

@@ -475,7 +475,7 @@ function SettingsPage() {
                       style={{ display: 'none' }}
                     />
                     <Text as="p" variant="bodySm" tone="subdued" >
-                      Upload a banner image (JPEG, PNG, GIF, WebP - Max 5MB) — Recommended: 629x360 px
+                      Upload a banner image (JPEG, PNG, GIF, WebP - Max 5MB) — Recommended: 629x240 px
                     </Text>
                   </div>
                 </div>
