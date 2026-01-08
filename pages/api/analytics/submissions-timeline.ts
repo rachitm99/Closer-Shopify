@@ -26,12 +26,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Shop parameter is required' });
     }
 
-    // Get all submissions for this shop
-    const submissionsSnapshot = await db.collection(collections.submissions)
-      .where('shop', '==', shop)
-      .get();
+    // Allow filtering and export options
+    const followingOnly = String(req.query.followingOnly || '') === 'true';
+    const format = String(req.query.format || '').toLowerCase(); // 'csv' for CSV export
+
+    // Build query, optionally filtering to only submissions that are following
+    let query: FirebaseFirestore.Query = db.collection(collections.submissions).where('shop', '==', shop);
+    if (followingOnly) {
+      query = query.where('isFollowing', '==', true);
+    }
+
+    const submissionsSnapshot = await query.get();
 
     if (submissionsSnapshot.empty) {
+      if (format === 'csv') {
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="submissions-${shop}.csv"`);
+        return res.status(200).send('date,instaHandle,customerEmail,orderNumber,submittedAt,isFollowing,submissionCount\n');
+      }
+
       return res.status(200).json({
         timeline: [],
         totalSubmissions: 0,
@@ -39,46 +52,77 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Group submissions by date
-    const dailyData: { [date: string]: { total: number; emails: Set<string>; repeats: number } } = {};
-    let totalUniqueEmails = new Set<string>();
+    // Group submissions by date using instaHandle as unique customer id
+    const dailyData: { [date: string]: { total: number; handles: Set<string>; repeats: number } } = {};
+    let totalUniqueHandles = new Set<string>();
+
+    // If CSV requested, build CSV rows
+    const csvRows: string[] = [];
 
     submissionsSnapshot.forEach((doc) => {
       const data = doc.data();
+
       // Handle both Firebase Timestamp and legacy string dates
       let submittedDate: string;
+      let submittedAtIso = '';
       if (data.submittedAt) {
         if (data.submittedAt.toDate) {
           // Firebase Timestamp
           submittedDate = data.submittedAt.toDate().toISOString().split('T')[0];
+          submittedAtIso = data.submittedAt.toDate().toISOString();
         } else {
           // Legacy ISO string
-          submittedDate = new Date(data.submittedAt).toISOString().split('T')[0];
+          const d = new Date(data.submittedAt);
+          submittedDate = d.toISOString().split('T')[0];
+          submittedAtIso = d.toISOString();
         }
       } else {
         submittedDate = 'unknown';
       }
-      const email = data.customerEmail || '';
-      
+
+      const handleRaw = data.instaHandle || '';
+      const handle = String(handleRaw).trim().toLowerCase();
+
       if (!dailyData[submittedDate]) {
         dailyData[submittedDate] = {
           total: 0,
-          emails: new Set(),
+          handles: new Set(),
           repeats: 0,
         };
       }
-      
+
       dailyData[submittedDate].total += 1;
-      
-      if (email) {
-        dailyData[submittedDate].emails.add(email);
-        totalUniqueEmails.add(email);
-        
-        if (data.submissionCount && data.submissionCount > 1) {
-          dailyData[submittedDate].repeats += 1;
-        }
+
+      if (handle) {
+        dailyData[submittedDate].handles.add(handle);
+        totalUniqueHandles.add(handle);
+      }
+
+      if (data.submissionCount && data.submissionCount > 1) {
+        dailyData[submittedDate].repeats += 1;
+      }
+
+      // Build CSV row (escape quotes by doubling)
+      if (format === 'csv') {
+        const row = [
+          submittedAtIso,
+          `"${String(data.instaHandle || '').replace(/"/g, '""')}"`,
+          `"${String(data.customerEmail || '').replace(/"/g, '""')}"`,
+          `"${String(data.orderNumber || '').replace(/"/g, '""')}"`,
+          data.isFollowing ? 'true' : 'false',
+          data.submissionCount || 1,
+        ].join(',');
+        csvRows.push(row);
       }
     });
+
+    // If CSV export requested, return CSV file of submissions
+    if (format === 'csv') {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="submissions-${shop}.csv"`);
+      const header = 'date,instaHandle,customerEmail,orderNumber,isFollowing,submissionCount\n';
+      return res.status(200).send(header + csvRows.join('\n'));
+    }
 
     // Convert to array and sort by date
     const timeline: DailySubmission[] = Object.keys(dailyData)
@@ -86,7 +130,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .map(date => ({
         date,
         count: dailyData[date].total,
-        uniqueCustomers: dailyData[date].emails.size,
+        uniqueCustomers: dailyData[date].handles.size,
         repeatCustomers: dailyData[date].repeats,
       }));
 
