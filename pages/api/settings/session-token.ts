@@ -76,6 +76,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           redirectUrl: data?.redirectUrl,
           countdownEndDate: data?.countdownEndDate,
           countdownTitle: data?.countdownTitle || DEFAULT_SETTINGS.countdownTitle,
+          submittedTitle: data?.submittedTitle || DEFAULT_SETTINGS.submittedTitle,
+          submittedMessage: data?.submittedMessage || DEFAULT_SETTINGS.submittedMessage,
+          followButtonText: data?.followButtonText || DEFAULT_SETTINGS.followButtonText,
         });
       } else {
         return res.status(200).json({
@@ -92,6 +95,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           formFieldLabel: DEFAULT_SETTINGS.formFieldLabel,
           submitButtonText: DEFAULT_SETTINGS.submitButtonText,
           countdownTitle: DEFAULT_SETTINGS.countdownTitle,
+          submittedTitle: DEFAULT_SETTINGS.submittedTitle,
+          submittedMessage: DEFAULT_SETTINGS.submittedMessage,
+          followButtonText: DEFAULT_SETTINGS.followButtonText,
         });
       }
     } catch (tokenError) {

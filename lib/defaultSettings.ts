@@ -8,6 +8,9 @@ export interface DefaultSettings {
   formFieldLabel: string;
   submitButtonText: string;
   countdownTitle: string;
+  submittedTitle: string;
+  submittedMessage: string;
+  followButtonText: string;
   giveawayRules: string[];
 }
 
@@ -21,6 +24,9 @@ export const DEFAULT_SETTINGS: DefaultSettings = {
   formFieldLabel: 'Instagram Username',
   submitButtonText: 'Follow & Enter Giveaway 🎁',
   countdownTitle: '⏰ Giveaway ends in ',
+  submittedTitle: '✅ Entry Submitted!',
+  submittedMessage: 'Thank you for entering! Good luck! 🍀',
+  followButtonText: 'Follow Us on Instagram',
   giveawayRules: [
     'Follow us on Instagram',
     'Like our latest post',

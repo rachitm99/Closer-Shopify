@@ -44,6 +44,9 @@ function SettingsPage() {
   const [rulesDescription, setRulesDescription] = useState(DEFAULT_SETTINGS.rulesDescription);
   const [formFieldLabel, setFormFieldLabel] = useState(DEFAULT_SETTINGS.formFieldLabel);
   const [submitButtonText, setSubmitButtonText] = useState(DEFAULT_SETTINGS.submitButtonText);
+  const [submittedTitle, setSubmittedTitle] = useState(DEFAULT_SETTINGS.submittedTitle);
+  const [submittedMessage, setSubmittedMessage] = useState(DEFAULT_SETTINGS.submittedMessage);
+  const [followButtonText, setFollowButtonText] = useState(DEFAULT_SETTINGS.followButtonText);
   const [redirectUrl, setRedirectUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -103,6 +106,9 @@ function SettingsPage() {
           setRulesDescription(data.rulesDescription || DEFAULT_SETTINGS.rulesDescription);
           setFormFieldLabel(data.formFieldLabel || DEFAULT_SETTINGS.formFieldLabel);
           setSubmitButtonText(data.submitButtonText || DEFAULT_SETTINGS.submitButtonText);
+          setSubmittedTitle(data.submittedTitle || DEFAULT_SETTINGS.submittedTitle);
+          setSubmittedMessage(data.submittedMessage || DEFAULT_SETTINGS.submittedMessage);
+          setFollowButtonText(data.followButtonText || DEFAULT_SETTINGS.followButtonText);
           setRedirectUrl(data.redirectUrl || '');
           setBannerUrl(data.bannerUrl || '');
           setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
@@ -664,6 +670,33 @@ function SettingsPage() {
                   helpText={`Text shown below the footer subtitle (e.g., '${DEFAULT_SETTINGS.socialProofSubtitle}')`}
                   autoComplete="off"
                   maxLength={100}
+                />
+
+                <TextField
+                  label="Submitted Title"
+                  value={submittedTitle}
+                  onChange={setSubmittedTitle}
+                  helpText="Title shown after a customer submits (e.g., '✅ Entry Submitted!')"
+                  autoComplete="off"
+                  maxLength={80}
+                />
+
+                <TextField
+                  label="Submitted Message"
+                  value={submittedMessage}
+                  onChange={setSubmittedMessage}
+                  helpText="Short message shown under the title after submission"
+                  autoComplete="off"
+                  maxLength={140}
+                />
+
+                <TextField
+                  label="Submitted Follow Button Text"
+                  value={followButtonText}
+                  onChange={setFollowButtonText}
+                  helpText="CTA text for the follow button in the 'thank you' screen"
+                  autoComplete="off"
+                  maxLength={50}
                 />
 
                 <TextField

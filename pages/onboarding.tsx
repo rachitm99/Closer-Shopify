@@ -56,6 +56,9 @@ function Onboarding() {
   const [subtitleTop, setSubtitleTop] = useState(DEFAULT_SETTINGS.subtitleTop);
   const [subtitleBottom, setSubtitleBottom] = useState(DEFAULT_SETTINGS.subtitleBottom);
   const [socialProofSubtitle, setSocialProofSubtitle] = useState(DEFAULT_SETTINGS.socialProofSubtitle);
+  const [submittedTitle, setSubmittedTitle] = useState(DEFAULT_SETTINGS.submittedTitle);
+  const [submittedMessage, setSubmittedMessage] = useState(DEFAULT_SETTINGS.submittedMessage);
+  const [followButtonText, setFollowButtonText] = useState(DEFAULT_SETTINGS.followButtonText);
   const [formFieldLabel, setFormFieldLabel] = useState(DEFAULT_SETTINGS.formFieldLabel);
 
   // Countdown end date (default to 7 days from now)
@@ -119,6 +122,9 @@ function Onboarding() {
             setSubtitleTop(data.subtitleTop || DEFAULT_SETTINGS.subtitleTop);
             setSubtitleBottom(data.subtitleBottom || DEFAULT_SETTINGS.subtitleBottom);
             setSocialProofSubtitle(data.socialProofSubtitle || DEFAULT_SETTINGS.socialProofSubtitle);
+            setSubmittedTitle(data.submittedTitle || DEFAULT_SETTINGS.submittedTitle);
+            setSubmittedMessage(data.submittedMessage || DEFAULT_SETTINGS.submittedMessage);
+            setFollowButtonText(data.followButtonText || DEFAULT_SETTINGS.followButtonText);
             setFormFieldLabel(data.formFieldLabel || DEFAULT_SETTINGS.formFieldLabel);
             setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
             setCountdownTitle(data.countdownTitle || DEFAULT_SETTINGS.countdownTitle);
@@ -190,6 +196,9 @@ function Onboarding() {
           rulesDescription,
           formFieldLabel,
           submitButtonText,
+          submittedTitle,
+          submittedMessage,
+          followButtonText,
           countdownEndDate,
           redirectUrl 
         }),
@@ -284,6 +293,9 @@ function Onboarding() {
           subtitleTop: subtitleTop,
           subtitleBottom: subtitleBottom,
           socialProofSubtitle: socialProofSubtitle,
+          submittedTitle: submittedTitle,
+          submittedMessage: submittedMessage,
+          followButtonText: followButtonText,
           rulesTitle: rulesTitle,
           rulesDescription: rulesDescription,
           formFieldLabel: formFieldLabel,
@@ -460,6 +472,33 @@ function Onboarding() {
                 helpText={`Text shown below the footer subtitle (e.g., '${DEFAULT_SETTINGS.socialProofSubtitle}')`}
                 autoComplete="off"
                 maxLength={100}
+              />
+
+              <TextField
+                label="Submitted Title"
+                value={submittedTitle}
+                onChange={setSubmittedTitle}
+                helpText="Title shown after a customer submits (e.g., '✅ Entry Submitted!')"
+                autoComplete="off"
+                maxLength={80}
+              />
+
+              <TextField
+                label="Submitted Message"
+                value={submittedMessage}
+                onChange={setSubmittedMessage}
+                helpText="Short message shown under the title after submission"
+                autoComplete="off"
+                maxLength={140}
+              />
+
+              <TextField
+                label="Submitted Follow Button Text"
+                value={followButtonText}
+                onChange={setFollowButtonText}
+                helpText="CTA text for the follow button in the 'thank you' screen"
+                autoComplete="off"
+                maxLength={50}
               />
 
               <TextField

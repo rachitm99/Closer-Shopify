@@ -12,6 +12,10 @@ export interface MerchantSettings {
   popupTitle: string;
   subtitleTop?: string; // shown under the popup title
   subtitleBottom?: string; // shown below the follow/submit button
+  socialProofSubtitle?: string;
+  submittedTitle?: string;
+  submittedMessage?: string;
+  followButtonText?: string;
   rulesTitle: string;
   // Short description displayed under the rules title (used in onboarding preview)
   rulesDescription?: string;
@@ -79,6 +83,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             data.subtitleBottom = data.subtitleBottom || DEFAULT_SETTINGS.subtitleBottom;
             // Add onboarding description default
             data.rulesDescription = data.rulesDescription || DEFAULT_SETTINGS.rulesDescription;
+            // Submitted-state defaults
+            data.submittedTitle = data.submittedTitle || DEFAULT_SETTINGS.submittedTitle;
+            data.submittedMessage = data.submittedMessage || DEFAULT_SETTINGS.submittedMessage;
+            data.followButtonText = data.followButtonText || DEFAULT_SETTINGS.followButtonText;
           }
 
           // Migrate legacy default values saved on older installs to the new copy
@@ -119,6 +127,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             subtitleBottom: DEFAULT_SETTINGS.subtitleBottom,
             rulesTitle: DEFAULT_SETTINGS.rulesTitle,
             rulesDescription: DEFAULT_SETTINGS.rulesDescription,
+            submittedTitle: DEFAULT_SETTINGS.submittedTitle,
+            submittedMessage: DEFAULT_SETTINGS.submittedMessage,
+            followButtonText: DEFAULT_SETTINGS.followButtonText,
             giveawayRules: DEFAULT_SETTINGS.giveawayRules,
             formFieldLabel: DEFAULT_SETTINGS.formFieldLabel,
             submitButtonText: DEFAULT_SETTINGS.submitButtonText,
@@ -144,6 +155,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           subtitleTop,
           subtitleBottom,
           socialProofSubtitle,
+          submittedTitle,
+          submittedMessage,
+          followButtonText,
           rulesTitle,
           rulesDescription,
           giveawayRules, 
@@ -152,8 +166,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           redirectUrl,
           onboardingCompleted,
         } = req.body;
-        
-        // Get existing settings to preserve fields not being updated
         const existingDoc = await db.collection(collections.users).doc(shop).get();
         const existingData = existingDoc.exists ? existingDoc.data() : {};
         
@@ -180,6 +192,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (bannerUrl !== undefined) updateData.bannerUrl = bannerUrl;
         if (countdownEndDate !== undefined) updateData.countdownEndDate = countdownEndDate;
         if (countdownTitle !== undefined) updateData.countdownTitle = countdownTitle;
+        if (submittedTitle !== undefined) updateData.submittedTitle = submittedTitle;
+        if (submittedMessage !== undefined) updateData.submittedMessage = submittedMessage;
+        if (followButtonText !== undefined) updateData.followButtonText = followButtonText;
 
 
         // Merge with existing data to preserve analytics and other fields

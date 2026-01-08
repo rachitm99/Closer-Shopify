@@ -32,6 +32,9 @@ interface Settings {
   subtitleTop?: string;
   subtitleBottom?: string;
   socialProofSubtitle?: string;
+  submittedTitle?: string;
+  submittedMessage?: string;
+  followButtonText?: string;
   rulesTitle: string;
   rulesDescription?: string;
   giveawayRules: string[];
@@ -526,16 +529,16 @@ function OrderStatusExtension() {
       ) : (
         <BlockStack spacing="base" inlineAlignment="center">
           <Text size="large" emphasis="bold">
-            ✅ Entry Submitted!
+            {settings.submittedTitle || DEFAULT_SETTINGS.submittedTitle}
           </Text>
           <Text size="medium" alignment="center">
-            Thank you for entering! Good luck! 🍀
+            {settings.submittedMessage || DEFAULT_SETTINGS.submittedMessage}
           </Text>
 
           {submitted && settings?.redirectUrl && (
             <Link to={settings.redirectUrl} external>
               <Button kind="primary" style={{ width: '100%' }}>
-                Follow Us on Instagram
+                {settings.followButtonText || DEFAULT_SETTINGS.followButtonText}
               </Button>
             </Link>
           )}
