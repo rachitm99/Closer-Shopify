@@ -467,9 +467,9 @@ function Dashboard() {
                       <Checkbox
                         label="Following only"
                         checked={followingOnly}
-                        onChange={async (checked: boolean) => {
+                        onChange={(checked: boolean) => {
+                          // Only affect the submissions table locally — do not reload analytics/charts
                           setFollowingOnly(checked);
-                          if (shop) await loadAnalytics(shop, checked);
                         }}
                       />
                       <Button
