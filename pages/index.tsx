@@ -16,6 +16,7 @@ import {
   Button,
   DataTable,
   Badge,
+  Switch,
 } from '@shopify/polaris';
 
 // Lazy load Recharts to reduce initial bundle size
@@ -71,7 +72,30 @@ function Dashboard() {
   const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
   const [shop, setShop] = useState<string>('');
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [followingOnly, setFollowingOnly] = useState(false);
   const authFetch = useAuthenticatedFetch();
+
+  // Helper to load analytics and submissions for a given shop and optional following filter
+  const loadAnalytics = async (shopDomain: string, followOnly = false) => {
+    try {
+      const analyticsResponse = await authFetch(`/api/analytics/submissions-timeline?shop=${shopDomain}&followingOnly=${followOnly}`);
+      if (analyticsResponse.ok) {
+        const data = await analyticsResponse.json();
+        setAnalytics(data);
+      } else {
+        setError('Failed to load analytics data');
+      }
+
+      const submissionsResponse = await authFetch('/api/submissions/list');
+      if (submissionsResponse.ok) {
+        const submissionsData = await submissionsResponse.json();
+        setSubmissions(submissionsData.submissions || []);
+      }
+    } catch (err) {
+      console.error('Error loading analytics:', err);
+      setError('Failed to load analytics data. Please check your connection and try again.');
+    }
+  };
 
   useEffect(() => {
     const checkOnboardingAndLoadData = async () => {
@@ -105,28 +129,15 @@ function Dashboard() {
           setOnboardingComplete(true);
           const shopDomain = settingsData.shop || 'unknown';
           setShop(shopDomain);
-          
-          // Load analytics data
-          const analyticsResponse = await authFetch(`/api/analytics/submissions-timeline?shop=${shopDomain}`);
-          if (analyticsResponse.ok) {
-            const data = await analyticsResponse.json();
-            setAnalytics(data);
-          } else {
-            setError('Failed to load analytics data');
-          }
-          
+
+          // Load analytics and submissions (consider followingOnly state)
+          await loadAnalytics(shopDomain, followingOnly);
+
           // Load impression data
           const impressionsResponse = await authFetch(`/api/analytics/impressions?shop=${shopDomain}`);
           if (impressionsResponse.ok) {
             const impressionData = await impressionsResponse.json();
             setImpressions(impressionData);
-          }
-          
-          // Load submissions list
-          const submissionsResponse = await authFetch('/api/submissions/list');
-          if (submissionsResponse.ok) {
-            const submissionsData = await submissionsResponse.json();
-            setSubmissions(submissionsData.submissions || []);
           }
         } else if (settingsResponse.status === 401) {
           // Unauthorized - redirect to auth
@@ -374,9 +385,38 @@ function Dashboard() {
                 <Card>
                   <Box padding="400">
                     <BlockStack gap="400">
-                      <Text as="h2" variant="headingLg">
-                        Submission Trends
-                      </Text>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text as="h2" variant="headingLg">
+                          Submission Trends
+                        </Text>
+                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Switch
+                              label="Following only"
+                              checked={followingOnly}
+                              onChange={async (val: boolean) => {
+                                setFollowingOnly(val);
+                                if (shop) await loadAnalytics(shop, val);
+                              }}
+                            />
+                          </div>
+                          <Button
+                            onClick={() => {
+                              // Trigger CSV download from API
+                              const params = new URLSearchParams(window.location.search);
+                              const host = params.get('host') || router.query.host;
+                              const shopParam = shop || router.query.shop;
+                              const queryString = new URLSearchParams();
+                              if (host) queryString.set('host', host as string);
+                              if (shopParam) queryString.set('shop', shopParam as string);
+
+                              const url = `/api/analytics/submissions-timeline?shop=${shopParam}&followingOnly=${followingOnly}&format=csv`;
+                              window.location.href = url;
+                            }}
+                          >Export CSV</Button>
+                        </div>
+                      </div>
+
                       <div style={{ width: '100%', height: '400px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={chartData}>
@@ -454,45 +494,48 @@ function Dashboard() {
                     <Text as="p" variant="bodyMd" tone="subdued">
                       No submissions yet. Entries will appear here once customers complete the giveaway form.
                     </Text>
-                  ) : (
-                    <DataTable
-                      columnContentTypes={[
-                        'text',
-                        'text',
-                        'text',
-                        'numeric',
-                      ]}
-                      headings={[
-                        'Instagram Handle',
-                        'Following Status',
-                        'Submitted On',
-                        'Total Entries',
-                      ]}
-                      rows={submissions.map((submission) => [
-                        `@${submission.instaHandle}`,
-                        submission.isFollowerChecked ? (
-                          submission.isFollowing ? (
-                            <Badge tone="success">Following</Badge>
+                  ) : (() => {
+                    const visibleSubmissions = followingOnly ? submissions.filter(s => s.isFollowing) : submissions;
+                    return (
+                      <DataTable
+                        columnContentTypes={[
+                          'text',
+                          'text',
+                          'text',
+                          'numeric',
+                        ]}
+                        headings={[
+                          'Instagram Handle',
+                          'Following Status',
+                          'Submitted On',
+                          'Total Entries',
+                        ]}
+                        rows={visibleSubmissions.map((submission) => [
+                          `@${submission.instaHandle}`,
+                          submission.isFollowerChecked ? (
+                            submission.isFollowing ? (
+                              <Badge tone="success">Following</Badge>
+                            ) : (
+                              <Badge tone="attention">Not Following</Badge>
+                            )
                           ) : (
-                            <Badge tone="attention">Not Following</Badge>
-                          )
-                        ) : (
-                          <Badge tone="info">Not Checked</Badge>
-                        ),
-                        submission.submittedAt 
-                          ? new Date(submission.submittedAt).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                          : 'N/A',
-                        submission.submissionCount || 1,
-                      ])}
-                      footerContent={`Showing ${submissions.length} ${submissions.length === 1 ? 'submission' : 'submissions'}`}
-                    />
-                  )}
+                            <Badge tone="info">Not Checked</Badge>
+                          ),
+                          submission.submittedAt 
+                            ? new Date(submission.submittedAt).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })
+                            : 'N/A',
+                          submission.submissionCount || 1,
+                        ])}
+                        footerContent={`Showing ${visibleSubmissions.length} ${visibleSubmissions.length === 1 ? 'submission' : 'submissions'}`}
+                      />
+                    );
+                  })()}
                 </BlockStack>
               </Box>
             </Card>
