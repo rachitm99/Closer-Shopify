@@ -36,12 +36,18 @@ interface DailySubmission {
   count: number;
   uniqueCustomers: number;
   repeatCustomers: number;
+  followers?: number;
+  uniqueFollowers?: number;
 }
 
 interface AnalyticsData {
   timeline: DailySubmission[];
   totalSubmissions: number;
   totalUniqueCustomers: number;
+  totalFollowers?: number;
+  totalUniqueFollowers?: number;
+  followersAdded?: number;
+  uniqueFollowerHandles?: number;
   allTimeData: DailySubmission[];
 }
 
@@ -241,6 +247,7 @@ function Dashboard() {
     date: formatDate(d.date),
     Submissions: d.count,
     'Unique Customers': d.uniqueCustomers,
+    Followers: d.followers || 0,
   })) || [];
 
   return (
@@ -315,9 +322,9 @@ function Dashboard() {
                   description="All-time giveaway entries"
                 />
                 <StatCard
-                  title="Unique Customers"
-                  value={analytics?.totalUniqueCustomers || 0}
-                  description="Distinct Instagram handles"
+                  title="Followers Added"
+                  value={analytics?.totalUniqueFollowers || analytics?.totalFollowers || 0}
+                  description="Distinct followers gained via giveaway"
                 />
                 <StatCard
                   title="Block Impressions"
@@ -413,6 +420,13 @@ function Dashboard() {
                               type="monotone" 
                               dataKey="Unique Customers" 
                               stroke="#5C6AC4" 
+                              strokeWidth={2}
+                              dot={{ r: 4 }}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="Followers" 
+                              stroke="#FF6B6B" 
                               strokeWidth={2}
                               dot={{ r: 4 }}
                             />

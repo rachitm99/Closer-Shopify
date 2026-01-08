@@ -42,6 +42,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const totalSubmissions = submissionsSnapshot.size;
     
     const uniqueHandles = new Set<string>();
+    const followerHandles = new Set<string>();
+    let followersCount = 0;
     let repeatSubmissions = 0;
     
     submissionsSnapshot.forEach((doc) => {
@@ -52,6 +54,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (handle) {
         uniqueHandles.add(handle);
       }
+
+      // Track follower counts and unique follower handles
+      if (data.isFollowing === true) {
+        followersCount++;
+        if (handle) followerHandles.add(handle);
+      }
       
       if (data.submissionCount && data.submissionCount > 1) {
         repeatSubmissions++;
@@ -60,6 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Count unique Instagram handles, otherwise fall back to total submissions
     const uniqueCustomers = uniqueHandles.size || totalSubmissions;
+    const uniqueFollowerHandles = followerHandles.size;
     
     // Calculate rates
     const completionRate = totalInstalls > 0 
@@ -77,6 +86,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       extensionEnabled,
       totalSubmissions,
       uniqueCustomers,
+      followersAdded: followersCount,
+      uniqueFollowerHandles: uniqueFollowerHandles,
       repeatSubmissions,
       completionRate,
       activationRate,

@@ -11,6 +11,8 @@ interface DailySubmission {
   count: number;
   uniqueCustomers: number;
   repeatCustomers: number;
+  followers: number; // followers added on that date
+  uniqueFollowers: number; // distinct follower handles that day
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -53,8 +55,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Group submissions by date using instaHandle as unique customer id
-    const dailyData: { [date: string]: { total: number; handles: Set<string>; repeats: number } } = {};
+    const dailyData: { [date: string]: { total: number; handles: Set<string>; repeats: number; followers: number; followerHandles: Set<string> } } = {};
     let totalUniqueHandles = new Set<string>();
+    let totalFollowersCount = 0;
+    let totalUniqueFollowerHandles = new Set<string>();
 
     // If CSV requested, build CSV rows
     const csvRows: string[] = [];
@@ -88,6 +92,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           total: 0,
           handles: new Set(),
           repeats: 0,
+          followers: 0,
+          followerHandles: new Set(),
         };
       }
 
@@ -96,6 +102,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (handle) {
         dailyData[submittedDate].handles.add(handle);
         totalUniqueHandles.add(handle);
+      }
+
+      if (data.isFollowing === true) {
+        dailyData[submittedDate].followers += 1;
+        totalFollowersCount += 1;
+        if (handle) {
+          dailyData[submittedDate].followerHandles.add(handle);
+          totalUniqueFollowerHandles.add(handle);
+        }
       }
 
       if (data.submissionCount && data.submissionCount > 1) {
@@ -132,6 +147,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         count: dailyData[date].total,
         uniqueCustomers: dailyData[date].handles.size,
         repeatCustomers: dailyData[date].repeats,
+        followers: dailyData[date].followers,
+        uniqueFollowers: dailyData[date].followerHandles.size,
       }));
 
     // Fill in missing dates for the last 30 days
@@ -159,6 +176,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       timeline: last30Days,
       totalSubmissions: submissionsSnapshot.size,
       totalUniqueCustomers: totalUniqueHandles.size,
+      totalFollowers: totalFollowersCount,
+      totalUniqueFollowers: totalUniqueFollowerHandles.size,
       allTimeData: timeline,
     });
   } catch (error) {
