@@ -385,37 +385,9 @@ function Dashboard() {
                 <Card>
                   <Box padding="400">
                     <BlockStack gap="400">
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text as="h2" variant="headingLg">
+                                <Text as="h2" variant="headingLg">
                           Submission Trends
                         </Text>
-                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Checkbox
-                              label="Following only"
-                              checked={followingOnly}
-                              onChange={async (checked: boolean) => {
-                                setFollowingOnly(checked);
-                                if (shop) await loadAnalytics(shop, checked);
-                              }}
-                            />
-                          </div>
-                          <Button
-                            onClick={() => {
-                              // Trigger CSV download from API
-                              const params = new URLSearchParams(window.location.search);
-                              const host = params.get('host') || router.query.host;
-                              const shopParam = shop || router.query.shop;
-                              const queryString = new URLSearchParams();
-                              if (host) queryString.set('host', host as string);
-                              if (shopParam) queryString.set('shop', shopParam as string);
-
-                              const url = `/api/analytics/submissions-timeline?shop=${shopParam}&followingOnly=${followingOnly}&format=csv`;
-                              window.location.href = url;
-                            }}
-                          >Export CSV</Button>
-                        </div>
-                      </div>
 
                       <div style={{ width: '100%', height: '400px' }}>
                         <ResponsiveContainer width="100%" height="100%">
@@ -487,9 +459,28 @@ function Dashboard() {
             <Card>
               <Box padding="400">
                 <BlockStack gap="400">
-                  <Text as="h2" variant="headingLg">
-                    Submissions
-                  </Text>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text as="h2" variant="headingLg">
+                      Submissions
+                    </Text>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <Checkbox
+                        label="Following only"
+                        checked={followingOnly}
+                        onChange={async (checked: boolean) => {
+                          setFollowingOnly(checked);
+                          if (shop) await loadAnalytics(shop, checked);
+                        }}
+                      />
+                      <Button
+                        onClick={() => {
+                          const url = `/api/analytics/submissions-timeline?shop=${shop}&followingOnly=${followingOnly}&format=csv`;
+                          window.location.href = url;
+                        }}
+                      >Export CSV</Button>
+                    </div>
+                  </div>
+
                   {submissions.length === 0 ? (
                     <Text as="p" variant="bodyMd" tone="subdued">
                       No submissions yet. Entries will appear here once customers complete the giveaway form.
