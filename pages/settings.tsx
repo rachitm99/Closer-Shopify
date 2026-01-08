@@ -26,7 +26,7 @@ function SettingsPage() {
   const [popupTitle, setPopupTitle] = useState('🎉Win Products worth ₹1,000');
   const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter the Giveaway');
   const [subtitleBottom, setSubtitleBottom] = useState('Winners will be announced on 23rd Jan 2026');
-  const [socialProofSubtitle, setSocialProofSubtitle] = useState('1248 entries submitted already!');
+  const [socialProofSubtitle, setSocialProofSubtitle] = useState('1248 Entries submitted already!');
   const [rulesTitle, setRulesTitle] = useState('How to Enter:');
   // Giveaway rules editing disabled for now
   // const [giveawayRules, setGiveawayRules] = useState([
@@ -86,7 +86,7 @@ function SettingsPage() {
           setPopupTitle(data.popupTitle || '🎉Win Products worth ₹1,000');
           setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter the Giveaway');
           setSubtitleBottom(data.subtitleBottom || 'Winners will be announced on 23rd Jan 2026');
-          setSocialProofSubtitle(data.socialProofSubtitle || '1248 entries submitted already!');
+          setSocialProofSubtitle(data.socialProofSubtitle || '1248 Entries submitted already!');
           setRulesTitle(data.rulesTitle || 'How to Enter:');
           // giveawayRules editing disabled for now
           // setGiveawayRules(data.giveawayRules || [
@@ -658,7 +658,7 @@ function SettingsPage() {
                   label="Social Proof Subtitle"
                   value={socialProofSubtitle}
                   onChange={setSocialProofSubtitle}
-                  helpText="Text shown below the footer subtitle (e.g., '1248 entries submitted already!')"
+                  helpText="Text shown below the footer subtitle (e.g., '1248 Entries submitted already!')"
                   autoComplete="off"
                   maxLength={100}
                 />

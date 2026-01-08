@@ -51,7 +51,7 @@ function Onboarding() {
   // Additional settings from the Settings page
   const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter the Giveaway');
   const [subtitleBottom, setSubtitleBottom] = useState('Winners will be announced on 23rd Jan 2026');
-  const [socialProofSubtitle, setSocialProofSubtitle] = useState('1248 entries submitted already!');
+  const [socialProofSubtitle, setSocialProofSubtitle] = useState('1248 Entries submitted already!');
   const [formFieldLabel, setFormFieldLabel] = useState('Instagram Username');
 
   // Countdown end date (default to 7 days from now)
@@ -114,7 +114,7 @@ function Onboarding() {
             // Additional fields from settings page
             setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter the Giveaway');
             setSubtitleBottom(data.subtitleBottom || 'Winners will be announced on 23rd Jan 2026');
-            setSocialProofSubtitle(data.socialProofSubtitle || '1248 entries submitted already!');
+            setSocialProofSubtitle(data.socialProofSubtitle || '1248 Entries submitted already!');
             setFormFieldLabel(data.formFieldLabel || 'Instagram Username');
             setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
             setCountdownTitle(data.countdownTitle || '⏰ Giveaway ends in ');
@@ -453,7 +453,7 @@ function Onboarding() {
                 label="Social Proof Subtitle"
                 value={socialProofSubtitle}
                 onChange={setSocialProofSubtitle}
-                helpText="Text shown below the footer subtitle (e.g., '1248 entries submitted already!')"
+                helpText="Text shown below the footer subtitle (e.g., '1248 Entries submitted already!')"
                 autoComplete="off"
                 maxLength={100}
               />
