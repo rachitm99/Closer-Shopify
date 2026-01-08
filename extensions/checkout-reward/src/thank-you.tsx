@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS = {
   popupTitle: '🎉Win Products worth ₹1,000',
   subtitleTop: 'Follow us on Instagram to enter the Giveaway',
   subtitleBottom: 'Winners will be announced on 23rd Jan 2026',
-  socialProofSubtitle: '1248 entries submitted',
+  socialProofSubtitle: '1248 entries submitted already!',
   rulesTitle: 'How to Enter:',
   rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
   formFieldLabel: 'Instagram Username',
