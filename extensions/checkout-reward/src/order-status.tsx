@@ -411,11 +411,6 @@ function OrderStatusExtension() {
         <Text size="small" appearance="subdued" inlineAlignment="center" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
       </View>
     )}
-    {settings.socialProofSubtitle && (
-      <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
-        <Text size="small" emphasis="bold" alignment="center" style={{ textAlign: 'center' }}>{settings.socialProofSubtitle}</Text>
-      </View>
-    )}
     {/* </BlockStack> */}
   {/* </View> */}
       </BlockStack>
@@ -543,6 +538,11 @@ function OrderStatusExtension() {
                 <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
               </View>
             )}
+            {settings.socialProofSubtitle && (
+              <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
+                <Text size="small" emphasis="bold" alignment="center" style={{ textAlign: 'center' }}>{settings.socialProofSubtitle}</Text>
+              </View>
+            )}
             </BlockStack>
         </BlockStack>
       ) : (
@@ -565,6 +565,11 @@ function OrderStatusExtension() {
           {settings.subtitleBottom && (
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
               <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
+            </View>
+          )}
+          {settings.socialProofSubtitle && (
+            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
+              <Text size="small" emphasis="bold" alignment="center" style={{ textAlign: 'center' }}>{settings.socialProofSubtitle}</Text>
             </View>
           )}
           </BlockStack>

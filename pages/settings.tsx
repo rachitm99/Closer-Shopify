@@ -499,15 +499,6 @@ function SettingsPage() {
                 />
 
                 <TextField
-                  label="Social Proof Subtitle"
-                  value={socialProofSubtitle}
-                  onChange={setSocialProofSubtitle}
-                  helpText="Text shown below the top subtitle (e.g., '1248 entries submitted')"
-                  autoComplete="off"
-                  maxLength={100}
-                />
-
-                <TextField
                   label="Rules Section Title"
                   value={rulesTitle}
                   onChange={setRulesTitle}
@@ -661,6 +652,15 @@ function SettingsPage() {
                   helpText="Small subtitle shown under the Follow button after submission"
                   autoComplete="off"
                   maxLength={150}
+                />
+
+                <TextField
+                  label="Social Proof Subtitle"
+                  value={socialProofSubtitle}
+                  onChange={setSocialProofSubtitle}
+                  helpText="Text shown below the footer subtitle (e.g., '1248 entries submitted')"
+                  autoComplete="off"
+                  maxLength={100}
                 />
 
                 <TextField

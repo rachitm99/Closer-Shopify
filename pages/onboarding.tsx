@@ -453,7 +453,7 @@ function Onboarding() {
                 label="Social Proof Subtitle"
                 value={socialProofSubtitle}
                 onChange={setSocialProofSubtitle}
-                helpText="Text shown below the top subtitle (e.g., '1248 entries submitted')"
+                helpText="Text shown below the footer subtitle (e.g., '1248 entries submitted')"
                 autoComplete="off"
                 maxLength={100}
               />
