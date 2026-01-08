@@ -158,7 +158,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({
       timeline: last30Days,
       totalSubmissions: submissionsSnapshot.size,
-      totalUniqueCustomers: totalUniqueEmails.size,
+      totalUniqueCustomers: totalUniqueHandles.size,
       allTimeData: timeline,
     });
   } catch (error) {
