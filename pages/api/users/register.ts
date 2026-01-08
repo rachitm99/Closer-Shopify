@@ -22,6 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       popupTitle,
       subtitleTop,
       subtitleBottom,
+      socialProofSubtitle,
       rulesTitle,
       rulesDescription,
       formFieldLabel,
@@ -54,6 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       popupTitle: popupTitle || 'Win ₹1,000 worth of products',
       subtitleTop: subtitleTop || 'Follow us on Instagram to enter the giveaway',
       subtitleBottom: subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026',
+      socialProofSubtitle: socialProofSubtitle || '1248 entries submitted',
       rulesTitle: rulesTitle || 'How to Enter:',
       giveawayRules: giveawayRules || [
         'Follow us on Instagram',

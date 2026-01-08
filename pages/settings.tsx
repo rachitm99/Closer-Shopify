@@ -23,10 +23,11 @@ function SettingsPage() {
   const authFetch = useAuthenticatedFetch();
   const [enabled, setEnabled] = useState(false);
   const [logoUrl, setLogoUrl] = useState('');
-  const [popupTitle, setPopupTitle] = useState('Win ₹1,000 worth of products');
-  const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter the giveaway');
-  const [subtitleBottom, setSubtitleBottom] = useState('3 lucky Winners announced on Instagram on 3rd Jan 2026');
-  const [rulesTitle, setRulesTitle] = useState('How it works');
+  const [popupTitle, setPopupTitle] = useState('🎉Win Products worth ₹1,000');
+  const [subtitleTop, setSubtitleTop] = useState('Follow us on Instagram to enter the Giveaway');
+  const [subtitleBottom, setSubtitleBottom] = useState('Winners will be announced on 23rd Jan 2026');
+  const [socialProofSubtitle, setSocialProofSubtitle] = useState('1248 entries submitted');
+  const [rulesTitle, setRulesTitle] = useState('How to Enter:');
   // Giveaway rules editing disabled for now
   // const [giveawayRules, setGiveawayRules] = useState([
   //   'Follow us on Instagram',
@@ -57,7 +58,7 @@ function SettingsPage() {
     return date.toISOString().slice(0, 16); // Format for datetime-local input
   };
   const [countdownEndDate, setCountdownEndDate] = useState(getDefaultEndDate());
-  const [countdownTitle, setCountdownTitle] = useState('⏳ Giveaway ends in ⏳');
+  const [countdownTitle, setCountdownTitle] = useState('⏰ Giveaway ends in ');
 
   useEffect(() => {
     console.log('⚙️ Settings Page - useEffect triggered');
@@ -82,10 +83,11 @@ function SettingsPage() {
           
           setEnabled(data.enabled || false);
           setLogoUrl(data.logoUrl || '');
-          setPopupTitle(data.popupTitle || 'Win ₹1,000 worth of products');
-          setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter the giveaway');
-          setSubtitleBottom(data.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026');
-          setRulesTitle(data.rulesTitle || 'How it works');
+          setPopupTitle(data.popupTitle || '🎉Win Products worth ₹1,000');
+          setSubtitleTop(data.subtitleTop || 'Follow us on Instagram to enter the Giveaway');
+          setSubtitleBottom(data.subtitleBottom || 'Winners will be announced on 23rd Jan 2026');
+          setSocialProofSubtitle(data.socialProofSubtitle || '1248 entries submitted');
+          setRulesTitle(data.rulesTitle || 'How to Enter:');
           // giveawayRules editing disabled for now
           // setGiveawayRules(data.giveawayRules || [
           //   'Follow us on Instagram',
@@ -101,7 +103,7 @@ function SettingsPage() {
           setRedirectUrl(data.redirectUrl || '');
           setBannerUrl(data.bannerUrl || '');
           setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
-          setCountdownTitle(data.countdownTitle || '⏳ Giveaway ends in ⏳');
+          setCountdownTitle(data.countdownTitle || '⏰ Giveaway ends in ');
           console.log('✅ Settings Page - All state updated successfully');
         } else if (response.status === 401) {
           console.log('🔒 Settings Page - Unauthorized (401)');
@@ -159,6 +161,7 @@ function SettingsPage() {
           popupTitle,
           subtitleTop: subtitleTop,
           subtitleBottom: subtitleBottom,
+          socialProofSubtitle: socialProofSubtitle,
           rulesTitle,
           rulesDescription,
           formFieldLabel,
@@ -206,6 +209,7 @@ function SettingsPage() {
           popupTitle,
           subtitleTop: subtitleTop,
           subtitleBottom: subtitleBottom,
+          socialProofSubtitle: socialProofSubtitle,
           rulesTitle,
           rulesDescription,
           formFieldLabel,
@@ -492,6 +496,15 @@ function SettingsPage() {
                   helpText="Small subtitle shown under the popup title"
                   autoComplete="off"
                   maxLength={150}
+                />
+
+                <TextField
+                  label="Social Proof Subtitle"
+                  value={socialProofSubtitle}
+                  onChange={setSocialProofSubtitle}
+                  helpText="Text shown below the top subtitle (e.g., '1248 entries submitted')"
+                  autoComplete="off"
+                  maxLength={100}
                 />
 
                 <TextField

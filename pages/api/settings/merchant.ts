@@ -149,6 +149,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           popupTitle,
           subtitleTop,
           subtitleBottom,
+          socialProofSubtitle,
           rulesTitle,
           rulesDescription,
           giveawayRules, 
@@ -174,6 +175,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (popupTitle !== undefined) updateData.popupTitle = popupTitle;
         if (subtitleTop !== undefined) updateData.subtitleTop = subtitleTop;
         if (subtitleBottom !== undefined) updateData.subtitleBottom = subtitleBottom;
+        if (socialProofSubtitle !== undefined) updateData.socialProofSubtitle = socialProofSubtitle;
         if (rulesTitle !== undefined) updateData.rulesTitle = rulesTitle; 
         if (rulesDescription !== undefined) updateData.rulesDescription = rulesDescription;
         if (giveawayRules !== undefined) updateData.giveawayRules = giveawayRules;

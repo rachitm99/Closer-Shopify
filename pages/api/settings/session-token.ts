@@ -70,26 +70,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           shop: shop, // Add shop domain for impression tracking
           logoUrl: data?.logoUrl,
           bannerUrl: data?.bannerUrl,
-          popupTitle: data?.popupTitle || 'Win ₹1,000 worth of products',
-          subtitleTop: data?.subtitleTop || 'Follow us on Instagram to enter the giveaway',
-          subtitleBottom: data?.subtitleBottom || '3 lucky Winners announced on Instagram on 3rd Jan 2026',
-          rulesTitle: data?.rulesTitle || 'How it works',
-          rulesDescription: data?.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
+          popupTitle: data?.popupTitle,
+          subtitleTop: data?.subtitleTop,
+          subtitleBottom: data?.subtitleBottom,
+          socialProofSubtitle: data?.socialProofSubtitle,
+          rulesTitle: data?.rulesTitle,
+          rulesDescription: data?.rulesDescription,
           giveawayRules: rules,
-          formFieldLabel: data?.formFieldLabel || 'Instagram Username',
-          submitButtonText: data?.submitButtonText || 'Follow & Enter Giveaway 🎁',
+          formFieldLabel: data?.formFieldLabel,
+          submitButtonText: data?.submitButtonText,
           redirectUrl: data?.redirectUrl,
           countdownEndDate: data?.countdownEndDate,
-          countdownTitle: data?.countdownTitle || '⏳ Giveaway ends in ⏳',
+          countdownTitle: data?.countdownTitle,
         });
       } else {
         return res.status(200).json({
           enabled: false,
           shop: shop, // Add shop domain for impression tracking
           bannerUrl: '',
-          popupTitle: 'Win ₹1,000 worth of products',
-          subtitleTop: 'Follow us on Instagram to enter the giveaway',
-          subtitleBottom: '3 lucky Winners announced on Instagram on 3rd Jan 2026',
+          popupTitle: '🎉Win Products worth ₹1,000',
+          subtitleTop: 'Follow us on Instagram to enter the Giveaway',
+          subtitleBottom: 'Winners will be announced on 23rd Jan 2026',
+          socialProofSubtitle: '1248 entries submitted',
           rulesTitle: 'How to Enter:',
           rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
           giveawayRules: [
@@ -102,6 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ],
           formFieldLabel: 'Instagram Username',
           submitButtonText: 'Follow & Enter Giveaway 🎁',
+          countdownTitle: '⏰ Giveaway ends in ',
         });
       }
     } catch (tokenError) {

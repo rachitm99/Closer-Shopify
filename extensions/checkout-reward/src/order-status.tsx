@@ -19,6 +19,25 @@ import {
 
 import { useEffect, useState, useRef } from 'react';
 
+// Centralized default settings - Edit these values to change defaults across the extension
+const DEFAULT_SETTINGS = {
+  popupTitle: '🎉Win Products worth ₹1,000',
+  subtitleTop: 'Follow us on Instagram to enter the Giveaway',
+  subtitleBottom: 'Winners will be announced on 23rd Jan 2026',
+  socialProofSubtitle: '1248 entries submitted',
+  rulesTitle: 'How to Enter:',
+  rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
+  formFieldLabel: 'Instagram Username',
+  submitButtonText: 'Follow & Enter Giveaway 🎁',
+  countdownTitle: '⏰ Giveaway ends in ',
+  giveawayRules: [
+    'Follow us on Instagram',
+    'Like our latest post',
+    'Tag 2 friends in the comments',
+    'Share this post to your story',
+  ],
+};
+
 interface Settings {
   enabled: boolean;
   shop?: string;
@@ -29,6 +48,7 @@ interface Settings {
   popupTitle: string;
   subtitleTop?: string;
   subtitleBottom?: string;
+  socialProofSubtitle?: string;
   rulesTitle: string;
   rulesDescription?: string;
   giveawayRules: string[];
@@ -151,38 +171,14 @@ function OrderStatusExtension() {
           console.log('Order Status - Failed to load settings, response not OK');
           setSettings({
             enabled: false,
-            popupTitle: 'Win ₹1,000 worth of products',
-            subtitleTop: 'Follow us on Instagram to enter the giveaway',
-            subtitleBottom: '3 lucky Winners announced on Instagram on 3rd Jan 2026',
-            rulesTitle: 'How to Enter:',
-            rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
-            giveawayRules: [
-              'Follow us on Instagram',
-              'Like our latest post',
-              'Tag 2 friends in the comments',
-              'Share this post to your story',
-            ],
-            formFieldLabel: 'Instagram Username',
-            submitButtonText: 'Follow & Enter Giveaway 🎁',
+            ...DEFAULT_SETTINGS,
           });
         }
       } catch (error) {
         console.error('Order Status - Error fetching settings:', error);
         setSettings({
           enabled: false,
-          popupTitle: 'Win ₹1,000 worth of products',
-          subtitleTop: 'Follow us on Instagram to enter the giveaway',
-          subtitleBottom: '3 lucky Winners announced on Instagram on 3rd Jan 2026',
-          rulesTitle: 'How to Enter:',
-          rulesDescription: 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter',
-          giveawayRules: [
-            'Follow us on Instagram',
-            'Like our latest post',
-            'Tag 2 friends in the comments',
-            'Share this post to your story'
-          ],
-          formFieldLabel: 'Instagram Username',
-          submitButtonText: 'Follow & Enter Giveaway 🎁',
+          ...DEFAULT_SETTINGS,
         });
       } finally {
         setLoading(false);
@@ -398,19 +394,28 @@ function OrderStatusExtension() {
   <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
 
   {/* <View minInlineSize={0}> */}
-    <Text
-      size="large"
-      emphasis="bold"
-      alignment="center"
-      blockAlignment="center"
-      >
-      {settings.popupTitle}
-    </Text>
+    {settings.popupTitle && (
+      <Text
+        size="large"
+        emphasis="bold"
+        alignment="center"
+        blockAlignment="center"
+        >
+        {settings.popupTitle}
+      </Text>
+    )}
     {/* <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}> */}
 
-    <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 6 }}>
-      <Text size="small" appearance="subdued" inlineAlignment="center" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
-    </View>
+    {settings.subtitleTop && (
+      <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 6 }}>
+        <Text size="small" appearance="subdued" inlineAlignment="center" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
+      </View>
+    )}
+    {settings.socialProofSubtitle && (
+      <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
+        <Text size="small" emphasis="bold" alignment="center" style={{ textAlign: 'center' }}>{settings.socialProofSubtitle}</Text>
+      </View>
+    )}
     {/* </BlockStack> */}
   {/* </View> */}
       </BlockStack>
@@ -449,7 +454,7 @@ function OrderStatusExtension() {
               <View style={{ display: 'inline-block', textAlign: 'center' }}>
                 <View style={{ display: 'block', marginBottom: 6 }}>
                   <View style={{ display: 'block', width: '100%', textAlign: 'center' }}>
-                    <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{settings.countdownTitle || '⏳ Giveaway ends in ⏳'}</Text>
+                    <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{settings.countdownTitle || DEFAULT_SETTINGS.countdownTitle}</Text>
                   </View>
                   <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
                  
@@ -469,13 +474,17 @@ function OrderStatusExtension() {
 
       {console.log('Order Status - Banner source set to https://closer-qq8c.vercel.app/give-away-banner.jpg')}
       <BlockStack spacing="tight" blockAlignment="center" inlineAlignment="center"  alignment="center">
-        <Text size="medium" emphasis="bold" alignment="center">
-          {settings.rulesTitle}
-        </Text>
+        {settings.rulesTitle && (
+          <Text size="medium" emphasis="bold" alignment="center">
+            {settings.rulesTitle}
+          </Text>
+        )}
 
-        <Text size="small" appearance="subdued" alignment="center" style={{ marginTop: 8 }}>
-          {settings.rulesDescription}
-        </Text>
+        {settings.rulesDescription && (
+          <Text size="small" appearance="subdued" alignment="center" style={{ marginTop: 8 }}>
+            {settings.rulesDescription}
+          </Text>
+        )}
 
         {/* Original rules list (commented out)
         <BlockStack spacing="tight">
@@ -496,12 +505,14 @@ function OrderStatusExtension() {
       {/* FORM */}
       {!submitted ? (
         <BlockStack spacing="loose">
-          <TextField
-            label={settings.formFieldLabel}
-            value={formValue}
-            onChange={setFormValue}
-            prefix="@"
-          />
+          {settings.formFieldLabel && (
+            <TextField
+              label={settings.formFieldLabel}
+              value={formValue}
+              onChange={setFormValue}
+              prefix="@"
+            />
+          )}
              <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
            
           {settings?.redirectUrl ? (
@@ -513,7 +524,7 @@ function OrderStatusExtension() {
                 disabled={submitting}
                 style={{ width: '100%' }}
               >
-                {settings.submitButtonText}
+                {settings.submitButtonText || DEFAULT_SETTINGS.submitButtonText}
               </Button>
             </Link>
           ) : (
@@ -524,12 +535,14 @@ function OrderStatusExtension() {
               disabled={submitting}
               style={{ width: '100%' }}
             >
-              {settings.submitButtonText}
+              {settings.submitButtonText || DEFAULT_SETTINGS.submitButtonText}
             </Button>
           )}
-            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
-              <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
-            </View>
+            {settings.subtitleBottom && (
+              <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
+                <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
+              </View>
+            )}
             </BlockStack>
         </BlockStack>
       ) : (
@@ -549,9 +562,11 @@ function OrderStatusExtension() {
             </Link>
           )}
           <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
-          <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
-            <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
-          </View>
+          {settings.subtitleBottom && (
+            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
+              <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
+            </View>
+          )}
           </BlockStack>
         </BlockStack>
       )}
