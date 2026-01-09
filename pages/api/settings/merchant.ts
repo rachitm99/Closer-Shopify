@@ -14,7 +14,10 @@ export interface MerchantSettings {
   subtitleBottom?: string; // shown below the follow/submit button
   socialProofSubtitle?: string;
   submittedTitle?: string;
-  submittedMessage?: string;
+  submittedSubtitle?: string;
+  submittedCountdownText?: string;
+  submittedWinnerText?: string;
+  submittedSocialProofText?: string;
   followButtonText?: string;
   rulesTitle: string;
   // Short description displayed under the rules title (used in onboarding preview)
@@ -85,7 +88,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             data.rulesDescription = data.rulesDescription || DEFAULT_SETTINGS.rulesDescription;
             // Submitted-state defaults
             data.submittedTitle = data.submittedTitle || DEFAULT_SETTINGS.submittedTitle;
-            data.submittedMessage = data.submittedMessage || DEFAULT_SETTINGS.submittedMessage;
+            data.submittedSubtitle = data.submittedSubtitle || DEFAULT_SETTINGS.submittedSubtitle;
+            data.submittedCountdownText = data.submittedCountdownText || DEFAULT_SETTINGS.submittedCountdownText;
+            data.submittedWinnerText = data.submittedWinnerText || DEFAULT_SETTINGS.submittedWinnerText;
+            data.submittedSocialProofText = data.submittedSocialProofText || DEFAULT_SETTINGS.submittedSocialProofText;
             data.followButtonText = data.followButtonText || DEFAULT_SETTINGS.followButtonText;
           }
 
@@ -128,7 +134,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             rulesTitle: DEFAULT_SETTINGS.rulesTitle,
             rulesDescription: DEFAULT_SETTINGS.rulesDescription,
             submittedTitle: DEFAULT_SETTINGS.submittedTitle,
-            submittedMessage: DEFAULT_SETTINGS.submittedMessage,
+            submittedSubtitle: DEFAULT_SETTINGS.submittedSubtitle,
+            submittedCountdownText: DEFAULT_SETTINGS.submittedCountdownText,
+            submittedWinnerText: DEFAULT_SETTINGS.submittedWinnerText,
+            submittedSocialProofText: DEFAULT_SETTINGS.submittedSocialProofText,
             followButtonText: DEFAULT_SETTINGS.followButtonText,
             giveawayRules: DEFAULT_SETTINGS.giveawayRules,
             formFieldLabel: DEFAULT_SETTINGS.formFieldLabel,
@@ -156,7 +165,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           subtitleBottom,
           socialProofSubtitle,
           submittedTitle,
-          submittedMessage,
+          submittedSubtitle,
+          submittedCountdownText,
+          submittedWinnerText,
+          submittedSocialProofText,
           followButtonText,
           rulesTitle,
           rulesDescription,
@@ -193,7 +205,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (countdownEndDate !== undefined) updateData.countdownEndDate = countdownEndDate;
         if (countdownTitle !== undefined) updateData.countdownTitle = countdownTitle;
         if (submittedTitle !== undefined) updateData.submittedTitle = submittedTitle;
-        if (submittedMessage !== undefined) updateData.submittedMessage = submittedMessage;
+        if (submittedSubtitle !== undefined) updateData.submittedSubtitle = submittedSubtitle;
+        if (submittedCountdownText !== undefined) updateData.submittedCountdownText = submittedCountdownText;
+        if (submittedWinnerText !== undefined) updateData.submittedWinnerText = submittedWinnerText;
+        if (submittedSocialProofText !== undefined) updateData.submittedSocialProofText = submittedSocialProofText;
         if (followButtonText !== undefined) updateData.followButtonText = followButtonText;
 
 

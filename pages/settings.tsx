@@ -16,6 +16,7 @@ import {
   TextField,
   BlockStack,
   Text,
+  Divider,
 } from '@shopify/polaris';
 
 import { DEFAULT_SETTINGS } from '../lib/defaultSettings';
@@ -45,7 +46,10 @@ function SettingsPage() {
   const [formFieldLabel, setFormFieldLabel] = useState(DEFAULT_SETTINGS.formFieldLabel);
   const [submitButtonText, setSubmitButtonText] = useState(DEFAULT_SETTINGS.submitButtonText);
   const [submittedTitle, setSubmittedTitle] = useState(DEFAULT_SETTINGS.submittedTitle);
-  const [submittedMessage, setSubmittedMessage] = useState(DEFAULT_SETTINGS.submittedMessage);
+  const [submittedSubtitle, setSubmittedSubtitle] = useState(DEFAULT_SETTINGS.submittedSubtitle);
+  const [submittedCountdownText, setSubmittedCountdownText] = useState(DEFAULT_SETTINGS.submittedCountdownText);
+  const [submittedWinnerText, setSubmittedWinnerText] = useState(DEFAULT_SETTINGS.submittedWinnerText);
+  const [submittedSocialProofText, setSubmittedSocialProofText] = useState(DEFAULT_SETTINGS.submittedSocialProofText);
   const [followButtonText, setFollowButtonText] = useState(DEFAULT_SETTINGS.followButtonText);
   const [redirectUrl, setRedirectUrl] = useState('');
   const [loading, setLoading] = useState(true);
@@ -107,7 +111,10 @@ function SettingsPage() {
           setFormFieldLabel(data.formFieldLabel || DEFAULT_SETTINGS.formFieldLabel);
           setSubmitButtonText(data.submitButtonText || DEFAULT_SETTINGS.submitButtonText);
           setSubmittedTitle(data.submittedTitle || DEFAULT_SETTINGS.submittedTitle);
-          setSubmittedMessage(data.submittedMessage || DEFAULT_SETTINGS.submittedMessage);
+          setSubmittedSubtitle(data.submittedSubtitle || DEFAULT_SETTINGS.submittedSubtitle);
+          setSubmittedCountdownText(data.submittedCountdownText || DEFAULT_SETTINGS.submittedCountdownText);
+          setSubmittedWinnerText(data.submittedWinnerText || DEFAULT_SETTINGS.submittedWinnerText);
+          setSubmittedSocialProofText(data.submittedSocialProofText || DEFAULT_SETTINGS.submittedSocialProofText);
           setFollowButtonText(data.followButtonText || DEFAULT_SETTINGS.followButtonText);
           setRedirectUrl(data.redirectUrl || '');
           setBannerUrl(data.bannerUrl || '');
@@ -673,33 +680,6 @@ function SettingsPage() {
                 />
 
                 <TextField
-                  label="Submitted Title"
-                  value={submittedTitle}
-                  onChange={setSubmittedTitle}
-                  helpText="Title shown after a customer submits (e.g., '✅ Entry Submitted!')"
-                  autoComplete="off"
-                  maxLength={80}
-                />
-
-                <TextField
-                  label="Submitted Message"
-                  value={submittedMessage}
-                  onChange={setSubmittedMessage}
-                  helpText="Short message shown under the title after submission"
-                  autoComplete="off"
-                  maxLength={140}
-                />
-
-                <TextField
-                  label="Submitted Follow Button Text"
-                  value={followButtonText}
-                  onChange={setFollowButtonText}
-                  helpText="CTA text for the follow button in the 'thank you' screen"
-                  autoComplete="off"
-                  maxLength={50}
-                />
-
-                <TextField
                   label="Your Instagram Profile URL"
                   value={redirectUrl}
                   onChange={setRedirectUrl}
@@ -707,6 +687,66 @@ function SettingsPage() {
                   autoComplete="off"
                   placeholder="https://instagram.com/yourprofile"
                   requiredIndicator
+                />
+
+                <Divider />
+
+                <Text as="h3" variant="headingMd">
+                  Post-Submission Screen
+                </Text>
+
+                <TextField
+                  label="Submitted Title"
+                  value={submittedTitle}
+                  onChange={setSubmittedTitle}
+                  helpText="Title shown after submission (e.g., '✅ You're entered!')"
+                  autoComplete="off"
+                  maxLength={80}
+                />
+
+                <TextField
+                  label="Submitted Subtitle"
+                  value={submittedSubtitle}
+                  onChange={setSubmittedSubtitle}
+                  helpText="Subtitle with handle placeholder (e.g., 'Thanks for following {{@instagramhandle}}')"
+                  autoComplete="off"
+                  maxLength={150}
+                />
+
+                <TextField
+                  label="Submitted Countdown Text"
+                  value={submittedCountdownText}
+                  onChange={setSubmittedCountdownText}
+                  helpText="Text before countdown on submitted screen (e.g., '🎁Giveaway ends in')"
+                  autoComplete="off"
+                  maxLength={80}
+                />
+
+                <TextField
+                  label="Submitted Winner Announcement Text"
+                  value={submittedWinnerText}
+                  onChange={setSubmittedWinnerText}
+                  helpText="Winner announcement text (e.g., '🏆Winner announced on Jan 23')"
+                  autoComplete="off"
+                  maxLength={100}
+                />
+
+                <TextField
+                  label="Submitted Social Proof Text"
+                  value={submittedSocialProofText}
+                  onChange={setSubmittedSocialProofText}
+                  helpText="Entry count text (e.g., '👥 1248 people have entered')"
+                  autoComplete="off"
+                  maxLength={100}
+                />
+
+                <TextField
+                  label="Submitted Button Text"
+                  value={followButtonText}
+                  onChange={setFollowButtonText}
+                  helpText="CTA button text on submitted screen (e.g., 'View us on Instagram')"
+                  autoComplete="off"
+                  maxLength={50}
                 />
 
                 <div>

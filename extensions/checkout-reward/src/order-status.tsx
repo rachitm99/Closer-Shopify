@@ -33,7 +33,10 @@ interface Settings {
   subtitleBottom?: string;
   socialProofSubtitle?: string;
   submittedTitle?: string;
-  submittedMessage?: string;
+  submittedSubtitle?: string;
+  submittedCountdownText?: string;
+  submittedWinnerText?: string;
+  submittedSocialProofText?: string;
   followButtonText?: string;
   rulesTitle: string;
   rulesDescription?: string;
@@ -528,13 +531,44 @@ function OrderStatusExtension() {
         </BlockStack>
       ) : (
         <BlockStack spacing="base" inlineAlignment="center">
-          <Text size="large" emphasis="bold">
+          {/* 1. Title */}
+          <Text size="large" emphasis="bold" alignment="center">
             {settings.submittedTitle || DEFAULT_SETTINGS.submittedTitle}
           </Text>
+
+          {/* 2. Subtitle with handle replacement */}
           <Text size="medium" alignment="center">
-            {settings.submittedMessage || DEFAULT_SETTINGS.submittedMessage}
+            {(settings.submittedSubtitle || DEFAULT_SETTINGS.submittedSubtitle).replace('{{@instagramhandle}}', `@${formValue}`)}
           </Text>
 
+          {/* 3. Divider */}
+          <Divider />
+
+          {/* 4. Countdown text + timer (days and hours only) */}
+          <BlockStack spacing="tight" inlineAlignment="center">
+            <Text size="medium" alignment="center">
+              {settings.submittedCountdownText || DEFAULT_SETTINGS.submittedCountdownText}
+            </Text>
+            <Text size="large" emphasis="bold" alignment="center">
+              {(() => {
+                const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((remainingMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                return `${days}d ${hours}h`;
+              })()}
+            </Text>
+          </BlockStack>
+
+          {/* 5. Winner announcement */}
+          <Text size="medium" alignment="center">
+            {settings.submittedWinnerText || DEFAULT_SETTINGS.submittedWinnerText}
+          </Text>
+
+          {/* 6. Social proof */}
+          <Text size="medium" alignment="center">
+            {settings.submittedSocialProofText || DEFAULT_SETTINGS.submittedSocialProofText}
+          </Text>
+
+          {/* 7. Button */}
           {submitted && settings?.redirectUrl && (
             <Link to={settings.redirectUrl} external>
               <Button kind="primary" style={{ width: '100%' }}>
@@ -542,18 +576,6 @@ function OrderStatusExtension() {
               </Button>
             </Link>
           )}
-          <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
-          {settings.subtitleBottom && (
-            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
-              <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
-            </View>
-          )}
-          {settings.socialProofSubtitle && (
-            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
-              <Text size="small" emphasis="bold" alignment="center" style={{ textAlign: 'center' }}>{settings.socialProofSubtitle}</Text>
-            </View>
-          )}
-          </BlockStack>
         </BlockStack>
       )}
     </BlockStack>

@@ -77,7 +77,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           countdownEndDate: data?.countdownEndDate,
           countdownTitle: data?.countdownTitle || DEFAULT_SETTINGS.countdownTitle,
           submittedTitle: data?.submittedTitle || DEFAULT_SETTINGS.submittedTitle,
-          submittedMessage: data?.submittedMessage || DEFAULT_SETTINGS.submittedMessage,
+          submittedSubtitle: data?.submittedSubtitle || DEFAULT_SETTINGS.submittedSubtitle,
+          submittedCountdownText: data?.submittedCountdownText || DEFAULT_SETTINGS.submittedCountdownText,
+          submittedWinnerText: data?.submittedWinnerText || DEFAULT_SETTINGS.submittedWinnerText,
+          submittedSocialProofText: data?.submittedSocialProofText || DEFAULT_SETTINGS.submittedSocialProofText,
           followButtonText: data?.followButtonText || DEFAULT_SETTINGS.followButtonText,
         });
       } else {
@@ -96,7 +99,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           submitButtonText: DEFAULT_SETTINGS.submitButtonText,
           countdownTitle: DEFAULT_SETTINGS.countdownTitle,
           submittedTitle: DEFAULT_SETTINGS.submittedTitle,
-          submittedMessage: DEFAULT_SETTINGS.submittedMessage,
+          submittedSubtitle: DEFAULT_SETTINGS.submittedSubtitle,
+          submittedCountdownText: DEFAULT_SETTINGS.submittedCountdownText,
+          submittedWinnerText: DEFAULT_SETTINGS.submittedWinnerText,
+          submittedSocialProofText: DEFAULT_SETTINGS.submittedSocialProofText,
           followButtonText: DEFAULT_SETTINGS.followButtonText,
         });
       }

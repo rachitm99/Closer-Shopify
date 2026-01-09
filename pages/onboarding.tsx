@@ -57,7 +57,10 @@ function Onboarding() {
   const [subtitleBottom, setSubtitleBottom] = useState(DEFAULT_SETTINGS.subtitleBottom);
   const [socialProofSubtitle, setSocialProofSubtitle] = useState(DEFAULT_SETTINGS.socialProofSubtitle);
   const [submittedTitle, setSubmittedTitle] = useState(DEFAULT_SETTINGS.submittedTitle);
-  const [submittedMessage, setSubmittedMessage] = useState(DEFAULT_SETTINGS.submittedMessage);
+  const [submittedSubtitle, setSubmittedSubtitle] = useState(DEFAULT_SETTINGS.submittedSubtitle);
+  const [submittedCountdownText, setSubmittedCountdownText] = useState(DEFAULT_SETTINGS.submittedCountdownText);
+  const [submittedWinnerText, setSubmittedWinnerText] = useState(DEFAULT_SETTINGS.submittedWinnerText);
+  const [submittedSocialProofText, setSubmittedSocialProofText] = useState(DEFAULT_SETTINGS.submittedSocialProofText);
   const [followButtonText, setFollowButtonText] = useState(DEFAULT_SETTINGS.followButtonText);
   const [formFieldLabel, setFormFieldLabel] = useState(DEFAULT_SETTINGS.formFieldLabel);
 
@@ -123,7 +126,10 @@ function Onboarding() {
             setSubtitleBottom(data.subtitleBottom || DEFAULT_SETTINGS.subtitleBottom);
             setSocialProofSubtitle(data.socialProofSubtitle || DEFAULT_SETTINGS.socialProofSubtitle);
             setSubmittedTitle(data.submittedTitle || DEFAULT_SETTINGS.submittedTitle);
-            setSubmittedMessage(data.submittedMessage || DEFAULT_SETTINGS.submittedMessage);
+            setSubmittedSubtitle(data.submittedSubtitle || DEFAULT_SETTINGS.submittedSubtitle);
+            setSubmittedCountdownText(data.submittedCountdownText || DEFAULT_SETTINGS.submittedCountdownText);
+            setSubmittedWinnerText(data.submittedWinnerText || DEFAULT_SETTINGS.submittedWinnerText);
+            setSubmittedSocialProofText(data.submittedSocialProofText || DEFAULT_SETTINGS.submittedSocialProofText);
             setFollowButtonText(data.followButtonText || DEFAULT_SETTINGS.followButtonText);
             setFormFieldLabel(data.formFieldLabel || DEFAULT_SETTINGS.formFieldLabel);
             setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
@@ -197,7 +203,10 @@ function Onboarding() {
           formFieldLabel,
           submitButtonText,
           submittedTitle,
-          submittedMessage,
+          submittedSubtitle,
+          submittedCountdownText,
+          submittedWinnerText,
+          submittedSocialProofText,
           followButtonText,
           countdownEndDate,
           redirectUrl 
@@ -294,7 +303,10 @@ function Onboarding() {
           subtitleBottom: subtitleBottom,
           socialProofSubtitle: socialProofSubtitle,
           submittedTitle: submittedTitle,
-          submittedMessage: submittedMessage,
+          submittedSubtitle: submittedSubtitle,
+          submittedCountdownText: submittedCountdownText,
+          submittedWinnerText: submittedWinnerText,
+          submittedSocialProofText: submittedSocialProofText,
           followButtonText: followButtonText,
           rulesTitle: rulesTitle,
           rulesDescription: rulesDescription,
@@ -474,29 +486,62 @@ function Onboarding() {
                 maxLength={100}
               />
 
+              <Divider />
+
+              <Text as="h3" variant="headingMd">
+                Post-Submission Screen
+              </Text>
+
               <TextField
                 label="Submitted Title"
                 value={submittedTitle}
                 onChange={setSubmittedTitle}
-                helpText="Title shown after a customer submits (e.g., '✅ Entry Submitted!')"
+                helpText="Title shown after submission (e.g., '✅ You're entered!')"
                 autoComplete="off"
                 maxLength={80}
               />
 
               <TextField
-                label="Submitted Message"
-                value={submittedMessage}
-                onChange={setSubmittedMessage}
-                helpText="Short message shown under the title after submission"
+                label="Submitted Subtitle"
+                value={submittedSubtitle}
+                onChange={setSubmittedSubtitle}
+                helpText="Subtitle with handle placeholder (e.g., 'Thanks for following {{@instagramhandle}}')"
                 autoComplete="off"
-                maxLength={140}
+                maxLength={150}
               />
 
               <TextField
-                label="Submitted Follow Button Text"
+                label="Submitted Countdown Text"
+                value={submittedCountdownText}
+                onChange={setSubmittedCountdownText}
+                helpText="Text before countdown on submitted screen (e.g., '🎁Giveaway ends in')"
+                autoComplete="off"
+                maxLength={80}
+              />
+
+              <TextField
+                label="Submitted Winner Announcement Text"
+                value={submittedWinnerText}
+                onChange={setSubmittedWinnerText}
+                helpText="Winner announcement text (e.g., '🏆Winner announced on Jan 23')"
+                autoComplete="off"
+                maxLength={100}
+              />
+
+              <TextField
+                label="Submitted Social Proof Text"
+                value={submittedSocialProofText}
+                onChange={setSubmittedSocialProofText}
+                helpText="Entry count text (e.g., '👥 1248 people have entered')"
+                autoComplete="off"
+                maxLength={100}
+              />
+
+              <TextField
+                label="Submitted Button Text"
                 value={followButtonText}
                 onChange={setFollowButtonText}
-                helpText="CTA text for the follow button in the 'thank you' screen"
+                helpText="CTA button text on submitted screen (e.g., 'View us on Instagram')"
                 autoComplete="off"
                 maxLength={50}
               />
