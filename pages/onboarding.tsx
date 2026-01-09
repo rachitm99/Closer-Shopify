@@ -505,7 +505,7 @@ function Onboarding() {
                 label="Submitted Subtitle"
                 value={submittedSubtitle}
                 onChange={setSubmittedSubtitle}
-                helpText="Subtitle with handle placeholder (e.g., 'Thanks for following {{@instagramhandle}}')"
+                helpText="Subtitle shown after submission (literal text, e.g., 'Thanks for following {{@instagramhandle}}')"
                 autoComplete="off"
                 maxLength={150}
               />
