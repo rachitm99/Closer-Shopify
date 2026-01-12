@@ -21,6 +21,7 @@ import { DEFAULT_SETTINGS } from '../../../lib/defaultSettings';
 
 interface Settings {
   enabled: boolean;
+  mode?: string;
   shop?: string;
   logoUrl?: string;
   bannerUrl?: string;

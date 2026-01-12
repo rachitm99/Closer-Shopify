@@ -1,4 +1,7 @@
+export type DisplayMode = 'basic' | 'giveaway' | 'free-gift';
+
 export interface DefaultSettings {
+  mode: DisplayMode;
   popupTitle: string;
   subtitleTop: string;
   subtitleBottom: string;
@@ -18,6 +21,7 @@ export interface DefaultSettings {
 }
 
 export const DEFAULT_SETTINGS: DefaultSettings = {
+  mode: 'giveaway',
   popupTitle: '🎉Win Products worth ₹1,000',
   subtitleTop: 'Follow us on Instagram to enter the Giveaway',
   subtitleBottom: 'Winners will be announced on 23rd Jan 2026',

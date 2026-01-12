@@ -18,6 +18,7 @@ import {
   Toast,
   SettingToggle,
   TextContainer,
+  Select,
 } from '@shopify/polaris';
 
 import { DEFAULT_SETTINGS } from '../lib/defaultSettings';
@@ -35,6 +36,7 @@ function Onboarding() {
   const [showToast, setShowToast] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [enabled, setEnabled] = useState(true);
+  const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift'>('giveaway');
   const [bannerUrl, setBannerUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState(DEFAULT_SETTINGS.popupTitle);
   const [rulesTitle, setRulesTitle] = useState(DEFAULT_SETTINGS.rulesTitle);
@@ -193,7 +195,8 @@ function Onboarding() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          enabled, 
+          enabled,
+          mode,
           bannerUrl, 
           popupTitle,
           subtitleTop,
@@ -297,6 +300,7 @@ function Onboarding() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           shop: shop,
+          mode: mode,
           bannerUrl: bannerUrl,
           popupTitle: popupTitle,
           subtitleTop: subtitleTop,
@@ -699,6 +703,18 @@ function Onboarding() {
                 helpText="Text displayed on the submit button"
                 autoComplete="off"
                 maxLength={50}
+              />
+
+              <Select
+                label="Display Mode"
+                options={[
+                  { label: 'Basic', value: 'basic' },
+                  { label: 'Giveaway', value: 'giveaway' },
+                  { label: 'Free Gift', value: 'free-gift' },
+                ]}
+                value={mode}
+                onChange={(value) => setMode(value as 'basic' | 'giveaway' | 'free-gift')}
+                helpText="Choose how to display your Instagram follow campaign"
               />
 
               <TextField

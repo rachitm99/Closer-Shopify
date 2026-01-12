@@ -18,6 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const {
       shop,
+      mode,
       logoUrl,
       bannerUrl,
       popupTitle,
@@ -56,6 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userData = {
       shop: shop,
       enabled: true, // Extension enabled by default after onboarding
+      mode: mode || DEFAULT_SETTINGS.mode,
       // Store both bannerUrl and logoUrl (banner preferred)
       bannerUrl: bannerUrl || logoUrl || '',
       logoUrl: logoUrl || bannerUrl || '',

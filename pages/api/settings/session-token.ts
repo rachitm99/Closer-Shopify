@@ -61,6 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         
         return res.status(200).json({
           enabled: data?.enabled || false,
+          mode: data?.mode || DEFAULT_SETTINGS.mode,
           shop: shop, // Add shop domain for impression tracking
           logoUrl: data?.logoUrl,
           bannerUrl: data?.bannerUrl,
@@ -86,6 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } else {
         return res.status(200).json({
           enabled: false,
+          mode: DEFAULT_SETTINGS.mode,
           shop: shop, // Add shop domain for impression tracking
           bannerUrl: '',
           popupTitle: DEFAULT_SETTINGS.popupTitle,

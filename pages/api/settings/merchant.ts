@@ -7,6 +7,7 @@ import { DEFAULT_SETTINGS } from '../../../lib/defaultSettings';
 export interface MerchantSettings {
   shop: string;
   enabled: boolean;
+  mode?: string;
   // Popup configuration
   logoUrl?: string;
   popupTitle: string;
@@ -127,6 +128,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const defaultSettings: MerchantSettings = {
             shop,
             enabled: false,
+            mode: DEFAULT_SETTINGS.mode,
             logoUrl: '',
             popupTitle: DEFAULT_SETTINGS.popupTitle,
             subtitleTop: DEFAULT_SETTINGS.subtitleTop,
@@ -155,7 +157,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Update merchant settings
       try {
         const { 
-          enabled, 
+          enabled,
+          mode,
           logoUrl, 
           bannerUrl,
           countdownEndDate,
@@ -189,6 +192,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         
         // Only update fields that are explicitly provided
         if (enabled !== undefined) updateData.enabled = enabled;
+        if (mode !== undefined) updateData.mode = mode;
         if (logoUrl !== undefined) updateData.logoUrl = logoUrl;
         if (popupTitle !== undefined) updateData.popupTitle = popupTitle;
         if (subtitleTop !== undefined) updateData.subtitleTop = subtitleTop;

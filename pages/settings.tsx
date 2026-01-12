@@ -17,6 +17,7 @@ import {
   BlockStack,
   Text,
   Divider,
+  Select,
 } from '@shopify/polaris';
 
 import { DEFAULT_SETTINGS } from '../lib/defaultSettings';
@@ -25,6 +26,7 @@ function SettingsPage() {
   const router = useRouter();
   const authFetch = useAuthenticatedFetch();
   const [enabled, setEnabled] = useState(false);
+  const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift'>('giveaway');
 
   const [logoUrl, setLogoUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState(DEFAULT_SETTINGS.popupTitle);
@@ -92,6 +94,7 @@ function SettingsPage() {
           // No need to check onboarding here - handled in _app.tsx
           
           setEnabled(data.enabled || false);
+          setMode(data.mode || DEFAULT_SETTINGS.mode);
           setLogoUrl(data.logoUrl || '');
           setPopupTitle(data.popupTitle || DEFAULT_SETTINGS.popupTitle);
           setSubtitleTop(data.subtitleTop || DEFAULT_SETTINGS.subtitleTop);
@@ -169,7 +172,8 @@ function SettingsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          enabled: newEnabled, 
+          enabled: newEnabled,
+          mode,
           logoUrl, 
           bannerUrl,
           countdownEndDate,
@@ -217,7 +221,8 @@ function SettingsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          enabled, 
+          enabled,
+          mode,
           logoUrl, 
           bannerUrl,
           countdownEndDate,
@@ -363,6 +368,30 @@ function SettingsPage() {
                   </Text>
                 </TextContainer>
               </SettingToggle>
+            </Card>
+
+            {/* Mode Selector */}
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingMd">
+                  Display Mode
+                </Text>
+                <Select
+                  label="Choose display mode"
+                  options={[
+                    { label: 'Basic', value: 'basic' },
+                    { label: 'Giveaway', value: 'giveaway' },
+                    { label: 'Free Gift', value: 'free-gift' },
+                  ]}
+                  value={mode}
+                  onChange={(value) => setMode(value as 'basic' | 'giveaway' | 'free-gift')}
+                />
+                <Text as="p" variant="bodyMd" tone="subdued">
+                  {mode === 'basic' && 'Basic mode: Simple follow button without giveaway elements'}
+                  {mode === 'giveaway' && 'Giveaway mode: Full giveaway experience with countdown, rules, and submitted screen'}
+                  {mode === 'free-gift' && 'Free Gift mode: Promote a free gift with your Instagram follow'}
+                </Text>
+              </BlockStack>
             </Card>
           </Layout.Section>
 
