@@ -703,10 +703,10 @@ function SettingsPage() {
 
                 {/* Product Selection Section */}
                 <Text as="h3" variant="headingMd">
-                  Selected Products (Up to 3)
+                  Free Gift Product
                 </Text>
                 <Text as="p" variant="bodySm" tone="subdued">
-                  Choose up to 3 products to feature. Each product will include its variant information.
+                  Choose a product to offer as a free gift. Select the specific variant you want to give away.
                 </Text>
 
                 {/* Display selected products */}
@@ -753,7 +753,7 @@ function SettingsPage() {
                     </div>
                   ))}
 
-                  {selectedProducts.length < 3 && (
+                  {selectedProducts.length < 1 && (
                     <div>
                       <Button
                         onClick={async () => {
@@ -771,7 +771,7 @@ function SettingsPage() {
                           }
                         }}
                       >
-                        {selectedProducts.length === 0 ? 'Select Products' : 'Add Another Product'}
+                        Select Free Gift Product
                       </Button>
                     </div>
                   )}
@@ -842,7 +842,7 @@ function SettingsPage() {
                                 </div>
                                 <Button
                                   size="slim"
-                                  disabled={selectedProducts.some(p => p.id === product.id && p.variantId === variant.id)}
+                                  disabled={selectedProducts.length >= 1 || selectedProducts.some(p => p.id === product.id && p.variantId === variant.id)}
                                   onClick={() => {
                                     const newProduct: SelectedProduct = {
                                       id: product.id,
@@ -854,10 +854,9 @@ function SettingsPage() {
                                     };
                                     setSelectedProducts([...selectedProducts, newProduct]);
                                     
-                                    if (selectedProducts.length + 1 >= 3) {
-                                      setShowProductPicker(false);
-                                      setAvailableProducts([]);
-                                    }
+                                    // Close modal immediately after selecting 1 product
+                                    setShowProductPicker(false);
+                                    setAvailableProducts([]);
                                   }}
                                 >
                                   {selectedProducts.some(p => p.id === product.id && p.variantId === variant.id) ? 'Selected' : 'Select'}
