@@ -18,9 +18,10 @@ import {
   Text,
   Divider,
   Select,
+  Button,
 } from '@shopify/polaris';
 
-import { DEFAULT_SETTINGS } from '../lib/defaultSettings';
+import { DEFAULT_SETTINGS, SelectedProduct } from '../lib/defaultSettings';
 
 function SettingsPage() {
   const router = useRouter();
@@ -71,6 +72,12 @@ function SettingsPage() {
   };
   const [countdownEndDate, setCountdownEndDate] = useState(getDefaultEndDate());
   const [countdownTitle, setCountdownTitle] = useState(DEFAULT_SETTINGS.countdownTitle);
+
+  // Product selection state
+  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
+  const [availableProducts, setAvailableProducts] = useState<any[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [showProductPicker, setShowProductPicker] = useState(false);
 
   useEffect(() => {
     console.log('⚙️ Settings Page - useEffect triggered');
@@ -123,6 +130,7 @@ function SettingsPage() {
           setBannerUrl(data.bannerUrl || '');
           setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
           setCountdownTitle(data.countdownTitle || DEFAULT_SETTINGS.countdownTitle);
+          setSelectedProducts(data.selectedProducts || []);
           console.log('✅ Settings Page - All state updated successfully');
         } else if (response.status === 401) {
           console.log('🔒 Settings Page - Unauthorized (401)');
@@ -235,7 +243,8 @@ function SettingsPage() {
           rulesDescription,
           formFieldLabel,
           submitButtonText, 
-          redirectUrl 
+          redirectUrl,
+          selectedProducts
         }),
       });
 
@@ -689,6 +698,180 @@ function SettingsPage() {
                   autoComplete="off"
                   maxLength={50}
                 />
+
+                <Divider />
+
+                {/* Product Selection Section */}
+                <Text as="h3" variant="headingMd">
+                  Selected Products (Up to 3)
+                </Text>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Choose up to 3 products to feature. Each product will include its variant information.
+                </Text>
+
+                {/* Display selected products */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+                  {selectedProducts.map((product, index) => (
+                    <div key={product.id + product.variantId} style={{ 
+                      display: 'flex', 
+                      gap: '12px', 
+                      padding: '12px', 
+                      border: '1px solid #e1e3e5', 
+                      borderRadius: '8px',
+                      alignItems: 'center'
+                    }}>
+                      {product.image && (
+                        <img 
+                          src={product.image} 
+                          alt={product.title}
+                          style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '4px' }}
+                        />
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <Text as="p" variant="bodyMd" fontWeight="semibold">
+                          {product.title}
+                        </Text>
+                        {product.variantTitle && product.variantTitle !== 'Default Title' && (
+                          <Text as="p" variant="bodySm" tone="subdued">
+                            Variant: {product.variantTitle}
+                          </Text>
+                        )}
+                        {product.price && (
+                          <Text as="p" variant="bodySm" tone="subdued">
+                            Price: ${product.price}
+                          </Text>
+                        )}
+                      </div>
+                      <Button
+                        tone="critical"
+                        onClick={() => {
+                          setSelectedProducts(selectedProducts.filter((_, i) => i !== index));
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+
+                  {selectedProducts.length < 3 && (
+                    <div>
+                      <Button
+                        onClick={async () => {
+                          setShowProductPicker(true);
+                          setLoadingProducts(true);
+                          try {
+                            const response = await authFetch('/api/shopify/products?limit=50');
+                            const data = await response.json();
+                            setAvailableProducts(data.products || []);
+                          } catch (error) {
+                            console.error('Failed to load products:', error);
+                            setError('Failed to load products');
+                          } finally {
+                            setLoadingProducts(false);
+                          }
+                        }}
+                      >
+                        {selectedProducts.length === 0 ? 'Select Products' : 'Add Another Product'}
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Product picker modal */}
+                  {showProductPicker && (
+                    <div style={{ 
+                      marginTop: '12px', 
+                      padding: '16px', 
+                      border: '2px solid #005bd3', 
+                      borderRadius: '8px',
+                      backgroundColor: '#f6f6f7',
+                      maxHeight: '400px',
+                      overflowY: 'auto'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <Text as="h4" variant="headingSm">
+                          {loadingProducts ? 'Loading products...' : 'Choose a product'}
+                        </Text>
+                        <Button
+                          onClick={() => {
+                            setShowProductPicker(false);
+                            setAvailableProducts([]);
+                          }}
+                        >
+                          Close
+                        </Button>
+                      </div>
+
+                      {!loadingProducts && availableProducts.map((product) => (
+                        <div key={product.id} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #e1e3e5' }}>
+                          <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
+                            {product.image && (
+                              <img 
+                                src={product.image} 
+                                alt={product.title}
+                                style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
+                              />
+                            )}
+                            <Text as="p" variant="bodyMd" fontWeight="semibold">
+                              {product.title}
+                            </Text>
+                          </div>
+
+                          {/* Variant selection */}
+                          <div style={{ marginLeft: '62px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {product.variants?.map((variant: any) => (
+                              <div key={variant.id} style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center',
+                                padding: '8px',
+                                backgroundColor: 'white',
+                                borderRadius: '4px'
+                              }}>
+                                <div>
+                                  <Text as="span" variant="bodySm">
+                                    {variant.title !== 'Default Title' ? variant.title : 'Single variant'}
+                                  </Text>
+                                  <Text as="span" variant="bodySm" tone="subdued">
+                                    {' '}• ${variant.price}
+                                  </Text>
+                                  {!variant.available && (
+                                    <Text as="span" variant="bodySm" tone="critical">
+                                      {' '}(Out of stock)
+                                    </Text>
+                                  )}
+                                </div>
+                                <Button
+                                  size="slim"
+                                  disabled={selectedProducts.some(p => p.id === product.id && p.variantId === variant.id)}
+                                  onClick={() => {
+                                    const newProduct: SelectedProduct = {
+                                      id: product.id,
+                                      variantId: variant.id,
+                                      title: product.title,
+                                      variantTitle: variant.title,
+                                      image: product.image,
+                                      price: variant.price
+                                    };
+                                    setSelectedProducts([...selectedProducts, newProduct]);
+                                    
+                                    if (selectedProducts.length + 1 >= 3) {
+                                      setShowProductPicker(false);
+                                      setAvailableProducts([]);
+                                    }
+                                  }}
+                                >
+                                  {selectedProducts.some(p => p.id === product.id && p.variantId === variant.id) ? 'Selected' : 'Select'}
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <Divider />
 
                 <TextField
                   label="Footer Subtitle (below Follow button)"

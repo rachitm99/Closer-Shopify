@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSessionFromRequest } from '../../../lib/auth-helpers';
 import { db, collections, FieldValue, Timestamp } from '../../../lib/firestore';
 import axios from 'axios';
-import { DEFAULT_SETTINGS } from '../../../lib/defaultSettings';
+import { DEFAULT_SETTINGS, SelectedProduct } from '../../../lib/defaultSettings';
 
 export interface MerchantSettings {
   shop: string;
@@ -30,6 +30,7 @@ export interface MerchantSettings {
   bannerUrl?: string;
   countdownEndDate?: string;
   countdownTitle?: string;
+  selectedProducts?: SelectedProduct[];
   updatedAt: FirebaseFirestore.Timestamp;
   onboardingCompleted?: boolean;
   onboardingCompletedAt?: FirebaseFirestore.Timestamp;
@@ -179,6 +180,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           formFieldLabel,
           submitButtonText, 
           redirectUrl,
+          selectedProducts,
           onboardingCompleted,
         } = req.body;
         const existingDoc = await db.collection(collections.users).doc(shop).get();
@@ -214,6 +216,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (submittedWinnerText !== undefined) updateData.submittedWinnerText = submittedWinnerText;
         if (submittedSocialProofText !== undefined) updateData.submittedSocialProofText = submittedSocialProofText;
         if (followButtonText !== undefined) updateData.followButtonText = followButtonText;
+        if (selectedProducts !== undefined) updateData.selectedProducts = selectedProducts;
 
 
         // Merge with existing data to preserve analytics and other fields

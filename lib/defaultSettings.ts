@@ -1,5 +1,14 @@
 export type DisplayMode = 'basic' | 'giveaway' | 'free-gift';
 
+export interface SelectedProduct {
+  id: string;
+  variantId: string;
+  title: string;
+  variantTitle?: string;
+  image?: string;
+  price?: string;
+}
+
 export interface DefaultSettings {
   mode: DisplayMode;
   popupTitle: string;
@@ -18,6 +27,7 @@ export interface DefaultSettings {
   submittedSocialProofText: string;
   followButtonText: string;
   giveawayRules: string[];
+  selectedProducts: SelectedProduct[];
 }
 
 export const DEFAULT_SETTINGS: DefaultSettings = {
@@ -43,4 +53,5 @@ export const DEFAULT_SETTINGS: DefaultSettings = {
     'Tag 2 friends in the comments',
     'Share this post to your story',
   ],
+  selectedProducts: [],
 };
