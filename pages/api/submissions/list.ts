@@ -16,10 +16,6 @@ interface SubmissionData {
   customerEmail?: string;
   orderNumber?: string;
   submissionCount?: number;
-  // New fields
-  mode?: string;
-  freeGiftProductId?: string;
-  freeGiftVariantId?: string;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -63,9 +59,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         customerEmail: data.customerEmail,
         orderNumber: data.orderNumber,
         submissionCount: data.submissionCount || 1,
-        mode: data.mode,
-        freeGiftProductId: data.freeGiftProductId,
-        freeGiftVariantId: data.freeGiftVariantId,
       });
     });
 

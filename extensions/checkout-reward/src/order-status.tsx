@@ -298,40 +298,23 @@ function OrderStatusExtension() {
       return;
     }
 
-    // Ensure settings are loaded before submitting
-    if (!settings || !settings.shop) {
-      console.error('Order Status - Cannot submit: settings not loaded');
-      return;
-    }
-
     try {
       setSubmitting(true);
-
-      const normalizeOrderNumber = (input: any) => {
-        if (!input) return '';
-        if (typeof input === 'number') return String(input);
-        if (typeof input !== 'string') return '';
-        const gidMatch = input.match(/\/(\d+)$/) || input.match(/(\d{6,})/);
-        return gidMatch ? (gidMatch[1] || gidMatch[0]) : '';
-      };
+      const token = await sessionToken.get();
 
       const submissionBody: any = {
         instaHandle: formValue,
         customerEmail: customerEmail,
-        orderNumber: normalizeOrderNumber(orderNumber),
+        orderNumber: orderNumber,
         customerId: customerId,
-        mode: settings.mode,
-        shop: settings.shop,
+        mode: settings?.mode,
+        shop: settings?.shop || shop,
       };
 
-      if (settings.mode === 'free-gift' && settings.selectedProducts?.[0]) {
+      if (settings?.mode === 'free-gift' && settings?.selectedProducts?.[0]) {
         submissionBody.freeGiftProductId = settings.selectedProducts[0].id;
         submissionBody.freeGiftVariantId = settings.selectedProducts[0].variantId;
       }
-
-      // Get fresh token right before making the request
-      const token = await sessionToken.get();
-      console.log('Order Status - Got fresh token, making submission request');
 
       const response = await fetch(`https://closer-qq8c.vercel.app/api/submissions/create`, {
         method: 'POST',
@@ -350,10 +333,6 @@ function OrderStatusExtension() {
         console.log('Order Status - Submission succeeded; showing follow link for manual redirect');
       } else {
         console.warn('Order Status - Submission failed:', response.status, text);
-        // Include payload context for debugging (no sensitive token info)
-        if (response.status === 401) {
-          console.warn('Order Status - 401 error. payload:', { shop: submissionBody.shop, mode: submissionBody.mode, orderNumber: submissionBody.orderNumber, freeGiftVariantId: submissionBody.freeGiftVariantId, hasToken: !!token });
-        }
       }
     } catch (error) {
       console.error('Order Status - Error submitting form:', error);
