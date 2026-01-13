@@ -18,6 +18,10 @@ export interface FormSubmission {
   submissionCount?: number;
   isFollowerChecked?: boolean;
   isFollowing?: boolean;
+  // Additional optional fields
+  mode?: string;
+  freeGiftProductId?: string;
+  freeGiftVariantId?: string;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -49,7 +53,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const payload = await shopify.session.decodeSessionToken(sessionToken);
       const shop = payload.dest.replace('https://', '');
 
-      const { instaHandle, orderNumber, customerEmail } = req.body;
+      const { instaHandle, orderNumber: rawOrderNumber, customerEmail, mode, freeGiftProductId, freeGiftVariantId, shop: shopFromPayload } = req.body;
+
+      // Normalize order number to numeric ID when possible
+      const normalizeOrderNumber = (input: any) => {
+        if (!input) return '';
+        if (typeof input === 'number') return String(input);
+        if (typeof input !== 'string') return '';
+        // If GID format gid://shopify/Order/7114315235637 -> extract last segment
+        const gidMatch = input.match(/\/(\d+)$|([0-9]+)$/);
+        if (gidMatch) {
+          // gidMatch[1] if matched /digits at end of path, else gidMatch[2]
+          return (gidMatch[1] || gidMatch[2] || '').toString();
+        }
+        // Fallback: extract first numeric sequence
+        const numMatch = input.match(/(\d{6,})/);
+        return numMatch ? numMatch[1] : '';
+      };
+
+      const orderNumber = normalizeOrderNumber(rawOrderNumber);
 
       if (!instaHandle) {
         return res.status(400).json({ error: 'Instagram handle is required' });
@@ -84,6 +106,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           submissionCount: (existingData.submissionCount || 1) + 1,
           isFollowerChecked: false,
           isFollowing: false,
+          mode: mode || existingData.mode,
+          freeGiftProductId: freeGiftProductId || existingData.freeGiftProductId,
+          freeGiftVariantId: freeGiftVariantId || existingData.freeGiftVariantId,
         };
         
         await db.collection(collections.submissions).doc(submissionId).update({
@@ -93,6 +118,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           submissionCount: (existingData.submissionCount || 1) + 1,
           isFollowerChecked: false,
           isFollowing: false,
+          mode: mode || existingData.mode,
+          freeGiftProductId: freeGiftProductId || existingData.freeGiftProductId,
+          freeGiftVariantId: freeGiftVariantId || existingData.freeGiftVariantId,
         });
         console.log('Form submission updated:', submissionId, 'for shop:', shop, 'count:', updatedSubmission.submissionCount);
         
@@ -116,7 +144,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           submissionCount: 1,
           isFollowerChecked: false,
           isFollowing: false,
-
+          mode: mode || undefined,
+          freeGiftProductId: freeGiftProductId || undefined,
+          freeGiftVariantId: freeGiftVariantId || undefined,
         };
 
         // Store in Firestore

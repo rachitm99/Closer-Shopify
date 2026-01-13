@@ -302,10 +302,18 @@ function OrderStatusExtension() {
       setSubmitting(true);
       const token = await sessionToken.get();
 
+      const normalizeOrderNumber = (input: any) => {
+        if (!input) return '';
+        if (typeof input === 'number') return String(input);
+        if (typeof input !== 'string') return '';
+        const gidMatch = input.match(/\/(\d+)$/) || input.match(/(\d{6,})/);
+        return gidMatch ? (gidMatch[1] || gidMatch[0]) : '';
+      };
+
       const submissionBody: any = {
         instaHandle: formValue,
         customerEmail: customerEmail,
-        orderNumber: orderNumber,
+        orderNumber: normalizeOrderNumber(orderNumber),
         customerId: customerId,
         mode: settings?.mode,
         shop: settings?.shop || shop,
