@@ -232,10 +232,17 @@ function ThankYouExtension() {
       setSubmitting(true);
       const token = await sessionToken.get();
 
+      // Extract numeric order id for submission (e.g., from gid://shopify/Order/7114315235637 -> 7114315235637)
+      const orderNumberForSubmission = (() => {
+        const v = orderNumber || '';
+        const m = String(v).match(/\d+$/);
+        return m ? m[0] : v;
+      })();
+
       const submissionBody: any = {
         instaHandle: formValue,
         customerEmail: customerEmail,
-        orderNumber: orderNumber,
+        orderNumber: orderNumberForSubmission,
         customerId: customerId,
         mode: settings?.mode,
         shop: settings?.shop || shop,
