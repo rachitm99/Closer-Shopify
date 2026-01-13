@@ -319,8 +319,11 @@ function OrderStatusExtension() {
       };
 
       if (settings?.mode === 'free-gift' && settings?.selectedProducts?.[0]) {
-        submissionBody.freeGiftProductId = settings.selectedProducts[0].id;
-        submissionBody.freeGiftVariantId = settings.selectedProducts[0].variantId;
+        const sp = settings.selectedProducts[0];
+        submissionBody.freeGiftProductId = sp.id;
+        submissionBody.freeGiftVariantId = sp.variantId;
+        submissionBody.productId = sp.id;
+        submissionBody.variantId = sp.variantId;
       }
 
       const response = await fetch(`https://closer-qq8c.vercel.app/api/submissions/create`, {
