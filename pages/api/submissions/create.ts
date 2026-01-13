@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSessionFromRequest } from '../../../lib/auth-helpers';
+import shopify from '../../../lib/shopify';
 import { db, collections, FieldValue, Timestamp } from '../../../lib/firestore';
 
 /**
@@ -39,15 +39,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Use the same session validation as other endpoints
-    const session = await getSessionFromRequest(req);
+    // Get session token from Authorization header (same as settings/session-token endpoint)
+    const authHeader = req.headers.authorization;
     
-    if (!session || !session.shop) {
-      console.error('submissions/create - No valid session found');
-      return res.status(401).json({ error: 'Invalid session token' });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('submissions/create - Missing Authorization header');
+      return res.status(401).json({ error: 'Missing session token' });
     }
 
-    const shop = session.shop;
+    const sessionToken = authHeader.replace('Bearer ', '');
+
+    // Verify session token with Shopify (same as settings/session-token endpoint)
+    let shop: string;
+    try {
+      const payload = await shopify.session.decodeSessionToken(sessionToken);
+      shop = payload.dest.replace('https://', '');
+      console.log('submissions/create - Verified session token for shop:', shop);
+    } catch (decodeError) {
+      console.error('submissions/create - Token decode error:', decodeError);
+      return res.status(401).json({ error: 'Invalid session token' });
+    }
 
     const { instaHandle, orderNumber: rawOrderNumber, customerEmail, mode, freeGiftProductId, freeGiftVariantId, shop: shopFromPayload } = req.body;
 
