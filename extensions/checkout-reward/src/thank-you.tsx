@@ -289,6 +289,16 @@ function ThankYouExtension() {
         console.log('Thank You - Submission succeeded; showing follow link for manual redirect');
       } else {
         console.warn('Thank You - Submission failed:', response.status, text);
+        if (response.status === 401) {
+          console.warn('Thank You - Submission 401. payload:', { shop: submissionBody.shop, mode: submissionBody.mode, orderNumber: submissionBody.orderNumber, freeGiftVariantId: submissionBody.freeGiftVariantId });
+        }
+      }
+
+      if (response.ok) {
+        setSubmitted(true);
+        console.log('Thank You - Submission succeeded; showing follow link for manual redirect');
+      } else {
+        console.warn('Thank You - Submission failed:', response.status, text);
       }
     } catch (error) {
       console.error('Thank You - Error submitting form:', error);

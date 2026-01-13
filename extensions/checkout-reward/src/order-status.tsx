@@ -359,6 +359,10 @@ function OrderStatusExtension() {
         console.log('Order Status - Submission succeeded; showing follow link for manual redirect');
       } else {
         console.warn('Order Status - Submission failed:', response.status, text);
+        // If it's a 401 after retry, include more payload context for debugging (no token)
+        if (response.status === 401) {
+          console.warn('Order Status - Submission 401. payload:', { shop: submissionBody.shop, mode: submissionBody.mode, orderNumber: submissionBody.orderNumber, freeGiftVariantId: submissionBody.freeGiftVariantId });
+        }
       }
     } catch (error) {
       console.error('Order Status - Error submitting form:', error);
