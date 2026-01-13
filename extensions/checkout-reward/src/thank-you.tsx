@@ -15,9 +15,9 @@ import {
 } from '@shopify/ui-extensions-react/checkout';
 
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
-import { DEFAULT_SETTINGS } from '../../../lib/defaultSettings';
+import { DEFAULT_SETTINGS, SelectedProduct } from '../../../lib/defaultSettings';
 
 interface Settings {
   enabled: boolean;
@@ -40,6 +40,7 @@ interface Settings {
   rulesTitle: string;
   rulesDescription?: string;
   giveawayRules: string[];
+  selectedProducts?: SelectedProduct[];
   formFieldLabel: string;
   submitButtonText: string;
   redirectUrl?: string;
@@ -50,14 +51,7 @@ function ThankYouExtension() {
   // const api = useApi();
   const api = useApi();
   // const orderData = useOrder();
-  console.log(" pased throug here");
-      // gid://shopify/Order/...
-console.log("API object:", api);
-console.log("Order confirmation:", api?.orderConfirmation);
-console.log(
-  "Order ID:",
-  api?.orderConfirmation?.current?.order?.id
-);
+  
   
   // Note: useOrder() is NOT available for purchase.thank-you.block.render target
   // We'll get order/customer data from API context or session token instead
@@ -169,39 +163,65 @@ console.log(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - run only on mount
 
-  // Separate effect to track impressions whenever settings are loaded and enabled
+  // Separate effect to track impressions once when settings become available & enabled
+  const impressionSentRef = useRef(false);
   useEffect(() => {
-    console.log('Thank You - useEffect triggered. Settings:', settings);
-    console.log('Thank You - Enabled:', settings?.enabled, 'Shop:', settings?.shop);
-    
+    if (impressionSentRef.current) return;
+
     if (settings?.enabled && settings?.shop) {
-      console.log('Thank You - CONDITIONS MET! Starting impression tracking for shop:', settings.shop);
-      
-      fetch(
-        `https://closer-qq8c.vercel.app/api/analytics/impressions`,
-        {
+      impressionSentRef.current = true;
+      fetch(`https://closer-qq8c.vercel.app/api/analytics/impressions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            shop: settings.shop,
-            page: 'thank-you',
-          }),
-        }
-      )
-      .then(response => {
-        console.log('Thank You - ✅ Impression tracked, status:', response.status);
-        return response.json();
-      })
-      .then(data => {
-        console.log('Thank You - ✅ SUCCESS! Impression response:', data);
-      })
-      .catch((err) => {
-        console.error('Thank You - ❌ FETCH FAILED! Error:', err);
-      });
+          body: JSON.stringify({ shop: settings.shop, page: 'thank-you' }),
+        })
+        .then((response) => {
+          // keep minimal logging
+          return response.json();
+        })
+        .then(() => {})
+        .catch(() => {});
     }
   }, [settings]); // Run whenever settings change
+
+  // Add free gift product to order in Free Gift mode (idempotent)
+  const productAddedRef = useRef(false);
+  useEffect(() => {
+    if (productAddedRef.current) return;
+    if (settings?.mode !== 'free-gift') return;
+
+    const variantId = settings?.selectedProducts?.[0]?.variantId;
+    if (!variantId) return; // nothing configured
+
+    // Order id from API context if available, otherwise fallback to earlier state
+    const apiOrderId = (api as any).order?.id || (api as any).order?.name || orderNumber;
+    if (!apiOrderId) return;
+
+    const isGid = typeof apiOrderId === 'string' && apiOrderId.startsWith('gid://');
+    const orderIdToSend = isGid ? apiOrderId : `gid://shopify/Order/${apiOrderId}`;
+
+    productAddedRef.current = true;
+
+    (async () => {
+      try {
+        const token = await sessionToken.get();
+        const addPayload = { shop: settings?.shop || '', orderId: orderIdToSend, variantId, quantity: 1 };
+
+        await fetch('https://closer-qq8c.vercel.app/api/shopify/order-add-product', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(addPayload),
+        });
+      } catch (e) {
+        // swallow errors to avoid noisy logs in production
+      }
+    })();
+  }, [settings, orderNumber, sessionToken]);
 
   const handleSubmit = async () => {
     if (!formValue.trim()) {
@@ -212,22 +232,28 @@ console.log(
       setSubmitting(true);
       const token = await sessionToken.get();
 
-      const response = await fetch(
-        `https://closer-qq8c.vercel.app/api/submissions/create`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            instaHandle: formValue,
-            customerEmail: customerEmail,
-            orderNumber: orderNumber,
-            customerId: customerId,
-          }),
-        }
-      );
+      const submissionBody: any = {
+        instaHandle: formValue,
+        customerEmail: customerEmail,
+        orderNumber: orderNumber,
+        customerId: customerId,
+        mode: settings?.mode,
+        shop: settings?.shop || shop,
+      };
+
+      if (settings?.mode === 'free-gift' && settings?.selectedProducts?.[0]) {
+        submissionBody.freeGiftProductId = settings.selectedProducts[0].id;
+        submissionBody.freeGiftVariantId = settings.selectedProducts[0].variantId;
+      }
+
+      const response = await fetch(`https://closer-qq8c.vercel.app/api/submissions/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(submissionBody),
+      });
 
       const text = await response.text();
       console.log('Thank You - submission response status:', response.status, 'body:', text);
@@ -430,7 +456,6 @@ console.log(
           </View>
 
           {/* RULES SECTION */}
-          {console.log('Thank You - Banner source set to https://closer-qq8c.vercel.app/give-away-banner.jpg')}
           <BlockStack spacing="tight" blockAlignment="center" inlineAlignment="center"  alignment="center">
             {settings.rulesTitle && (
               <Text size="medium" emphasis="bold" alignment="center">

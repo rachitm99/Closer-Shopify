@@ -19,7 +19,7 @@ import {
 
 import { useEffect, useState, useRef } from 'react';
 
-import { DEFAULT_SETTINGS } from '../../../lib/defaultSettings';
+import { DEFAULT_SETTINGS, SelectedProduct } from '../../../lib/defaultSettings';
 
 interface Settings {
   enabled: boolean;
@@ -42,6 +42,7 @@ interface Settings {
   rulesTitle: string;
   rulesDescription?: string;
   giveawayRules: string[];
+  selectedProducts?: SelectedProduct[];
   formFieldLabel: string;
   submitButtonText: string;
   redirectUrl?: string;
@@ -61,7 +62,7 @@ function OrderStatusExtension() {
   //   "Order ID:",
   //   api?.orderConfirmation?.current?.order?.id
   // );
-  const { sessionToken } = api;
+  const { sessionToken, shop } = api;
   const orderData = useOrder();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -176,6 +177,12 @@ function OrderStatusExtension() {
 
   // When we have an order id, fetch detailed order data from a secure server route
   useEffect(() => {
+    // Only run in Free Gift mode
+    if (settings?.mode !== 'free-gift') {
+      console.log('Order GraphQL - Skipping order check because mode is not free-gift:', settings?.mode);
+      return;
+    }
+
     // Only call the server when we have a valid order id (GID or numeric id)
     if (!orderNumber) return;
 
@@ -250,7 +257,7 @@ function OrderStatusExtension() {
         console.error('Order GraphQL error:', err);
       }
     })();
-  }, [orderNumber, settings?.shop, sessionToken]);
+  }, [orderNumber, settings?.shop, settings?.mode, sessionToken]);
 
   // Separate effect to track impressions whenever settings are loaded and enabled
   useEffect(() => {
@@ -295,22 +302,28 @@ function OrderStatusExtension() {
       setSubmitting(true);
       const token = await sessionToken.get();
 
-      const response = await fetch(
-        `https://closer-qq8c.vercel.app/api/submissions/create`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            instaHandle: formValue,
-            customerEmail: customerEmail,
-            orderNumber: orderNumber,
-            customerId: customerId,
-          }),
-        }
-      );
+      const submissionBody: any = {
+        instaHandle: formValue,
+        customerEmail: customerEmail,
+        orderNumber: orderNumber,
+        customerId: customerId,
+        mode: settings?.mode,
+        shop: settings?.shop || shop,
+      };
+
+      if (settings?.mode === 'free-gift' && settings?.selectedProducts?.[0]) {
+        submissionBody.freeGiftProductId = settings.selectedProducts[0].id;
+        submissionBody.freeGiftVariantId = settings.selectedProducts[0].variantId;
+      }
+
+      const response = await fetch(`https://closer-qq8c.vercel.app/api/submissions/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(submissionBody),
+      });
 
       const text = await response.text();
       console.log('Order Status - submission response status:', response.status, 'body:', text);
