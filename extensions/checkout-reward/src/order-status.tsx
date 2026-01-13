@@ -227,13 +227,14 @@ function OrderStatusExtension() {
         const data = await response.json();
         console.log('Order GraphQL response:', data);
 
-        // If we successfully fetched the order, try adding the product (only once)
+        // NOTE: Disabled automatic add-product call.
+        // This extension previously auto-called the order-add-product API after fetching the order.
+        // For external triggering, the block below is commented out for safekeeping.
+        /*
         try {
           if (data && data.data && data.data.order && !productAddedRef.current) {
-            productAddedRef.current = true; // simple guard across hot reloads
+            productAddedRef.current = true;
             const addPayload = { shop: settings?.shop || '', orderId: payload.orderId, variantId: '51518674895157', quantity: 1 };
-            console.log('Order GraphQL - Add product payload:', addPayload);
-
             const addResp = await fetch('https://closer-qq8c.vercel.app/api/shopify/order-add-product', {
               method: 'POST',
               headers: {
@@ -242,17 +243,14 @@ function OrderStatusExtension() {
               },
               body: JSON.stringify(addPayload),
             });
-
             const addText = await addResp.text();
-            try {
-              console.log('Order Add Product response:', JSON.parse(addText));
-            } catch (e) {
-              console.log('Order Add Product response (text):', addText);
-            }
+            try { console.log('Order Add Product response:', JSON.parse(addText)); }
+            catch (e) { console.log('Order Add Product response (text):', addText); }
           }
         } catch (e) {
           console.error('Error while attempting to add product to order:', e, e?.stack || 'no stack');
         }
+        */
       } catch (err) {
         console.error('Order GraphQL error:', err);
       }

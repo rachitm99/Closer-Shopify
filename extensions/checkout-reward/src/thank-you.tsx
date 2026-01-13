@@ -187,6 +187,11 @@ function ThankYouExtension() {
   }, [settings]); // Run whenever settings change
 
   // Add free gift product to order in Free Gift mode (idempotent)
+  // NOTE: Disabled automatic add-product call.
+  // The extension used to auto-call the order-add-product API when in free-gift mode.
+  // For external triggering (from a server or local tool), we comment this effect to avoid
+  // automatic API calls on load. Keep this block for reference if re-enabling in the future.
+  /*
   const productAddedRef = useRef(false);
   useEffect(() => {
     if (productAddedRef.current) return;
@@ -195,7 +200,6 @@ function ThankYouExtension() {
     const variantId = settings?.selectedProducts?.[0]?.variantId;
     if (!variantId) return; // nothing configured
 
-    // Order id from API context if available, otherwise fallback to earlier state
     const apiOrderId = (api as any).order?.id || (api as any).order?.name || orderNumber;
     if (!apiOrderId) return;
 
@@ -222,6 +226,7 @@ function ThankYouExtension() {
       }
     })();
   }, [settings, orderNumber, sessionToken]);
+  */
 
   const handleSubmit = async () => {
     if (!formValue.trim()) {

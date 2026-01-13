@@ -83,11 +83,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Missing orderId and productId/variantId in request body' });
   }
 
-  // Validate session
+  // Validate session or external token
   const session = await getSessionFromRequest(req);
-  if (!session) return res.status(401).json({ error: 'Unauthorized: missing session' });
+  const authHeader = req.headers.authorization || '';
+  const externalToken = process.env.EXTERNAL_API_TOKEN;
+  const isExternal = externalToken && authHeader === `Bearer ${externalToken}`;
+  if (!session && !isExternal) {
+    return res.status(401).json({ error: 'Unauthorized: missing session or invalid external token' });
+  }
 
-  let shop = session.shop || bodyShop;
+  let shop = (session as any)?.shop || bodyShop;
   if (shop && !shop.endsWith('.myshopify.com') && !shop.includes('.')) shop = `${shop}.myshopify.com`;
   if (!shop || !validateShopDomain(shop)) return res.status(400).json({ error: 'Invalid shop domain', shop });
 
