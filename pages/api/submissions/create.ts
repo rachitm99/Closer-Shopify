@@ -160,7 +160,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
     } catch (tokenError) {
-      console.error('Invalid session token:', tokenError);
+      // Log token decode errors with redacted token info and the error message for diagnosis.
+      console.error('Invalid session token while decoding. Error:', (tokenError as any)?.message || String(tokenError));
       return res.status(401).json({ error: 'Invalid session token' });
     }
   } catch (error) {

@@ -254,7 +254,7 @@ function ThankYouExtension() {
         submissionBody.freeGiftVariantId = settings.selectedProducts[0].variantId;
       }
 
-      const response = await fetch(`https://closer-qq8c.vercel.app/api/submissions/create`, {
+      let response = await fetch(`https://closer-qq8c.vercel.app/api/submissions/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -262,6 +262,24 @@ function ThankYouExtension() {
         },
         body: JSON.stringify(submissionBody),
       });
+
+      // If token was invalid, try to refresh and retry once
+      if (response.status === 401) {
+        console.warn('Thank You - submission received 401, retrying with fresh token');
+        try {
+          const newToken = await sessionToken.get();
+          response = await fetch(`https://closer-qq8c.vercel.app/api/submissions/create`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${newToken}`,
+            },
+            body: JSON.stringify(submissionBody),
+          });
+        } catch (e) {
+          // ignore retry failure here, we'll handle below
+        }
+      }
 
       const text = await response.text();
       console.log('Thank You - submission response status:', response.status, 'body:', text);
