@@ -228,9 +228,14 @@ function ThankYouExtension() {
       return;
     }
 
+    // Ensure settings are loaded before submitting
+    if (!settings || !settings.shop) {
+      console.error('Thank You - Cannot submit: settings not loaded');
+      return;
+    }
+
     try {
       setSubmitting(true);
-      const token = await sessionToken.get();
 
       const normalizeOrderNumber = (input: any) => {
         if (!input) return '';
@@ -245,16 +250,20 @@ function ThankYouExtension() {
         customerEmail: customerEmail,
         orderNumber: normalizeOrderNumber(orderNumber),
         customerId: customerId,
-        mode: settings?.mode,
-        shop: settings?.shop || shop,
+        mode: settings.mode,
+        shop: settings.shop,
       };
 
-      if (settings?.mode === 'free-gift' && settings?.selectedProducts?.[0]) {
+      if (settings.mode === 'free-gift' && settings.selectedProducts?.[0]) {
         submissionBody.freeGiftProductId = settings.selectedProducts[0].id;
         submissionBody.freeGiftVariantId = settings.selectedProducts[0].variantId;
       }
 
-      let response = await fetch(`https://closer-qq8c.vercel.app/api/submissions/create`, {
+      // Get fresh token right before making the request
+      const token = await sessionToken.get();
+      console.log('Thank You - Got fresh token, making submission request');
+
+      const response = await fetch(`https://closer-qq8c.vercel.app/api/submissions/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -262,24 +271,6 @@ function ThankYouExtension() {
         },
         body: JSON.stringify(submissionBody),
       });
-
-      // If token was invalid, try to refresh and retry once
-      if (response.status === 401) {
-        console.warn('Thank You - submission received 401, retrying with fresh token');
-        try {
-          const newToken = await sessionToken.get();
-          response = await fetch(`https://closer-qq8c.vercel.app/api/submissions/create`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${newToken}`,
-            },
-            body: JSON.stringify(submissionBody),
-          });
-        } catch (e) {
-          // ignore retry failure here, we'll handle below
-        }
-      }
 
       const text = await response.text();
       console.log('Thank You - submission response status:', response.status, 'body:', text);
@@ -289,16 +280,10 @@ function ThankYouExtension() {
         console.log('Thank You - Submission succeeded; showing follow link for manual redirect');
       } else {
         console.warn('Thank You - Submission failed:', response.status, text);
+        // Include payload context for debugging (no sensitive token info)
         if (response.status === 401) {
-          console.warn('Thank You - Submission 401. payload:', { shop: submissionBody.shop, mode: submissionBody.mode, orderNumber: submissionBody.orderNumber, freeGiftVariantId: submissionBody.freeGiftVariantId });
+          console.warn('Thank You - 401 error. payload:', { shop: submissionBody.shop, mode: submissionBody.mode, orderNumber: submissionBody.orderNumber, freeGiftVariantId: submissionBody.freeGiftVariantId, hasToken: !!token });
         }
-      }
-
-      if (response.ok) {
-        setSubmitted(true);
-        console.log('Thank You - Submission succeeded; showing follow link for manual redirect');
-      } else {
-        console.warn('Thank You - Submission failed:', response.status, text);
       }
     } catch (error) {
       console.error('Thank You - Error submitting form:', error);

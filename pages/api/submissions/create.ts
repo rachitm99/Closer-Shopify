@@ -38,6 +38,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Validate that API secret is configured
+  if (!process.env.SHOPIFY_API_SECRET) {
+    console.error('SHOPIFY_API_SECRET is not configured in environment variables');
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
+
   try {
     // Get session token from Authorization header
     const authHeader = req.headers.authorization;
