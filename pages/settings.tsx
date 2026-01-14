@@ -932,7 +932,7 @@ function SettingsPage() {
                       maxLength={150}
                     />
 
-                    <TextField
+                    {/* <TextField
                       label="Submitted Countdown Text"
                       value={submittedCountdownText}
                       onChange={setSubmittedCountdownText}
@@ -943,6 +943,15 @@ function SettingsPage() {
 
                     <TextField
                       label="Submitted Winner Announcement Text"
+                      value={submittedWinnerText}
+                      onChange={setSubmittedWinnerText}
+                      helpText="Winner announcement text (e.g., '🏆Winner announced on Jan 23')"
+                      autoComplete="off"
+                      maxLength={100}
+                    /> */}
+
+                    <TextField
+                      label="Submitted Social Proof Text"
                       value={submittedWinnerText}
                       onChange={setSubmittedWinnerText}
                       helpText="Winner announcement text (e.g., '🏆Winner announced on Jan 23')"
