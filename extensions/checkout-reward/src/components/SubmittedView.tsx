@@ -13,6 +13,7 @@ interface SubmittedViewProps {
     submittedSubtitle?: string;
     submittedCountdownText?: string;
     submittedFollowInstruction?: string;
+    followButtonText?: string;
     redirectUrl?: string;
   };
   remainingMs: number;
@@ -58,7 +59,7 @@ export function SubmittedView({ settings, remainingMs }: SubmittedViewProps) {
         </Text>
         {settings.redirectUrl && (
           <Link to={settings.redirectUrl} external>
-            <Button kind="secondary">Follow Us on Instagram</Button>
+            <Button kind="secondary">{settings.followButtonText || 'Follow Us on Instagram'}</Button>
           </Link>
         )}
       </BlockStack>
