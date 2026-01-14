@@ -454,155 +454,192 @@ function Onboarding() {
                 </div>
               </div>
 
-              <TextField
-                label="Popup Title"
-                value={popupTitle}
-                onChange={setPopupTitle}
-                helpText="The main title shown at the top of the popup"
-                autoComplete="off"
-                maxLength={100}
-              />
-
-              <TextField
-                label="Popup Subtitle (under title)"
-                value={subtitleTop}
-                onChange={setSubtitleTop}
-                helpText="Small subtitle shown under the popup title"
-                autoComplete="off"
-                maxLength={150}
-              />
-
-              <TextField
-                label="Footer Subtitle (below Follow button)"
-                value={subtitleBottom}
-                onChange={setSubtitleBottom}
-                helpText="Small subtitle shown under the Follow button after submission"
-                autoComplete="off"
-                maxLength={150}
-              />
-
-              <TextField
-                label="Social Proof Subtitle"
-                value={socialProofSubtitle}
-                onChange={setSocialProofSubtitle}
-                helpText={`Text shown below the footer subtitle (e.g., '${DEFAULT_SETTINGS.socialProofSubtitle}')`}
-                autoComplete="off"
-                maxLength={100}
-              />
-
-              <Divider />
-
-              <Text as="h3" variant="headingMd">
-                Post-Submission Screen
-              </Text>
-
-              <TextField
-                label="Submitted Title"
-                value={submittedTitle}
-                onChange={setSubmittedTitle}
-                helpText="Title shown after submission (e.g., '✅ You're entered!')"
-                autoComplete="off"
-                maxLength={80}
-              />
-
-              <TextField
-                label="Submitted Subtitle"
-                value={submittedSubtitle}
-                onChange={setSubmittedSubtitle}
-                helpText="Subtitle shown after submission (literal text, e.g., 'Thanks for following {{@instagramhandle}}')"
-                autoComplete="off"
-                maxLength={150}
-              />
-
-              <TextField
-                label="Submitted Countdown Text"
-                value={submittedCountdownText}
-                onChange={setSubmittedCountdownText}
-                helpText="Text before countdown on submitted screen (e.g., '🎁Giveaway ends in')"
-                autoComplete="off"
-                maxLength={80}
-              />
-
-              <TextField
-                label="Submitted Winner Announcement Text"
-                value={submittedWinnerText}
-                onChange={setSubmittedWinnerText}
-                helpText="Winner announcement text (e.g., '🏆Winner announced on Jan 23')"
-                autoComplete="off"
-                maxLength={100}
-              />
-
-              <TextField
-                label="Submitted Social Proof Text"
-                value={submittedSocialProofText}
-                onChange={setSubmittedSocialProofText}
-                helpText="Entry count text (e.g., '👥 1248 people have entered')"
-                autoComplete="off"
-                maxLength={100}
-              />
-
-              <TextField
-                label="Submitted Button Text"
-                value={followButtonText}
-                onChange={setFollowButtonText}
-                helpText="CTA button text on submitted screen (e.g., 'View us on Instagram')"
-                autoComplete="off"
-                maxLength={50}
-              />
-
-              <TextField
-                label="Form Field Label"
-                value={formFieldLabel}
-                onChange={setFormFieldLabel}
-                helpText="Label for the input where customers enter their Instagram handle"
-                autoComplete="off"
-                maxLength={50}
-              />
-
-              <div>
-                <Text as="p" variant="bodyMd" fontWeight="semibold">
-                  Countdown End Date & Time
-                </Text>
-                <Text as="p" variant="bodySm" tone="subdued">
-                  Set when the giveaway ends (countdown will show time remaining)
-                </Text>
-                <div style={{ marginTop: '8px' }}>
-                  <input
-                    type="datetime-local"
-                    value={countdownEndDate}
-                    onChange={(e) => setCountdownEndDate(e.target.value)}
-                    style={{ width: '100%', padding: '8px', borderRadius: 4, border: '1px solid #ddd', fontSize: '14px' }}
+              {mode === 'basic' ? (
+                <>
+                  <TextField
+                    label="Popup Title"
+                    value={popupTitle}
+                    onChange={setPopupTitle}
+                    helpText="The main title shown at the top of the popup"
+                    autoComplete="off"
+                    maxLength={100}
                   />
-                </div>
-              </div>
 
-              <TextField
-                label="Countdown Title"
-                value={countdownTitle}
-                onChange={setCountdownTitle}
-                helpText="Text shown above the countdown timer (e.g., '⏳ Giveaway ends in ⏳')"
-                autoComplete="off"
-                maxLength={50}
-              />
+                  <TextField
+                    label="Popup Subtitle (under title)"
+                    value={subtitleTop}
+                    onChange={setSubtitleTop}
+                    helpText="Small subtitle shown under the popup title"
+                    autoComplete="off"
+                    maxLength={150}
+                  />
 
-              <TextField
-                label="Rules Section Title"
-                value={rulesTitle}
-                onChange={setRulesTitle}
-                helpText="Title for the rules section (e.g., 'How to Enter:', 'Rules:')"
-                autoComplete="off"
-                maxLength={50}
-              />
+                  <TextField
+                    label="Footer Subtitle (below Follow button)"
+                    value={subtitleBottom}
+                    onChange={setSubtitleBottom}
+                    helpText="Small subtitle shown under the Follow button after submission"
+                    autoComplete="off"
+                    maxLength={150}
+                  />
 
-              <TextField
-                label="Rules Description"
-                value={rulesDescription}
-                onChange={setRulesDescription}
-                helpText="Short centered description shown under the rules title in the popup"
-                autoComplete="off"
-                maxLength={200}
-                multiline
-              />
+                  <div style={{ marginTop: 12 }}>
+                    <Text as="p" variant="bodySm" tone="subdued">Only the banner, popup title, and popup subtitle are shown in Basic mode.</Text>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <TextField
+                    label="Popup Title"
+                    value={popupTitle}
+                    onChange={setPopupTitle}
+                    helpText="The main title shown at the top of the popup"
+                    autoComplete="off"
+                    maxLength={100}
+                  />
+
+                  <TextField
+                    label="Popup Subtitle (under title)"
+                    value={subtitleTop}
+                    onChange={setSubtitleTop}
+                    helpText="Small subtitle shown under the popup title"
+                    autoComplete="off"
+                    maxLength={150}
+                  />
+
+                  <TextField
+                    label="Footer Subtitle (below Follow button)"
+                    value={subtitleBottom}
+                    onChange={setSubtitleBottom}
+                    helpText="Small subtitle shown under the Follow button after submission"
+                    autoComplete="off"
+                    maxLength={150}
+                  />
+
+                  <TextField
+                    label="Social Proof Subtitle"
+                    value={socialProofSubtitle}
+                    onChange={setSocialProofSubtitle}
+                    helpText={`Text shown below the footer subtitle (e.g., '${DEFAULT_SETTINGS.socialProofSubtitle}')`}
+                    autoComplete="off"
+                    maxLength={100}
+                  />
+
+                  <Divider />
+
+                  <Text as="h3" variant="headingMd">
+                    Post-Submission Screen
+                  </Text>
+
+                  <TextField
+                    label="Submitted Title"
+                    value={submittedTitle}
+                    onChange={setSubmittedTitle}
+                    helpText="Title shown after submission (e.g., '✅ You're entered!')"
+                    autoComplete="off"
+                    maxLength={80}
+                  />
+
+                  <TextField
+                    label="Submitted Subtitle"
+                    value={submittedSubtitle}
+                    onChange={setSubmittedSubtitle}
+                    helpText="Subtitle shown after submission (literal text, e.g., 'Thanks for following {{@instagramhandle}}')"
+                    autoComplete="off"
+                    maxLength={150}
+                  />
+
+                  <TextField
+                    label="Submitted Countdown Text"
+                    value={submittedCountdownText}
+                    onChange={setSubmittedCountdownText}
+                    helpText="Text before countdown on submitted screen (e.g., '🎁Giveaway ends in')"
+                    autoComplete="off"
+                    maxLength={80}
+                  />
+
+                  <TextField
+                    label="Submitted Winner Announcement Text"
+                    value={submittedWinnerText}
+                    onChange={setSubmittedWinnerText}
+                    helpText="Winner announcement text (e.g., '🏆Winner announced on Jan 23')"
+                    autoComplete="off"
+                    maxLength={100}
+                  />
+
+                  <TextField
+                    label="Submitted Social Proof Text"
+                    value={submittedSocialProofText}
+                    onChange={setSubmittedSocialProofText}
+                    helpText="Entry count text (e.g., '👥 1248 people have entered')"
+                    autoComplete="off"
+                    maxLength={100}
+                  />
+
+                  <TextField
+                    label="Submitted Button Text"
+                    value={followButtonText}
+                    onChange={setFollowButtonText}
+                    helpText="CTA button text on submitted screen (e.g., 'View us on Instagram')"
+                    autoComplete="off"
+                    maxLength={50}
+                  />
+
+                  <TextField
+                    label="Form Field Label"
+                    value={formFieldLabel}
+                    onChange={setFormFieldLabel}
+                    helpText="Label for the input where customers enter their Instagram handle"
+                    autoComplete="off"
+                    maxLength={50}
+                  />
+
+                  <div>
+                    <Text as="p" variant="bodyMd" fontWeight="semibold">
+                      Countdown End Date & Time
+                    </Text>
+                    <Text as="p" variant="bodySm" tone="subdued">
+                      Set when the giveaway ends (countdown will show time remaining)
+                    </Text>
+                    <div style={{ marginTop: '8px' }}>
+                      <input
+                        type="datetime-local"
+                        value={countdownEndDate}
+                        onChange={(e) => setCountdownEndDate(e.target.value)}
+                        style={{ width: '100%', padding: '8px', borderRadius: 4, border: '1px solid #ddd', fontSize: '14px' }}
+                      />
+                    </div>
+                  </div>
+
+                  <TextField
+                    label="Countdown Title"
+                    value={countdownTitle}
+                    onChange={setCountdownTitle}
+                    helpText="Text shown above the countdown timer (e.g., '⏳ Giveaway ends in ⏳')"
+                    autoComplete="off"
+                    maxLength={50}
+                  />
+
+                  <TextField
+                    label="Rules Section Title"
+                    value={rulesTitle}
+                    onChange={setRulesTitle}
+                    helpText="Title for the rules section (e.g., 'How to Enter:', 'Rules:')"
+                    autoComplete="off"
+                    maxLength={50}
+                  />
+
+                  <TextField
+                    label="Rules Description"
+                    value={rulesDescription}
+                    onChange={setRulesDescription}
+                    helpText="Short centered description shown under the rules title in the popup"
+                    autoComplete="off"
+                    maxLength={200}
+                    multiline
+                  />
+                </>
+              )}
 
               {/* Original giveaway rules editor (commented out for now) */}
               {/**

@@ -534,177 +534,122 @@ function SettingsPage() {
                   </div>
                 </div>
 
-                <TextField
-                  label="Popup Title"
-                  value={popupTitle}
-                  onChange={setPopupTitle}
-                  helpText="The main title shown at the top of the popup"
-                  autoComplete="off"
-                  maxLength={100}
-                />
-
-                <TextField
-                  label="Popup Subtitle (under title)"
-                  value={subtitleTop}
-                  onChange={setSubtitleTop}
-                  helpText="Small subtitle shown under the popup title"
-                  autoComplete="off"
-                  maxLength={150}
-                />
-
-                <TextField
-                  label="Rules Section Title"
-                  value={rulesTitle}
-                  onChange={setRulesTitle}
-                  helpText="Title for the rules section (e.g., 'How to Enter:', 'Rules:')"
-                  autoComplete="off"
-                  maxLength={50}
-                />
-
-                <div>
-                  <Text as="p" variant="bodyMd" fontWeight="semibold">
-                    Countdown End Date & Time
-                  </Text>
-                  <Text as="p" variant="bodySm" tone="subdued">
-                    Set when the giveaway ends (countdown will show time remaining)
-                  </Text>
-                  <div style={{ marginTop: '8px' }}>
-                    <input
-                      type="datetime-local"
-                      value={countdownEndDate}
-                      onChange={(e) => setCountdownEndDate(e.target.value)}
-                      style={{ width: '100%', padding: '8px', borderRadius: 4, border: '1px solid #ddd', fontSize: '14px' }}
+                {mode === 'basic' ? (
+                  <>
+                    <TextField
+                      label="Popup Title"
+                      value={popupTitle}
+                      onChange={setPopupTitle}
+                      helpText="The main title shown at the top of the popup"
+                      autoComplete="off"
+                      maxLength={100}
                     />
-                  </div>
-                </div>
 
-                <TextField
-                  label="Countdown Title"
-                  value={countdownTitle}
-                  onChange={setCountdownTitle}
-                  helpText="Text shown above the countdown timer (e.g., '⏳ Giveaway ends in ⏳')"
-                  autoComplete="off"
-                  maxLength={50}
-                />
+                    <TextField
+                      label="Popup Subtitle (under title)"
+                      value={subtitleTop}
+                      onChange={setSubtitleTop}
+                      helpText="Small subtitle shown under the popup title"
+                      autoComplete="off"
+                      maxLength={150}
+                    />
 
-                {/* Giveaway rules editing disabled for now. Replaced with a single description */}
-                <TextField
-                  label="Rules Description"
-                  value={rulesDescription}
-                  onChange={setRulesDescription}
-                  helpText="Short centered description shown under the rules title in the popup"
-                  autoComplete="off"
-                  maxLength={200}
-                  multiline
-                />
+                    <TextField
+                      label="Footer Subtitle (below Follow button)"
+                      value={subtitleBottom}
+                      onChange={setSubtitleBottom}
+                      helpText="Small subtitle shown under the Follow button after submission"
+                      autoComplete="off"
+                      maxLength={150}
+                    />
 
-                {/* Original giveaway rules editor (commented out for now) */}
-                {/**
-                <div>
-                  <Text as="p" variant="bodyMd" fontWeight="semibold">
-                    Giveaway Rules (List Format)
-                  </Text>
-                  <Text as="p" variant="bodySm" tone="subdued" >
-                    Add individual rule points that will be displayed as a bulleted list
-                  </Text>
-                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {giveawayRules.map((rule, index) => (
-                      <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 'bold', minWidth: '20px' }}>•</span>
-                        <input
-                          type="text"
-                          value={rule}
-                          onChange={(e) => {
-                            const newRules = [...giveawayRules];
-                            newRules[index] = e.target.value;
-                            setGiveawayRules(newRules);
-                          }}
-                          style={{
-                            flex: 1,
-                            padding: '8px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '14px'
-                          }}
-                        />
-                        <button
-                          onClick={() => {
-                            const newRules = giveawayRules.filter((_, i) => i !== index);
-                            setGiveawayRules(newRules);
-                          }}
-                          style={{
-                            padding: '8px 12px',
-                            backgroundColor: '#e74c3c',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '14px'
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                      <input
-                        type="text"
-                        value={newRule}
-                        onChange={(e) => setNewRule(e.target.value)}
-                        placeholder="Add new rule..."
-                        style={{
-                          flex: 1,
-                          padding: '8px',
-                          border: '1px solid #ddd',
-                          borderRadius: '4px',
-                          fontSize: '14px'
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter' && newRule.trim()) {
-                            setGiveawayRules([...giveawayRules, newRule.trim()]);
-                            setNewRule('');
-                          }
-                        }}
-                      />
-                      <button
-                        onClick={() => {
-                          if (newRule.trim()) {
-                            setGiveawayRules([...giveawayRules, newRule.trim()]);
-                            setNewRule('');
-                          }
-                        }}
-                        style={{
-                          padding: '8px 16px',
-                          backgroundColor: '#008060',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '14px'
-                        }}
-                      >
-                        Add Rule
-                      </button>
+                    <div style={{ marginTop: 12 }}>
+                      <Text as="p" variant="bodySm" tone="subdued">Only the banner, popup title, and popup subtitle are shown in Basic mode.</Text>
                     </div>
-                  </div>
-                </div>
-                */}
+                  </>
+                ) : (
+                  <>
+                    <TextField
+                      label="Popup Title"
+                      value={popupTitle}
+                      onChange={setPopupTitle}
+                      helpText="The main title shown at the top of the popup"
+                      autoComplete="off"
+                      maxLength={100}
+                    />
 
-                <TextField
-                  label="Submit Button Text"
-                  value={submitButtonText}
-                  onChange={setSubmitButtonText}
-                  helpText="Text displayed on the submit button"
-                  autoComplete="off"
-                  maxLength={50}
-                />
+                    <TextField
+                      label="Popup Subtitle (under title)"
+                      value={subtitleTop}
+                      onChange={setSubtitleTop}
+                      helpText="Small subtitle shown under the popup title"
+                      autoComplete="off"
+                      maxLength={150}
+                    />
 
-                <Divider />
+                    <TextField
+                      label="Rules Section Title"
+                      value={rulesTitle}
+                      onChange={setRulesTitle}
+                      helpText="Title for the rules section (e.g., 'How to Enter:', 'Rules:')"
+                      autoComplete="off"
+                      maxLength={50}
+                    />
 
-                {/* Product Selection Section */}
-                <Text as="h3" variant="headingMd">
-                  Free Gift Product
-                </Text>
+                    <div>
+                      <Text as="p" variant="bodyMd" fontWeight="semibold">
+                        Countdown End Date & Time
+                      </Text>
+                      <Text as="p" variant="bodySm" tone="subdued">
+                        Set when the giveaway ends (countdown will show time remaining)
+                      </Text>
+                      <div style={{ marginTop: '8px' }}>
+                        <input
+                          type="datetime-local"
+                          value={countdownEndDate}
+                          onChange={(e) => setCountdownEndDate(e.target.value)}
+                          style={{ width: '100%', padding: '8px', borderRadius: 4, border: '1px solid #ddd', fontSize: '14px' }}
+                        />
+                      </div>
+                    </div>
+
+                    <TextField
+                      label="Countdown Title"
+                      value={countdownTitle}
+                      onChange={setCountdownTitle}
+                      helpText="Text shown above the countdown timer (e.g., '⏳ Giveaway ends in ⏳')"
+                      autoComplete="off"
+                      maxLength={50}
+                    />
+
+                    {/* Giveaway rules editing disabled for now. Replaced with a single description */}
+                    <TextField
+                      label="Rules Description"
+                      value={rulesDescription}
+                      onChange={setRulesDescription}
+                      helpText="Short centered description shown under the rules title in the popup"
+                      autoComplete="off"
+                      maxLength={200}
+                      multiline
+                    />
+
+                    <TextField
+                      label="Submit Button Text"
+                      value={submitButtonText}
+                      onChange={setSubmitButtonText}
+                      helpText="Text displayed on the submit button"
+                      autoComplete="off"
+                      maxLength={50}
+                    />
+
+                    <Divider />
+
+                    {/* Product Selection Section */}
+                    <Text as="h3" variant="headingMd">
+                      Free Gift Product
+                    </Text>
+                  </>
+                )}
                 <Text as="p" variant="bodySm" tone="subdued">
                   Choose a product to offer as a free gift. Select the specific variant you want to give away.
                 </Text>

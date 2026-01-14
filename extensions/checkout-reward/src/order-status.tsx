@@ -382,97 +382,142 @@ function OrderStatusExtension() {
       {/* HEADER — Only show when not submitted */}
       {!submitted && (
         <>
-          <BlockStack
-            spacing="base"
-            blockAlignment="center"
-            inlineAlignment="center"
-          >
-            {/* TITLE */}
-            <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
-              {settings.popupTitle && (
-                <Text
-                  size="large"
-                  emphasis="bold"
-                  alignment="center"
-                  blockAlignment="center"
-                >
-                  {settings.popupTitle}
-                </Text>
-              )}
+          {settings?.mode === 'basic' ? (
+            <>
+              <BlockStack
+                spacing="base"
+                blockAlignment="center"
+                inlineAlignment="center"
+              >
+                {/* TITLE */}
+                <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+                  {settings.popupTitle && (
+                    <Text
+                      size="large"
+                      emphasis="bold"
+                      alignment="center"
+                      blockAlignment="center"
+                    >
+                      {settings.popupTitle}
+                    </Text>
+                  )}
 
-              {settings.subtitleTop && (
-                <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 6 }}>
-                  <Text size="small" appearance="subdued" inlineAlignment="center" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
-                </View>
-              )}
-            </BlockStack>
-          </BlockStack>
-
-          <Divider />
-
-          {/* Banner - full width */}
-          <View cornerRadius="none" padding="none">
-            <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
-              <Image
-                source={settings?.bannerUrl || "https://closer-qq8c.vercel.app/give-away-banner.jpg"}
-                alt="Giveaway Banner"
-                fit="cover"
-              />
-            </BlockStack>
-          </View>
-
-          {/* Countdown Timer */}
-          <View padding="tight" cornerRadius="base" background="surface">
-            <BlockStack spacing="tight" inlineAlignment="center">
-              {(() => {
-                const totalSeconds = Math.floor(remainingMs / 1000);
-                const seconds = totalSeconds % 60;
-                const totalMinutes = Math.floor(totalSeconds / 60);
-                const minutes = totalMinutes % 60;
-                const totalHours = Math.floor(totalMinutes / 60);
-                const hours = totalHours % 24;
-                const days = Math.floor(totalHours / 24);
-                const pad = (n: number) => String(n).padStart(2, '0');
-                const formatted = `${pad(days)}d : ${pad(hours)}h : ${pad(minutes)}m`;
-
-                return (
-                  <View style={{ display: 'inline-block', textAlign: 'center' }}>
-                    <View style={{ display: 'block', marginBottom: 6 }}>
-                      <View style={{ display: 'block', width: '100%', textAlign: 'center' }}>
-                        <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{settings.countdownTitle || DEFAULT_SETTINGS.countdownTitle}</Text>
-                      </View>
-                      <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
-                        <View style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: 12 }}>
-                          <Text size="large" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{formatted}</Text>
-                        </View>
-                      </BlockStack>
+                  {settings.subtitleTop && (
+                    <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 6 }}>
+                      <Text size="small" appearance="subdued" inlineAlignment="center" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
                     </View>
-                  </View>
-                );
-              })()}
-            </BlockStack>
-          </View>
+                  )}
+                </BlockStack>
+              </BlockStack>
 
-          {/* RULES SECTION */}
-          {console.log('Order Status - Banner source set to https://closer-qq8c.vercel.app/give-away-banner.jpg')}
-          <BlockStack spacing="tight" blockAlignment="center" inlineAlignment="center"  alignment="center">
-            {settings.rulesTitle && (
-              <Text size="medium" emphasis="bold" alignment="center">
-                {settings.rulesTitle}
-              </Text>
-            )}
+              <Divider />
 
-            {settings.rulesDescription && (
-              <Text size="small" appearance="subdued" alignment="center" style={{ marginTop: 8 }}>
-                {settings.rulesDescription}
-              </Text>
-            )}
-          </BlockStack>
+              {/* Banner - full width */}
+              <View cornerRadius="none" padding="none">
+                <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+                  <Image
+                    source={settings?.bannerUrl || "https://closer-qq8c.vercel.app/give-away-banner.jpg"}
+                    alt="Giveaway Banner"
+                    fit="cover"
+                  />
+                </BlockStack>
+              </View>
+            </>
+          ) : (
+            <>
+              <BlockStack
+                spacing="base"
+                blockAlignment="center"
+                inlineAlignment="center"
+              >
+                {/* TITLE */}
+                <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+                  {settings.popupTitle && (
+                    <Text
+                      size="large"
+                      emphasis="bold"
+                      alignment="center"
+                      blockAlignment="center"
+                    >
+                      {settings.popupTitle}
+                    </Text>
+                  )}
+
+                  {settings.subtitleTop && (
+                    <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 6 }}>
+                      <Text size="small" appearance="subdued" inlineAlignment="center" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
+                    </View>
+                  )}
+                </BlockStack>
+              </BlockStack>
+
+              <Divider />
+
+              {/* Banner - full width */}
+              <View cornerRadius="none" padding="none">
+                <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+                  <Image
+                    source={settings?.bannerUrl || "https://closer-qq8c.vercel.app/give-away-banner.jpg"}
+                    alt="Giveaway Banner"
+                    fit="cover"
+                  />
+                </BlockStack>
+              </View>
+
+              {/* Countdown Timer */}
+              <View padding="tight" cornerRadius="base" background="surface">
+                <BlockStack spacing="tight" inlineAlignment="center">
+                  {(() => {
+                    const totalSeconds = Math.floor(remainingMs / 1000);
+                    const seconds = totalSeconds % 60;
+                    const totalMinutes = Math.floor(totalSeconds / 60);
+                    const minutes = totalMinutes % 60;
+                    const totalHours = Math.floor(totalMinutes / 60);
+                    const hours = totalHours % 24;
+                    const days = Math.floor(totalHours / 24);
+                    const pad = (n: number) => String(n).padStart(2, '0');
+                    const formatted = `${pad(days)}d : ${pad(hours)}h : ${pad(minutes)}m`;
+
+                    return (
+                      <View style={{ display: 'inline-block', textAlign: 'center' }}>
+                        <View style={{ display: 'block', marginBottom: 6 }}>
+                          <View style={{ display: 'block', width: '100%', textAlign: 'center' }}>
+                            <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{settings.countdownTitle || DEFAULT_SETTINGS.countdownTitle}</Text>
+                          </View>
+                          <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+                            <View style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: 12 }}>
+                              <Text size="large" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{formatted}</Text>
+                            </View>
+                          </BlockStack>
+                        </View>
+                      </View>
+                    );
+                  })()}
+                </BlockStack>
+              </View>
+
+              {/* RULES SECTION */}
+              {console.log('Order Status - Banner source set to https://closer-qq8c.vercel.app/give-away-banner.jpg')}
+              <BlockStack spacing="tight" blockAlignment="center" inlineAlignment="center"  alignment="center">
+                {settings.rulesTitle && (
+                  <Text size="medium" emphasis="bold" alignment="center">
+                    {settings.rulesTitle}
+                  </Text>
+                )}
+
+                {settings.rulesDescription && (
+                  <Text size="small" appearance="subdued" alignment="center" style={{ marginTop: 8 }}>
+                    {settings.rulesDescription}
+                  </Text>
+                )}
+              </BlockStack>
+            </>
+          )}
         </>
       )}
 
       {/* FORM */}
-      {!submitted ? (
+      {(!submitted && settings?.mode !== 'basic') ? (
         <BlockStack spacing="loose">
           {settings.formFieldLabel && (
             <TextField
