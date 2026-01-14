@@ -942,15 +942,6 @@ function Onboarding() {
                     maxLength={100}
                   />
 
-                  {/* <TextField
-                    label="Submitted Social Proof Text"
-                    value={submittedSocialProofText}
-                    onChange={setSubmittedSocialProofText}
-                    helpText="Entry count text"
-                    autoComplete="off"
-                    maxLength={100}
-                  /> */}
-
                   <TextField
                     label="Submitted Button Text"
                     value={followButtonText}

@@ -950,15 +950,6 @@ function SettingsPage() {
                       maxLength={100}
                     /> */}
 
-                    <TextField
-                      label="Submitted Social Proof Text"
-                      value={submittedWinnerText}
-                      onChange={setSubmittedWinnerText}
-                      helpText="Winner announcement text (e.g., '🏆Winner announced on Jan 23')"
-                      autoComplete="off"
-                      maxLength={100}
-                    />
-
                     {/* <TextField
                       label="Submitted Social Proof Text"
                       value={submittedSocialProofText}
