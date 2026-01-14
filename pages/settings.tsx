@@ -554,20 +554,13 @@ function SettingsPage() {
                       maxLength={150}
                     />
 
-                    <TextField
-                      label="Footer Subtitle (below Follow button)"
-                      value={subtitleBottom}
-                      onChange={setSubtitleBottom}
-                      helpText="Small subtitle shown under the Follow button after submission"
-                      autoComplete="off"
-                      maxLength={150}
-                    />
-
                     <div style={{ marginTop: 12 }}>
-                      <Text as="p" variant="bodySm" tone="subdued">Only the banner, popup title, and popup subtitle are shown in Basic mode.</Text>
+                      <Text as="p" variant="bodySm" tone="subdued">Basic mode only displays the banner image, popup title, and popup subtitle.</Text>
                     </div>
                   </>
-                ) : (
+                ) : null}
+
+                {mode === 'giveaway' && (
                   <>
                     <TextField
                       label="Popup Title"
@@ -641,269 +634,282 @@ function SettingsPage() {
                       autoComplete="off"
                       maxLength={50}
                     />
+                  </>
+                )}
 
+                {/* Free Gift Product Section - Only for free-gift mode */}
+                {mode === 'free-gift' && (
+                  <>
                     <Divider />
 
-                    {/* Product Selection Section */}
                     <Text as="h3" variant="headingMd">
                       Free Gift Product
                     </Text>
-                  </>
-                )}
-                <Text as="p" variant="bodySm" tone="subdued">
-                  Choose a product to offer as a free gift. Select the specific variant you want to give away.
-                </Text>
+                    <Text as="p" variant="bodySm" tone="subdued">
+                      Choose a product to offer as a free gift. Select the specific variant you want to give away.
+                    </Text>
 
-                {/* Display selected products */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
-                  {selectedProducts.map((product, index) => (
-                    <div key={product.id + product.variantId} style={{ 
-                      display: 'flex', 
-                      gap: '12px', 
-                      padding: '12px', 
-                      border: '1px solid #e1e3e5', 
-                      borderRadius: '8px',
-                      alignItems: 'center'
-                    }}>
-                      {product.image && (
-                        <img 
-                          src={product.image} 
-                          alt={product.title}
-                          style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '4px' }}
-                        />
-                      )}
-                      <div style={{ flex: 1 }}>
-                        <Text as="p" variant="bodyMd" fontWeight="semibold">
-                          {product.title}
-                        </Text>
-                        {product.variantTitle && product.variantTitle !== 'Default Title' && (
-                          <Text as="p" variant="bodySm" tone="subdued">
-                            Variant: {product.variantTitle}
-                          </Text>
-                        )}
-                        {product.price && (
-                          <Text as="p" variant="bodySm" tone="subdued">
-                            Price: ${product.price}
-                          </Text>
-                        )}
-                      </div>
-                      <Button
-                        tone="critical"
-                        onClick={() => {
-                          setSelectedProducts(selectedProducts.filter((_, i) => i !== index));
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-
-                  {selectedProducts.length < 1 && (
-                    <div>
-                      <Button
-                        onClick={async () => {
-                          setShowProductPicker(true);
-                          setLoadingProducts(true);
-                          try {
-                            const response = await authFetch('/api/shopify/products?limit=50');
-                            const data = await response.json();
-                            setAvailableProducts(data.products || []);
-                          } catch (error) {
-                            console.error('Failed to load products:', error);
-                            setError('Failed to load products');
-                          } finally {
-                            setLoadingProducts(false);
-                          }
-                        }}
-                      >
-                        Select Free Gift Product
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Product picker modal */}
-                  {showProductPicker && (
-                    <div style={{ 
-                      marginTop: '12px', 
-                      padding: '16px', 
-                      border: '2px solid #005bd3', 
-                      borderRadius: '8px',
-                      backgroundColor: '#f6f6f7',
-                      maxHeight: '400px',
-                      overflowY: 'auto'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <Text as="h4" variant="headingSm">
-                          {loadingProducts ? 'Loading products...' : 'Choose a product'}
-                        </Text>
-                        <Button
-                          onClick={() => {
-                            setShowProductPicker(false);
-                            setAvailableProducts([]);
-                          }}
-                        >
-                          Close
-                        </Button>
-                      </div>
-
-                      {!loadingProducts && availableProducts.map((product) => (
-                        <div key={product.id} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #e1e3e5' }}>
-                          <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
-                            {product.image && (
-                              <img 
-                                src={product.image} 
-                                alt={product.title}
-                                style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
-                              />
-                            )}
+                    {/* Display selected products */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+                      {selectedProducts.map((product, index) => (
+                        <div key={product.id + product.variantId} style={{ 
+                          display: 'flex', 
+                          gap: '12px', 
+                          padding: '12px', 
+                          border: '1px solid #e1e3e5', 
+                          borderRadius: '8px',
+                          alignItems: 'center'
+                        }}>
+                          {product.image && (
+                            <img 
+                              src={product.image} 
+                              alt={product.title}
+                              style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '4px' }}
+                            />
+                          )}
+                          <div style={{ flex: 1 }}>
                             <Text as="p" variant="bodyMd" fontWeight="semibold">
                               {product.title}
                             </Text>
+                            {product.variantTitle && product.variantTitle !== 'Default Title' && (
+                              <Text as="p" variant="bodySm" tone="subdued">
+                                Variant: {product.variantTitle}
+                              </Text>
+                            )}
+                            {product.price && (
+                              <Text as="p" variant="bodySm" tone="subdued">
+                                Price: ${product.price}
+                              </Text>
+                            )}
                           </div>
-
-                          {/* Variant selection */}
-                          <div style={{ marginLeft: '62px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {product.variants?.map((variant: any) => (
-                              <div key={variant.id} style={{ 
-                                display: 'flex', 
-                                justifyContent: 'space-between', 
-                                alignItems: 'center',
-                                padding: '8px',
-                                backgroundColor: 'white',
-                                borderRadius: '4px'
-                              }}>
-                                <div>
-                                  <Text as="span" variant="bodySm">
-                                    {variant.title !== 'Default Title' ? variant.title : 'Single variant'}
-                                  </Text>
-                                  <Text as="span" variant="bodySm" tone="subdued">
-                                    {' '}• ${variant.price}
-                                  </Text>
-                                  {!variant.available && (
-                                    <Text as="span" variant="bodySm" tone="critical">
-                                      {' '}(Out of stock)
-                                    </Text>
-                                  )}
-                                </div>
-                                <Button
-                                  size="slim"
-                                  disabled={selectedProducts.length >= 1 || selectedProducts.some(p => p.id === product.id && p.variantId === variant.id)}
-                                  onClick={() => {
-                                    const newProduct: SelectedProduct = {
-                                      id: product.id,
-                                      variantId: variant.id,
-                                      title: product.title,
-                                      variantTitle: variant.title,
-                                      image: product.image,
-                                      price: variant.price
-                                    };
-                                    setSelectedProducts([...selectedProducts, newProduct]);
-                                    
-                                    // Close modal immediately after selecting 1 product
-                                    setShowProductPicker(false);
-                                    setAvailableProducts([]);
-                                  }}
-                                >
-                                  {selectedProducts.some(p => p.id === product.id && p.variantId === variant.id) ? 'Selected' : 'Select'}
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
+                          <Button
+                            tone="critical"
+                            onClick={() => {
+                              setSelectedProducts(selectedProducts.filter((_, i) => i !== index));
+                            }}
+                          >
+                            Remove
+                          </Button>
                         </div>
                       ))}
+
+                      {selectedProducts.length < 1 && (
+                        <div>
+                          <Button
+                            onClick={async () => {
+                              setShowProductPicker(true);
+                              setLoadingProducts(true);
+                              try {
+                                const response = await authFetch('/api/shopify/products?limit=50');
+                                const data = await response.json();
+                                setAvailableProducts(data.products || []);
+                              } catch (error) {
+                                console.error('Failed to load products:', error);
+                                setError('Failed to load products');
+                              } finally {
+                                setLoadingProducts(false);
+                              }
+                            }}
+                          >
+                            Select Free Gift Product
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Product picker modal */}
+                      {showProductPicker && (
+                        <div style={{ 
+                          marginTop: '12px', 
+                          padding: '16px', 
+                          border: '2px solid #005bd3', 
+                          borderRadius: '8px',
+                          backgroundColor: '#f6f6f7',
+                          maxHeight: '400px',
+                          overflowY: 'auto'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                            <Text as="h4" variant="headingSm">
+                              {loadingProducts ? 'Loading products...' : 'Choose a product'}
+                            </Text>
+                            <Button
+                              onClick={() => {
+                                setShowProductPicker(false);
+                                setAvailableProducts([]);
+                              }}
+                            >
+                              Close
+                            </Button>
+                          </div>
+
+                          {!loadingProducts && availableProducts.map((product) => (
+                            <div key={product.id} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #e1e3e5' }}>
+                              <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
+                                {product.image && (
+                                  <img 
+                                    src={product.image} 
+                                    alt={product.title}
+                                    style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
+                                  />
+                                )}
+                                <Text as="p" variant="bodyMd" fontWeight="semibold">
+                                  {product.title}
+                                </Text>
+                              </div>
+
+                              {/* Variant selection */}
+                              <div style={{ marginLeft: '62px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {product.variants?.map((variant: any) => (
+                                  <div key={variant.id} style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between', 
+                                    alignItems: 'center',
+                                    padding: '8px',
+                                    backgroundColor: 'white',
+                                    borderRadius: '4px'
+                                  }}>
+                                    <div>
+                                      <Text as="span" variant="bodySm">
+                                        {variant.title !== 'Default Title' ? variant.title : 'Single variant'}
+                                      </Text>
+                                      <Text as="span" variant="bodySm" tone="subdued">
+                                        {' '}• ${variant.price}
+                                      </Text>
+                                      {!variant.available && (
+                                        <Text as="span" variant="bodySm" tone="critical">
+                                          {' '}(Out of stock)
+                                        </Text>
+                                      )}
+                                    </div>
+                                    <Button
+                                      size="slim"
+                                      disabled={selectedProducts.length >= 1 || selectedProducts.some(p => p.id === product.id && p.variantId === variant.id)}
+                                      onClick={() => {
+                                        const newProduct: SelectedProduct = {
+                                          id: product.id,
+                                          variantId: variant.id,
+                                          title: product.title,
+                                          variantTitle: variant.title,
+                                          image: product.image,
+                                          price: variant.price
+                                        };
+                                        setSelectedProducts([...selectedProducts, newProduct]);
+                                        
+                                        // Close modal immediately after selecting 1 product
+                                        setShowProductPicker(false);
+                                        setAvailableProducts([]);
+                                      }}
+                                    >
+                                      {selectedProducts.some(p => p.id === product.id && p.variantId === variant.id) ? 'Selected' : 'Select'}
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </>
+                )}
 
-                <Divider />
+                {/* Common fields shown for giveaway and free-gift modes */}
+                {mode !== 'basic' && (
+                  <>
+                    <Divider />
 
-                <TextField
-                  label="Footer Subtitle (below Follow button)"
-                  value={subtitleBottom}
-                  onChange={setSubtitleBottom}
-                  helpText="Small subtitle shown under the Follow button after submission"
-                  autoComplete="off"
-                  maxLength={150}
-                />
+                    <TextField
+                      label="Footer Subtitle (below Follow button)"
+                      value={subtitleBottom}
+                      onChange={setSubtitleBottom}
+                      helpText="Small subtitle shown under the Follow button after submission"
+                      autoComplete="off"
+                      maxLength={150}
+                    />
 
-                <TextField
-                  label="Social Proof Subtitle"
-                  value={socialProofSubtitle}
-                  onChange={setSocialProofSubtitle}
-                  helpText={`Text shown below the footer subtitle (e.g., '${DEFAULT_SETTINGS.socialProofSubtitle}')`}
-                  autoComplete="off"
-                  maxLength={100}
-                />
+                    <TextField
+                      label="Social Proof Subtitle"
+                      value={socialProofSubtitle}
+                      onChange={setSocialProofSubtitle}
+                      helpText={`Text shown below the footer subtitle (e.g., '${DEFAULT_SETTINGS.socialProofSubtitle}')`}
+                      autoComplete="off"
+                      maxLength={100}
+                    />
 
-                <TextField
-                  label="Your Instagram Profile URL"
-                  value={redirectUrl}
-                  onChange={setRedirectUrl}
-                  helpText="Your Instagram profile link (users will be redirected here after submission)"
-                  autoComplete="off"
-                  placeholder="https://instagram.com/yourprofile"
-                  requiredIndicator
-                />
+                    <TextField
+                      label="Your Instagram Profile URL"
+                      value={redirectUrl}
+                      onChange={setRedirectUrl}
+                      helpText="Your Instagram profile link (users will be redirected here after submission)"
+                      autoComplete="off"
+                      placeholder="https://instagram.com/yourprofile"
+                      requiredIndicator
+                    />
+                  </>
+                )}
 
-                <Divider />
+                {mode !== 'basic' && <Divider />}
 
-                <Text as="h3" variant="headingMd">
-                  Post-Submission Screen
-                </Text>
+                {mode !== 'basic' && (
+                  <>
+                    <Text as="h3" variant="headingMd">
+                      Post-Submission Screen
+                    </Text>
 
-                <TextField
-                  label="Submitted Title"
-                  value={submittedTitle}
-                  onChange={setSubmittedTitle}
-                  helpText="Title shown after submission (e.g., '✅ You're entered!')"
-                  autoComplete="off"
-                  maxLength={80}
-                />
+                    <TextField
+                      label="Submitted Title"
+                      value={submittedTitle}
+                      onChange={setSubmittedTitle}
+                      helpText="Title shown after submission (e.g., '✅ You're entered!')"
+                      autoComplete="off"
+                      maxLength={80}
+                    />
 
-                <TextField
-                  label="Submitted Subtitle"
-                  value={submittedSubtitle}
-                  onChange={setSubmittedSubtitle}
-                  helpText="Subtitle shown after submission (literal text, e.g., 'Thanks for following {{@instagramhandle}}')"
-                  autoComplete="off"
-                  maxLength={150}
-                />
+                    <TextField
+                      label="Submitted Subtitle"
+                      value={submittedSubtitle}
+                      onChange={setSubmittedSubtitle}
+                      helpText="Subtitle shown after submission (literal text, e.g., 'Thanks for following {{@instagramhandle}}')"
+                      autoComplete="off"
+                      maxLength={150}
+                    />
 
-                <TextField
-                  label="Submitted Countdown Text"
-                  value={submittedCountdownText}
-                  onChange={setSubmittedCountdownText}
-                  helpText="Text before countdown on submitted screen (e.g., '🎁Giveaway ends in')"
-                  autoComplete="off"
-                  maxLength={80}
-                />
+                    <TextField
+                      label="Submitted Countdown Text"
+                      value={submittedCountdownText}
+                      onChange={setSubmittedCountdownText}
+                      helpText="Text before countdown on submitted screen (e.g., '🎁Giveaway ends in')"
+                      autoComplete="off"
+                      maxLength={80}
+                    />
 
-                <TextField
-                  label="Submitted Winner Announcement Text"
-                  value={submittedWinnerText}
-                  onChange={setSubmittedWinnerText}
-                  helpText="Winner announcement text (e.g., '🏆Winner announced on Jan 23')"
-                  autoComplete="off"
-                  maxLength={100}
-                />
+                    <TextField
+                      label="Submitted Winner Announcement Text"
+                      value={submittedWinnerText}
+                      onChange={setSubmittedWinnerText}
+                      helpText="Winner announcement text (e.g., '🏆Winner announced on Jan 23')"
+                      autoComplete="off"
+                      maxLength={100}
+                    />
 
-                <TextField
-                  label="Submitted Social Proof Text"
-                  value={submittedSocialProofText}
-                  onChange={setSubmittedSocialProofText}
-                  helpText="Entry count text (e.g., '👥 1248 people have entered')"
-                  autoComplete="off"
-                  maxLength={100}
-                />
+                    <TextField
+                      label="Submitted Social Proof Text"
+                      value={submittedSocialProofText}
+                      onChange={setSubmittedSocialProofText}
+                      helpText="Entry count text (e.g., '👥 1248 people have entered')"
+                      autoComplete="off"
+                      maxLength={100}
+                    />
 
-                <TextField
-                  label="Submitted Button Text"
-                  value={followButtonText}
-                  onChange={setFollowButtonText}
-                  helpText="CTA button text on submitted screen (e.g., 'View us on Instagram')"
-                  autoComplete="off"
-                  maxLength={50}
-                />
+                    <TextField
+                      label="Submitted Button Text"
+                      value={followButtonText}
+                      onChange={setFollowButtonText}
+                      helpText="CTA button text on submitted screen (e.g., 'View us on Instagram')"
+                      autoComplete="off"
+                      maxLength={50}
+                    />
+                  </>
+                )}
 
                 <div>
                   <button
