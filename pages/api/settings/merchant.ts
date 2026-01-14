@@ -155,6 +155,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           bannerUrl,
           countdownEndDate,
           countdownTitle,
+          couponCode,
+          couponCodeTitle,
           popupTitle,
           subtitleTop,
           subtitleBottom,
@@ -201,6 +203,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (bannerUrl !== undefined) updateData.bannerUrl = bannerUrl;
         if (countdownEndDate !== undefined) updateData.countdownEndDate = countdownEndDate;
         if (countdownTitle !== undefined) updateData.countdownTitle = countdownTitle;
+        if (couponCode !== undefined) updateData.couponCode = couponCode;
+        if (couponCodeTitle !== undefined) updateData.couponCodeTitle = couponCodeTitle;
         if (submittedTitle !== undefined) updateData.submittedTitle = submittedTitle;
         if (submittedSubtitle !== undefined) updateData.submittedSubtitle = submittedSubtitle;
         if (submittedCountdownText !== undefined) updateData.submittedCountdownText = submittedCountdownText;
