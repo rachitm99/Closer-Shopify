@@ -86,7 +86,7 @@ export function GiveawayModeView({
 
             return (
               <View style={{ display: 'inline-block', textAlign: 'center' }}>
-                <View style={{ display: 'block', marginBottom: 6 }}>
+                {/* <View style={{ display: 'block', marginBottom: 6 }}>
                   <View style={{ display: 'block', width: '100%', textAlign: 'center' }}>
                     <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>
                       {settings.countdownTitle || 'Giveaway Ends In'}
@@ -100,7 +100,7 @@ export function GiveawayModeView({
                       </Text>
                     </View>
                   </BlockStack>
-                </View>
+                </View> */}
               </View>
             );
           })()}
@@ -163,13 +163,13 @@ export function GiveawayModeView({
               </Text>
             </View>
           )}
-          {settings.socialProofSubtitle && (
+          {/* {settings.socialProofSubtitle && (
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
               <Text size="small" emphasis="bold" alignment="center" style={{ textAlign: 'center' }}>
                 {settings.socialProofSubtitle}
               </Text>
             </View>
-          )}
+          )} */}
         </BlockStack>
       </BlockStack>
     </>

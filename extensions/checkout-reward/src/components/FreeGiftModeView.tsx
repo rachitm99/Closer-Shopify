@@ -116,13 +116,13 @@ export function FreeGiftModeView({
               </Text>
             </View>
           )}
-          {settings.socialProofSubtitle && (
+          {/* {settings.socialProofSubtitle && (
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
               <Text size="small" emphasis="bold" alignment="center" style={{ textAlign: 'center' }}>
                 {settings.socialProofSubtitle}
               </Text>
             </View>
-          )}
+          )} */
         </BlockStack>
       </BlockStack>
     </>

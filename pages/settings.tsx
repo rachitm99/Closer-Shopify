@@ -589,7 +589,7 @@ function SettingsPage() {
                       maxLength={50}
                     />
 
-                    <div>
+                    {/* <div>
                       <Text as="p" variant="bodyMd" fontWeight="semibold">
                         Countdown End Date & Time
                       </Text>
@@ -613,7 +613,7 @@ function SettingsPage() {
                       helpText="Text shown above the countdown timer (e.g., '⏳ Giveaway ends in ⏳')"
                       autoComplete="off"
                       maxLength={50}
-                    />
+                    /> */}
 
                     {/* Giveaway rules editing disabled for now. Replaced with a single description */}
                     <TextField
@@ -826,14 +826,14 @@ function SettingsPage() {
                       maxLength={150}
                     />
 
-                    <TextField
+                    {/* <TextField
                       label="Social Proof Subtitle"
                       value={socialProofSubtitle}
                       onChange={setSocialProofSubtitle}
                       helpText={`Text shown below the footer subtitle (e.g., '${DEFAULT_SETTINGS.socialProofSubtitle}')`}
                       autoComplete="off"
                       maxLength={100}
-                    />
+                    /> */}
 
                     <TextField
                       label="Your Instagram Profile URL"
