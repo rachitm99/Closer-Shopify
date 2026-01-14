@@ -864,14 +864,14 @@ function Onboarding() {
                     maxLength={150}
                   />
 
-                  <TextField
+                  {/* <TextField
                     label="Social Proof Subtitle"
                     value={socialProofSubtitle}
                     onChange={setSocialProofSubtitle}
                     helpText={`Text shown below the footer subtitle (e.g., '${DEFAULT_SETTINGS.socialProofSubtitle}')`}
                     autoComplete="off"
                     maxLength={100}
-                  />
+                  /> */}
 
                   <TextField
                     label="Form Field Label"
