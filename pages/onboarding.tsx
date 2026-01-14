@@ -636,14 +636,14 @@ function Onboarding() {
                     maxLength={100}
                   />
 
-                  <TextField
+                  {/* <TextField
                     label="Submitted Social Proof Text"
                     value={submittedSocialProofText}
                     onChange={setSubmittedSocialProofText}
                     helpText="Entry count text (e.g., '👥 1248 people have entered')"
                     autoComplete="off"
                     maxLength={100}
-                  />
+                  /> */}
 
                   <TextField
                     label="Submitted Button Text"
@@ -942,14 +942,14 @@ function Onboarding() {
                     maxLength={100}
                   />
 
-                  <TextField
+                  {/* <TextField
                     label="Submitted Social Proof Text"
                     value={submittedSocialProofText}
                     onChange={setSubmittedSocialProofText}
                     helpText="Entry count text"
                     autoComplete="off"
                     maxLength={100}
-                  />
+                  /> */}
 
                   <TextField
                     label="Submitted Button Text"
