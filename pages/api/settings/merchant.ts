@@ -76,6 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
 
           // Backward compatibility for subtitle fields: older docs may use `subtitle`
+          // Only apply these migrations, don't fill in defaults for existing documents
           if (data) {
             if (!data.subtitleTop && data.subtitle) {
               data.subtitleTop = data.subtitle;
@@ -83,18 +84,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!data.subtitleBottom && data.subtitle) {
               data.subtitleBottom = data.subtitle;
             }
-            // Ensure both keys exist (even if empty) and provide sensible defaults from centralized defaults
-            data.subtitleTop = data.subtitleTop || DEFAULT_SETTINGS.subtitleTop;
-            data.subtitleBottom = data.subtitleBottom || DEFAULT_SETTINGS.subtitleBottom;
-            // Add onboarding description default
-            data.rulesDescription = data.rulesDescription || DEFAULT_SETTINGS.rulesDescription;
-            // Submitted-state defaults
-            data.submittedTitle = data.submittedTitle || DEFAULT_SETTINGS.submittedTitle;
-            data.submittedSubtitle = data.submittedSubtitle || DEFAULT_SETTINGS.submittedSubtitle;
-            data.submittedCountdownText = data.submittedCountdownText || DEFAULT_SETTINGS.submittedCountdownText;
-            data.submittedWinnerText = data.submittedWinnerText || DEFAULT_SETTINGS.submittedWinnerText;
-            data.submittedSocialProofText = data.submittedSocialProofText || DEFAULT_SETTINGS.submittedSocialProofText;
-            data.followButtonText = data.followButtonText || DEFAULT_SETTINGS.followButtonText;
+            // NOTE: Removed automatic default filling - defaults only apply on first-time setup
+            // Each field will return its actual saved value (could be empty string or undefined)
           }
 
           // Migrate legacy default values saved on older installs to the new copy
@@ -125,7 +116,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(200).json(data);
         } else {
           console.log('⚠️ API /settings/merchant - No existing data, returning defaults');
-          // Return default settings
+          // Return default settings (ONLY for first-time setup when document doesn't exist)
           const defaultSettings: MerchantSettings = {
             shop,
             enabled: false,

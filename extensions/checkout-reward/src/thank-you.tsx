@@ -18,6 +18,10 @@ import {
 import { useEffect, useState, useRef } from 'react';
 
 import { DEFAULT_SETTINGS, SelectedProduct } from '../../../lib/defaultSettings';
+import { BasicModeView } from './components/BasicModeView';
+import { GiveawayModeView } from './components/GiveawayModeView';
+import { FreeGiftModeView } from './components/FreeGiftModeView';
+import { SubmittedView } from './components/SubmittedView';
 
 interface Settings {
   enabled: boolean;
@@ -399,225 +403,37 @@ function ThankYouExtension() {
 
 <View
     padding="loose"
-
     cornerRadius="large"
     border="base"
   >
-    <BlockStack spacing="loose" >
+    <BlockStack spacing="loose">
 
-      {/* HEADER — Only show when not submitted */}
-      {!submitted && (
+      {/* Render based on submission state and mode */}
+      {!submitted ? (
         <>
           {settings?.mode === 'basic' ? (
-            <>
-              <BlockStack blockAlignment="center" inlineAlignment="center" spacing="base">
-                {/* TITLE */}
-                <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center">
-                  {settings.popupTitle && (
-                    <Text size="large" emphasis="bold" alignment="center">
-                      {settings.popupTitle}
-                    </Text>
-                  )}
-                  {settings.subtitleTop && (
-                    <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 6 }}>
-                      <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
-                    </View>
-                  )}
-                </BlockStack>
-              </BlockStack>
-
-              <Divider />
-
-              {/* Banner - full width */}
-              <View cornerRadius="none" padding="none">
-                <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
-                  <Image
-                    source={settings?.bannerUrl || "https://closer-qq8c.vercel.app/give-away-banner.jpg"}
-                    alt="Giveaway Banner"
-                    fit="cover"
-                  />
-                </BlockStack>
-              </View>
-            </>
+            <BasicModeView settings={settings} />
+          ) : settings?.mode === 'free-gift' ? (
+            <FreeGiftModeView
+              settings={settings}
+              formValue={formValue}
+              setFormValue={setFormValue}
+              handleSubmit={handleSubmit}
+              submitting={submitting}
+            />
           ) : (
-            <>
-              <BlockStack blockAlignment="center" inlineAlignment="center" spacing="base">
-                {/* TITLE */}
-                <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center">
-                  {settings.popupTitle && (
-                    <Text size="large" emphasis="bold" alignment="center">
-                      {settings.popupTitle}
-                    </Text>
-                  )}
-                  {settings.subtitleTop && (
-                    <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 6 }}>
-                      <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleTop}</Text>
-                    </View>
-                  )}
-                </BlockStack>
-              </BlockStack>
-
-              <Divider />
-
-              {/* Banner - full width */}
-              <View cornerRadius="none" padding="none">
-                <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
-                  <Image
-                    source={settings?.bannerUrl || "https://closer-qq8c.vercel.app/give-away-banner.jpg"}
-                    alt="Giveaway Banner"
-                    fit="cover"
-                  />
-                </BlockStack>
-              </View>
-
-              {/* Countdown Timer */}
-              <View padding="tight" cornerRadius="base" background="surface">
-                <BlockStack spacing="tight" inlineAlignment="center">
-                  {(() => {
-                    const totalSeconds = Math.floor(remainingMs / 1000);
-                    const seconds = totalSeconds % 60;
-                    const totalMinutes = Math.floor(totalSeconds / 60);
-                    const minutes = totalMinutes % 60;
-                    const totalHours = Math.floor(totalMinutes / 60);
-                    const hours = totalHours % 24;
-                    const days = Math.floor(totalHours / 24);
-                    const pad = (n: number) => String(n).padStart(2, '0');
-                    const formatted = `${pad(days)}d : ${pad(hours)}h : ${pad(minutes)}m`;
-
-                    return (
-                      <View style={{ display: 'inline-block', textAlign: 'center' }}>
-                        <View style={{ display: 'block', marginBottom: 6 }}>
-                          <View style={{ display: 'block', width: '100%', textAlign: 'center' }}>
-                            <Text size="medium" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{settings.countdownTitle || DEFAULT_SETTINGS.countdownTitle}</Text>
-                          </View>
-
-                          <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center"  alignment="center" style={{ width: '100%', alignItems: 'center' }}>
-                            <View style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: 12 }}>
-                              <Text size="large" emphasis="bold" alignment="center" style={{ display: 'inline-block' }}>{formatted}</Text>
-                            </View>
-                          </BlockStack>
-                        </View>
-                      </View>
-                    );
-                  })()}
-                </BlockStack>
-              </View>
-
-              {/* RULES SECTION */}
-              <BlockStack spacing="tight" blockAlignment="center" inlineAlignment="center"  alignment="center">
-                {settings.rulesTitle && (
-                  <Text size="medium" emphasis="bold" alignment="center">
-                    {settings.rulesTitle}
-                  </Text>
-                )}
-
-                {settings.rulesDescription && (
-                  <Text size="small" appearance="subdued" alignment="center" style={{ marginTop: 8 }}>
-                    {settings.rulesDescription}
-                  </Text>
-                )}
-              </BlockStack>
-            </>
-          )}
-        </>
-      )}
-
-      {/* FORM */}
-      {(!submitted && settings?.mode !== 'basic') ? (
-        <BlockStack spacing="loose" alignment="center">
-          {settings.formFieldLabel && (
-            <TextField
-              label={settings.formFieldLabel}
-              value={formValue}
-              onChange={setFormValue}
-              prefix="@"
-              
+            <GiveawayModeView
+              settings={settings}
+              remainingMs={remainingMs}
+              formValue={formValue}
+              setFormValue={setFormValue}
+              handleSubmit={handleSubmit}
+              submitting={submitting}
             />
           )}
-          <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center" alignment="center" style={{ width: '100%', alignItems: 'center' }}>
-          {settings?.redirectUrl ? (
-            <Link to={settings.redirectUrl} external>
-              <Button
-                kind="primary"
-                onPress={handleSubmit}
-                loading={submitting}
-                disabled={submitting}
-                style={{ width: '100%' }}
-              >
-                {settings.submitButtonText || DEFAULT_SETTINGS.submitButtonText}
-              </Button>
-            </Link>
-          ) : (
-            <Button
-              kind="primary"
-              onPress={handleSubmit}
-              loading={submitting}
-              disabled={submitting}
-              style={{ width: '100%' }}
-            >
-              {settings.submitButtonText || DEFAULT_SETTINGS.submitButtonText}
-            </Button>
-          )}
-            {settings.subtitleBottom && (
-              <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
-                <Text size="small" appearance="subdued" alignment="center" style={{ textAlign: 'center' }}>{settings.subtitleBottom}</Text>
-              </View>
-            )}
-            {settings.socialProofSubtitle && (
-              <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
-                <Text size="small" emphasis="bold" alignment="center" style={{ textAlign: 'center' }}>{settings.socialProofSubtitle}</Text>
-              </View>
-            )}
-          </BlockStack>
-        </BlockStack>
+        </>
       ) : (
-        <BlockStack spacing="base" inlineAlignment="center">
-          {/* 1. Title */}
-          <Text size="large" emphasis="bold" alignment="center">
-            {settings.submittedTitle || DEFAULT_SETTINGS.submittedTitle}
-          </Text>
-
-          {/* 2. Subtitle */}
-          <Text size="medium" alignment="center">
-            {settings.submittedSubtitle || DEFAULT_SETTINGS.submittedSubtitle}
-          </Text>
-
-          {/* 3. Divider */}
-          <Divider />
-
-          {/* 4. Countdown text + timer (days and hours only) */}
-          <BlockStack spacing="tight" inlineAlignment="center">
-            <Text size="medium" alignment="center">
-              {settings.submittedCountdownText || DEFAULT_SETTINGS.submittedCountdownText}
-            </Text>
-            <Text size="large" emphasis="bold" alignment="center">
-              {(() => {
-                const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((remainingMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                return `${days}d ${hours}h`;
-              })()}
-            </Text>
-          </BlockStack>
-
-          {/* 5. Winner announcement */}
-          <Text size="medium" alignment="center">
-            {settings.submittedWinnerText || DEFAULT_SETTINGS.submittedWinnerText}
-          </Text>
-
-          {/* 6. Social proof */}
-          <Text size="medium" alignment="center">
-            {settings.submittedSocialProofText || DEFAULT_SETTINGS.submittedSocialProofText}
-          </Text>
-
-          {/* 7. Button */}
-          {submitted && settings?.redirectUrl && (
-            <Link to={settings.redirectUrl} external>
-              <Button kind="primary" style={{ width: '100%' }}>
-                {settings.followButtonText || DEFAULT_SETTINGS.followButtonText}
-              </Button>
-            </Link>
-          )}
-        </BlockStack>
+        <SubmittedView settings={settings} remainingMs={remainingMs} />
       )}
     </BlockStack>
   </View>
