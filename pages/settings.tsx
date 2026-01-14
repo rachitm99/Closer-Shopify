@@ -27,7 +27,7 @@ function SettingsPage() {
   const router = useRouter();
   const authFetch = useAuthenticatedFetch();
   const [enabled, setEnabled] = useState(false);
-  const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift'>('giveaway');
+  const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift' | 'coupon-code'>('giveaway');
 
   const [logoUrl, setLogoUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState(DEFAULT_SETTINGS.popupTitle);
@@ -54,6 +54,8 @@ function SettingsPage() {
   const [submittedWinnerText, setSubmittedWinnerText] = useState(DEFAULT_SETTINGS.submittedWinnerText);
   const [submittedSocialProofText, setSubmittedSocialProofText] = useState(DEFAULT_SETTINGS.submittedSocialProofText);
   const [followButtonText, setFollowButtonText] = useState(DEFAULT_SETTINGS.followButtonText);
+  const [couponCode, setCouponCode] = useState(DEFAULT_SETTINGS.couponCode);
+  const [couponCodeTitle, setCouponCodeTitle] = useState(DEFAULT_SETTINGS.couponCodeTitle);
   const [redirectUrl, setRedirectUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -126,6 +128,8 @@ function SettingsPage() {
           setSubmittedWinnerText(data.submittedWinnerText || DEFAULT_SETTINGS.submittedWinnerText);
           setSubmittedSocialProofText(data.submittedSocialProofText || DEFAULT_SETTINGS.submittedSocialProofText);
           setFollowButtonText(data.followButtonText || DEFAULT_SETTINGS.followButtonText);
+          setCouponCode(data.couponCode || DEFAULT_SETTINGS.couponCode);
+          setCouponCodeTitle(data.couponCodeTitle || DEFAULT_SETTINGS.couponCodeTitle);
           setRedirectUrl(data.redirectUrl || '');
           setBannerUrl(data.bannerUrl || '');
           setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
@@ -244,7 +248,9 @@ function SettingsPage() {
           formFieldLabel,
           submitButtonText, 
           redirectUrl,
-          selectedProducts
+          selectedProducts,
+          couponCode,
+          couponCodeTitle
         }),
       });
 
@@ -391,14 +397,16 @@ function SettingsPage() {
                     { label: 'Basic', value: 'basic' },
                     { label: 'Giveaway', value: 'giveaway' },
                     { label: 'Free Gift', value: 'free-gift' },
+                    { label: 'Coupon Code', value: 'coupon-code' },
                   ]}
                   value={mode}
-                  onChange={(value) => setMode(value as 'basic' | 'giveaway' | 'free-gift')}
+                  onChange={(value) => setMode(value as 'basic' | 'giveaway' | 'free-gift' | 'coupon-code')}
                 />
                 <Text as="p" variant="bodyMd" tone="subdued">
                   {mode === 'basic' && 'Basic mode: Simple follow button without giveaway elements'}
                   {mode === 'giveaway' && 'Giveaway mode: Full giveaway experience with countdown, rules, and submitted screen'}
                   {mode === 'free-gift' && 'Free Gift mode: Promote a free gift with your Instagram follow'}
+                  {mode === 'coupon-code' && 'Coupon Code mode: Reward followers with a discount code after submission'}
                 </Text>
               </BlockStack>
             </Card>
@@ -616,6 +624,57 @@ function SettingsPage() {
                     /> */}
 
                     {/* Giveaway rules editing disabled for now. Replaced with a single description */}
+                    <TextField
+                      label="Rules Description"
+                      value={rulesDescription}
+                      onChange={setRulesDescription}
+                      helpText="Short centered description shown under the rules title in the popup"
+                      autoComplete="off"
+                      maxLength={200}
+                      multiline
+                    />
+
+                    <TextField
+                      label="Submit Button Text"
+                      value={submitButtonText}
+                      onChange={setSubmitButtonText}
+                      helpText="Text displayed on the submit button"
+                      autoComplete="off"
+                      maxLength={50}
+                    />
+                  </>
+                )}
+
+                {/* Coupon Code Mode Section - Similar to giveaway but with coupon code */}
+                {mode === 'coupon-code' && (
+                  <>
+                    <TextField
+                      label="Popup Title"
+                      value={popupTitle}
+                      onChange={setPopupTitle}
+                      helpText="The main title shown at the top of the popup"
+                      autoComplete="off"
+                      maxLength={100}
+                    />
+
+                    <TextField
+                      label="Popup Subtitle (under title)"
+                      value={subtitleTop}
+                      onChange={setSubtitleTop}
+                      helpText="Small subtitle shown under the popup title"
+                      autoComplete="off"
+                      maxLength={150}
+                    />
+
+                    <TextField
+                      label="Rules Section Title"
+                      value={rulesTitle}
+                      onChange={setRulesTitle}
+                      helpText="Title for the rules section (e.g., 'How to Get Your Code:', 'Instructions:')"
+                      autoComplete="off"
+                      maxLength={50}
+                    />
+
                     <TextField
                       label="Rules Description"
                       value={rulesDescription}
@@ -908,6 +967,34 @@ function SettingsPage() {
                       autoComplete="off"
                       maxLength={50}
                     />
+
+                    {/* Coupon Code Fields - Only for coupon-code mode */}
+                    {mode === 'coupon-code' && (
+                      <>
+                        <Divider />
+                        <Text as="h3" variant="headingMd">
+                          Coupon Code Settings
+                        </Text>
+                        
+                        <TextField
+                          label="Coupon Code"
+                          value={couponCode}
+                          onChange={setCouponCode}
+                          helpText="The discount code to display after submission (e.g., 'WELCOME10')"
+                          autoComplete="off"
+                          maxLength={50}
+                        />
+
+                        <TextField
+                          label="Coupon Code Title"
+                          value={couponCodeTitle}
+                          onChange={setCouponCodeTitle}
+                          helpText="Title shown above the coupon code (e.g., '🎁 Your Coupon Code')"
+                          autoComplete="off"
+                          maxLength={100}
+                        />
+                      </>
+                    )}
                   </>
                 )}
 

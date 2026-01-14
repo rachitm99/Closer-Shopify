@@ -122,7 +122,7 @@ export function FreeGiftModeView({
                 {settings.socialProofSubtitle}
               </Text>
             </View>
-          )} */
+          )} */}
         </BlockStack>
       </BlockStack>
     </>

@@ -21,6 +21,7 @@ import { DEFAULT_SETTINGS, SelectedProduct } from '../../../lib/defaultSettings'
 import { BasicModeView } from './components/BasicModeView';
 import { GiveawayModeView } from './components/GiveawayModeView';
 import { FreeGiftModeView } from './components/FreeGiftModeView';
+import { CouponCodeModeView } from './components/CouponCodeModeView';
 import { SubmittedView } from './components/SubmittedView';
 
 interface Settings {
@@ -41,6 +42,8 @@ interface Settings {
   submittedWinnerText?: string;
   submittedSocialProofText?: string;
   followButtonText?: string;
+  couponCode?: string;
+  couponCodeTitle?: string;
   rulesTitle: string;
   rulesDescription?: string;
   giveawayRules: string[];
@@ -421,6 +424,15 @@ function ThankYouExtension() {
               handleSubmit={handleSubmit}
               submitting={submitting}
             />
+          ) : settings?.mode === 'coupon-code' ? (
+            <CouponCodeModeView
+              settings={settings}
+              remainingMs={remainingMs}
+              formValue={formValue}
+              setFormValue={setFormValue}
+              handleSubmit={handleSubmit}
+              submitting={submitting}
+            />
           ) : (
             <GiveawayModeView
               settings={settings}
@@ -433,7 +445,7 @@ function ThankYouExtension() {
           )}
         </>
       ) : (
-        <SubmittedView settings={settings} remainingMs={remainingMs} />
+        <SubmittedView settings={settings} remainingMs={remainingMs} mode={settings?.mode} />
       )}
     </BlockStack>
   </View>

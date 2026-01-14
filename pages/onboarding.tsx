@@ -36,7 +36,7 @@ function Onboarding() {
   const [showToast, setShowToast] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [enabled, setEnabled] = useState(true);
-  const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift'>('giveaway');
+  const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift' | 'coupon-code'>('giveaway');
   const [bannerUrl, setBannerUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState(DEFAULT_SETTINGS.popupTitle);
   const [rulesTitle, setRulesTitle] = useState(DEFAULT_SETTINGS.rulesTitle);
@@ -64,6 +64,8 @@ function Onboarding() {
   const [submittedWinnerText, setSubmittedWinnerText] = useState(DEFAULT_SETTINGS.submittedWinnerText);
   const [submittedSocialProofText, setSubmittedSocialProofText] = useState(DEFAULT_SETTINGS.submittedSocialProofText);
   const [followButtonText, setFollowButtonText] = useState(DEFAULT_SETTINGS.followButtonText);
+  const [couponCode, setCouponCode] = useState(DEFAULT_SETTINGS.couponCode);
+  const [couponCodeTitle, setCouponCodeTitle] = useState(DEFAULT_SETTINGS.couponCodeTitle);
   const [formFieldLabel, setFormFieldLabel] = useState(DEFAULT_SETTINGS.formFieldLabel);
 
   // Countdown end date (default to 7 days from now)
@@ -133,6 +135,8 @@ function Onboarding() {
             setSubmittedWinnerText(data.submittedWinnerText || DEFAULT_SETTINGS.submittedWinnerText);
             setSubmittedSocialProofText(data.submittedSocialProofText || DEFAULT_SETTINGS.submittedSocialProofText);
             setFollowButtonText(data.followButtonText || DEFAULT_SETTINGS.followButtonText);
+            setCouponCode(data.couponCode || DEFAULT_SETTINGS.couponCode);
+            setCouponCodeTitle(data.couponCodeTitle || DEFAULT_SETTINGS.couponCodeTitle);
             setFormFieldLabel(data.formFieldLabel || DEFAULT_SETTINGS.formFieldLabel);
             setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
             setCountdownTitle(data.countdownTitle || DEFAULT_SETTINGS.countdownTitle);
@@ -312,6 +316,8 @@ function Onboarding() {
           submittedWinnerText: submittedWinnerText,
           submittedSocialProofText: submittedSocialProofText,
           followButtonText: followButtonText,
+          couponCode: couponCode,
+          couponCodeTitle: couponCodeTitle,
           rulesTitle: rulesTitle,
           rulesDescription: rulesDescription,
           formFieldLabel: formFieldLabel,
@@ -701,6 +707,133 @@ function Onboarding() {
                     maxLength={50}
                   />
                 </>
+              ) : mode === 'coupon-code' ? (
+                <>
+                  {/* Coupon Code Mode Fields - Similar to Giveaway */}
+                  <TextField
+                    label="Popup Title"
+                    value={popupTitle}
+                    onChange={setPopupTitle}
+                    helpText="The main title shown at the top of the popup"
+                    autoComplete="off"
+                    maxLength={100}
+                  />
+
+                  <TextField
+                    label="Popup Subtitle (under title)"
+                    value={subtitleTop}
+                    onChange={setSubtitleTop}
+                    helpText="Small subtitle shown under the popup title"
+                    autoComplete="off"
+                    maxLength={150}
+                  />
+
+                  <TextField
+                    label="Rules Section Title"
+                    value={rulesTitle}
+                    onChange={setRulesTitle}
+                    helpText="Title for the rules section (e.g., 'How to Get Your Code:', 'Instructions:')"
+                    autoComplete="off"
+                    maxLength={50}
+                  />
+
+                  <TextField
+                    label="Rules Description"
+                    value={rulesDescription}
+                    onChange={setRulesDescription}
+                    helpText="Short centered description shown under the rules title"
+                    autoComplete="off"
+                    maxLength={200}
+                    multiline
+                  />
+
+                  <TextField
+                    label="Form Field Label"
+                    value={formFieldLabel}
+                    onChange={setFormFieldLabel}
+                    helpText="Label for the input where customers enter their Instagram handle"
+                    autoComplete="off"
+                    maxLength={50}
+                  />
+
+                  <TextField
+                    label="Submit Button Text"
+                    value={submitButtonText}
+                    onChange={setSubmitButtonText}
+                    helpText="Text displayed on the submit button"
+                    autoComplete="off"
+                    maxLength={50}
+                  />
+
+                  <TextField
+                    label="Footer Subtitle (below Follow button)"
+                    value={subtitleBottom}
+                    onChange={setSubtitleBottom}
+                    helpText="Small subtitle shown under the Follow button after submission"
+                    autoComplete="off"
+                    maxLength={150}
+                  />
+
+                  <TextField
+                    label="Your Instagram Profile URL"
+                    value={redirectUrl}
+                    onChange={setRedirectUrl}
+                    helpText="Your Instagram profile link (users will be redirected here after submission)"
+                    autoComplete="off"
+                    placeholder="https://instagram.com/yourprofile"
+                  />
+
+                  <Divider />
+
+                  <Text as="h3" variant="headingMd">
+                    Post-Submission Screen
+                  </Text>
+
+                  <TextField
+                    label="Submitted Title"
+                    value={submittedTitle}
+                    onChange={setSubmittedTitle}
+                    helpText="Title shown after submission (e.g., '✅ Code Unlocked!')"
+                    autoComplete="off"
+                    maxLength={80}
+                  />
+
+                  <TextField
+                    label="Submitted Subtitle"
+                    value={submittedSubtitle}
+                    onChange={setSubmittedSubtitle}
+                    helpText="Subtitle shown after submission"
+                    autoComplete="off"
+                    maxLength={150}
+                  />
+
+                  <TextField
+                    label="Coupon Code"
+                    value={couponCode}
+                    onChange={setCouponCode}
+                    helpText="The discount code to display (e.g., 'WELCOME10')"
+                    autoComplete="off"
+                    maxLength={50}
+                  />
+
+                  <TextField
+                    label="Coupon Code Title"
+                    value={couponCodeTitle}
+                    onChange={setCouponCodeTitle}
+                    helpText="Title shown above the coupon code (e.g., '🎁 Your Coupon Code')"
+                    autoComplete="off"
+                    maxLength={100}
+                  />
+
+                  <TextField
+                    label="Submitted Button Text"
+                    value={followButtonText}
+                    onChange={setFollowButtonText}
+                    helpText="CTA button text on submitted screen (e.g., 'View us on Instagram')"
+                    autoComplete="off"
+                    maxLength={50}
+                  />
+                </>
               ) : (
                 <>
                   {/* Free Gift Mode Fields */}
@@ -927,9 +1060,10 @@ function Onboarding() {
                   { label: 'Basic', value: 'basic' },
                   { label: 'Giveaway', value: 'giveaway' },
                   { label: 'Free Gift', value: 'free-gift' },
+                  { label: 'Coupon Code', value: 'coupon-code' },
                 ]}
                 value={mode}
-                onChange={(value) => setMode(value as 'basic' | 'giveaway' | 'free-gift')}
+                onChange={(value) => setMode(value as 'basic' | 'giveaway' | 'free-gift' | 'coupon-code')}
                 helpText="Choose how to display your Instagram follow campaign"
               />
             </BlockStack>

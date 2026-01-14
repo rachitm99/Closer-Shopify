@@ -1,4 +1,4 @@
-export type DisplayMode = 'basic' | 'giveaway' | 'free-gift';
+export type DisplayMode = 'basic' | 'giveaway' | 'free-gift' | 'coupon-code';
 
 export interface SelectedProduct {
   id: string;
@@ -26,6 +26,8 @@ export interface DefaultSettings {
   submittedWinnerText: string;
   submittedSocialProofText: string;
   followButtonText: string;
+  couponCode: string;
+  couponCodeTitle: string;
   giveawayRules: string[];
   selectedProducts: SelectedProduct[];
 }
@@ -45,6 +47,8 @@ export const DEFAULT_SETTINGS: DefaultSettings = {
   submittedSubtitle: 'Thanks for following {{@instagramhandle}}',
   submittedCountdownText: '🎁Giveaway ends in',
   submittedWinnerText: '🏆Winner announced on Jan 23',
+  couponCode: 'WELCOME10',
+  couponCodeTitle: '🎁 Your Coupon Code',
   submittedSocialProofText: '👥 1248 people have entered',
   followButtonText: 'View us on Instagram',
   giveawayRules: [
