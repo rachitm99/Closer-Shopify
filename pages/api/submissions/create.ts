@@ -14,6 +14,7 @@ export interface FormSubmission {
   submittedAt: FirebaseFirestore.Timestamp;
   orderNumber?: string;
   customerEmail?: string;
+  mode?: string; // e.g., 'giveaway' | 'free-gift' | 'basic' - records the banner mode at submission time
   updatedAt?: FirebaseFirestore.Timestamp;
   submissionCount?: number;
   isFollowerChecked?: boolean;
@@ -80,6 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ...existingData,
           instaHandle, // Update with latest Instagram handle
           orderNumber: orderNumber || existingData.orderNumber || '',
+          mode: req.body.mode || existingData.mode || '',
           updatedAt: Timestamp.now(),
           submissionCount: (existingData.submissionCount || 1) + 1,
           isFollowerChecked: false,
@@ -89,6 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await db.collection(collections.submissions).doc(submissionId).update({
           instaHandle,
           orderNumber: orderNumber || existingData.orderNumber || '',
+          mode: req.body.mode || existingData.mode || '',
           updatedAt: FieldValue.serverTimestamp(),
           submissionCount: (existingData.submissionCount || 1) + 1,
           isFollowerChecked: false,
@@ -112,6 +115,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           instaHandle,
           orderNumber: orderNumber || '',
           customerEmail: customerEmail || '',
+          mode: req.body.mode || '',
           submittedAt: Timestamp.now(),
           submissionCount: 1,
           isFollowerChecked: false,
@@ -121,7 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Store in Firestore
         await db.collection(collections.submissions).doc(submissionId).set(submission);
-        console.log('Form submission stored:', submissionId, 'for shop:', shop);
+        console.log('Form submission stored:', submissionId, 'for shop:', shop, 'mode:', submission.mode);
 
         return res.status(200).json({ 
           success: true, 

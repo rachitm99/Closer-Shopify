@@ -175,7 +175,13 @@ function OrderStatusExtension() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - run only on mount
 
-  // When we have an order id, fetch detailed order data from a secure server route
+  // NOTE: Disabled order GraphQL fetch and related logic.
+  // The following effect used to call a secure server route to fetch full order
+  // details and (optionally) trigger an automatic add-product flow. To avoid any
+  // automatic network calls from customer-facing extensions, the entire effect is
+  // commented out for safekeeping. Re-enable only if you intend to run this
+  // logic automatically from the extension again.
+  /*
   useEffect(() => {
     // Only run in Free Gift mode
     if (settings?.mode !== 'free-gift') {
@@ -230,32 +236,31 @@ function OrderStatusExtension() {
         // NOTE: Disabled automatic add-product call.
         // This extension previously auto-called the order-add-product API after fetching the order.
         // For external triggering, the block below is commented out for safekeeping.
-        /*
-        try {
-          if (data && data.data && data.data.order && !productAddedRef.current) {
-            productAddedRef.current = true;
-            const addPayload = { shop: settings?.shop || '', orderId: payload.orderId, variantId: '51518674895157', quantity: 1 };
-            const addResp = await fetch('https://closer-qq8c.vercel.app/api/shopify/order-add-product', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-              },
-              body: JSON.stringify(addPayload),
-            });
-            const addText = await addResp.text();
-            try { console.log('Order Add Product response:', JSON.parse(addText)); }
-            catch (e) { console.log('Order Add Product response (text):', addText); }
-          }
-        } catch (e) {
-          console.error('Error while attempting to add product to order:', e, e?.stack || 'no stack');
-        }
-        */
+        // try {
+        //   if (data && data.data && data.data.order && !productAddedRef.current) {
+        //     productAddedRef.current = true;
+        //     const addPayload = { shop: settings?.shop || '', orderId: payload.orderId, variantId: '51518674895157', quantity: 1 };
+        //     const addResp = await fetch('https://closer-qq8c.vercel.app/api/shopify/order-add-product', {
+        //       method: 'POST',
+        //       headers: {
+        //         'Content-Type': 'application/json',
+        //         'Authorization': `Bearer ${token}`,
+        //       },
+        //       body: JSON.stringify(addPayload),
+        //     });
+        //     const addText = await addResp.text();
+        //     try { console.log('Order Add Product response:', JSON.parse(addText)); }
+        //     catch (e) { console.log('Order Add Product response (text):', addText); }
+        //   }
+        // } catch (e) {
+        //   console.error('Error while attempting to add product to order:', e, e?.stack || 'no stack');
+        // }
       } catch (err) {
         console.error('Order GraphQL error:', err);
       }
     })();
   }, [orderNumber, settings?.shop, settings?.mode, sessionToken]);
+  */
 
   // Separate effect to track impressions whenever settings are loaded and enabled
   useEffect(() => {
