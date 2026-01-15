@@ -1,19 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import crypto from 'crypto';
 import { db, collections } from '../../../../lib/firestore';
-import getRawBody from 'raw-body';
-
-// Verify webhook is from Shopify
-function verifyWebhook(rawBody: string, hmac: string): boolean {
-  if (!hmac) return false;
-
-  const hash = crypto
-    .createHmac('sha256', process.env.SHOPIFY_API_SECRET!)
-    .update(rawBody, 'utf8')
-    .digest('base64');
-
-  return hash === hmac;
-}
+import { readAndVerifyShopifyWebhook } from '../../../../lib/webhook-verifier';
 
 // Map Shopify charge status to our plan names
 function mapChargeNameToPlan(chargeName: string): string {
@@ -31,18 +18,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log('🔔 Billing update webhook received');
 
   try {
-    // Get raw body for verification
-    const rawBody = await getRawBody(req);
-    const bodyString = rawBody.toString('utf8');
-    const hmac = req.headers['x-shopify-hmac-sha256'] as string;
-
-    // Verify webhook
-    if (!verifyWebhook(bodyString, hmac)) {
+    // Verify webhook and get raw body
+    const rawBody = await readAndVerifyShopifyWebhook(req, process.env.SHOPIFY_API_SECRET!);
+    
+    if (!rawBody) {
       console.error('❌ Webhook verification failed');
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const charge = JSON.parse(bodyString);
+    const charge = JSON.parse(rawBody.toString('utf8'));
     const shop = req.headers['x-shopify-shop-domain'] as string;
 
     if (!shop) {
