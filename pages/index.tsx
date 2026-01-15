@@ -90,27 +90,29 @@ function Dashboard() {
     try {
       setIsImpersonating(true);
       
-      // Load analytics using admin endpoint
-      const response = await fetch('/api/admin/impersonate', {
-        method: 'POST',
+      // Load submissions for this shop
+      const submissionsResponse = await fetch(`/api/submissions/list?shop=${shopDomain}`, {
         headers: {
-          'Content-Type': 'application/json',
           'x-admin-auth': 'true',
         },
-        body: JSON.stringify({ shop: shopDomain }),
       });
-
-      if (!response.ok) {
-        setError('Failed to load impersonated shop data');
-        setLoading(false);
-        return;
-      }
-
-      // Load submissions for this shop
-      const submissionsResponse = await fetch(`/api/submissions/list?shop=${shopDomain}`);
       if (submissionsResponse.ok) {
         const submissionsData = await submissionsResponse.json();
         setSubmissions(submissionsData.submissions || []);
+      }
+
+      // Load analytics for this shop
+      const analyticsResponse = await fetch(`/api/analytics/submissions-timeline?shop=${shopDomain}&followingOnly=${followingOnly}`, {
+        headers: {
+          'x-admin-auth': 'true',
+        },
+      });
+      if (analyticsResponse.ok) {
+        const analyticsData = await analyticsResponse.json();
+        setAnalytics(analyticsData);
+      } else if (analyticsResponse.status === 403) {
+        const errorData = await analyticsResponse.json();
+        setError(errorData.message || 'Analytics not available for this shop');
       }
 
       setLoading(false);

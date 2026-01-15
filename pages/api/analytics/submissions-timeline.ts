@@ -23,15 +23,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Check if user has access to analytics
-    const session = await getSessionFromRequest(req);
-    if (session) {
-      const hasAnalytics = await checkPlanLimit(session, 'analytics');
-      if (!hasAnalytics) {
-        return res.status(403).json({ 
-          error: 'Analytics not available on your plan',
-          message: 'Please upgrade to Starter or Growth plan to access analytics features'
-        });
+    // Check for admin impersonation
+    const adminAuth = req.headers['x-admin-auth'];
+    const isAdmin = adminAuth === 'true';
+
+    // Check if user has access to analytics (skip for admin)
+    if (!isAdmin) {
+      const session = await getSessionFromRequest(req);
+      if (session) {
+        const hasAnalytics = await checkPlanLimit(session, 'analytics');
+        if (!hasAnalytics) {
+          return res.status(403).json({ 
+            error: 'Analytics not available on your plan',
+            message: 'Please upgrade to Starter or Growth plan to access analytics features'
+          });
+        }
       }
     }
 

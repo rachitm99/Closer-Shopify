@@ -41,6 +41,8 @@ export default function SuperAdminPanel() {
   const [selectedShop, setSelectedShop] = useState('');
   const [impersonating, setImpersonating] = useState(false);
   const [error, setError] = useState('');
+  const [shopDetails, setShopDetails] = useState<any>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     // Check admin auth
@@ -153,6 +155,30 @@ export default function SuperAdminPanel() {
     }
   };
 
+  const handleViewShopDetails = async (shop: string) => {
+    try {
+      const response = await fetch('/api/admin/shop-details', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-auth': 'true',
+        },
+        body: JSON.stringify({ shop }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setShopDetails(data);
+        setShowDetailsModal(true);
+      } else {
+        setError('Failed to load shop details');
+      }
+    } catch (err) {
+      console.error('Error loading shop details:', err);
+      setError('Failed to load shop details');
+    }
+  };
+
   const handleLogout = () => {
     sessionStorage.removeItem('adminAuth');
     router.push('/admin-login');
@@ -179,11 +205,18 @@ export default function SuperAdminPanel() {
 
   // Prepare table data for shops
   const tableRows = shops.slice(0, 20).map(shop => [
-    shop.shop,
+    <div key={`${shop.shop}-name`}>
+      <Text as="span">{shop.shop}</Text>
+      <div style={{ marginTop: '4px' }}>
+        <Button size="slim" onClick={() => handleViewShopDetails(shop.shop)}>
+          View Details
+        </Button>
+      </div>
+    </div>,
     <Badge key={shop.shop} tone={shop.currentPlan === 'growth' ? 'success' : shop.currentPlan === 'starter' ? 'info' : undefined}>
       {shop.currentPlan}
     </Badge>,
-    <div key={`${shop.shop}-status`} title={`Status: ${shop.planStatus || 'active'}`}>
+    <div key={`${shop.shop}-status`} title={`Actual status value: "${shop.planStatus || 'active'}"`}>
       <InlineStack gap="200">
         <Badge tone={shop.planStatus === 'active' ? 'success' : shop.planStatus === 'cancelled' || shop.planStatus === 'declined' ? 'critical' : 'warning'}>
           {(shop.planStatus || 'active').toUpperCase()}
@@ -322,6 +355,12 @@ export default function SuperAdminPanel() {
             <Card>
               <BlockStack gap="400">
                 <Text variant="headingMd" as="h2">All Shops (First 20)</Text>
+                <Banner tone="info">
+                  <Text as="p">
+                    <strong>Status Badge Colors:</strong> Green = 'active' status, Orange = other status (accepted/pending/frozen), Red = cancelled/declined. 
+                    Hover over status to see exact value from database.
+                  </Text>
+                </Banner>
                 <DataTable
                   columnContentTypes={['text', 'text', 'text', 'text', 'text']}
                   headings={['Shop', 'Plan', 'Status', 'Email', 'Created']}
@@ -336,6 +375,67 @@ export default function SuperAdminPanel() {
             </Card>
           </Layout.Section>
         </Layout>
+
+        {/* Shop Details Modal */}
+        {showDetailsModal && shopDetails && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '24px',
+              borderRadius: '8px',
+              maxWidth: '800px',
+              maxHeight: '80vh',
+              overflow: 'auto',
+              width: '90%',
+            }}>
+              <BlockStack gap="400">
+                <InlineStack align="space-between">
+                  <Text variant="headingLg" as="h2">Shop Details: {shopDetails.shop}</Text>
+                  <Button onClick={() => setShowDetailsModal(false)}>Close</Button>
+                </InlineStack>
+                
+                <Card>
+                  <BlockStack gap="300">
+                    <Text variant="headingMd" as="h3">Billing Status Debug</Text>
+                    <Text as="p"><strong>Plan Status:</strong> "{shopDetails.raw?.planStatus}" (type: {shopDetails.raw?.planStatusType})</Text>
+                    <Text as="p"><strong>Current Plan:</strong> {shopDetails.raw?.currentPlan || 'N/A'}</Text>
+                    <Text as="p"><strong>Override Plan:</strong> {shopDetails.raw?.overridePlan || 'N/A'}</Text>
+                    <Text as="p"><strong>In Trial:</strong> {shopDetails.raw?.planInTrial ? 'Yes' : 'No'}</Text>
+                    <Text as="p"><strong>Trial Ends:</strong> {shopDetails.raw?.planTrialEndsOn || 'N/A'}</Text>
+                  </BlockStack>
+                </Card>
+
+                <Card>
+                  <BlockStack gap="300">
+                    <Text variant="headingMd" as="h3">Full Users Data</Text>
+                    <div style={{ 
+                      backgroundColor: '#f6f6f7', 
+                      padding: '12px', 
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontFamily: 'monospace',
+                      overflow: 'auto',
+                      maxHeight: '300px'
+                    }}>
+                      <pre>{JSON.stringify(shopDetails.users, null, 2)}</pre>
+                    </div>
+                  </BlockStack>
+                </Card>
+              </BlockStack>
+            </div>
+          </div>
+        )}
       </BlockStack>
     </Page>
   );
