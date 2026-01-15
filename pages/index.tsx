@@ -348,9 +348,11 @@ function Dashboard() {
                 const params = new URLSearchParams(window.location.search);
                 const host = params.get('host') || router.query.host;
                 const shopParam = params.get('shop') || router.query.shop;
+                const impersonate = params.get('impersonate');
                 const queryString = new URLSearchParams();
                 if (host) queryString.set('host', host as string);
                 if (shopParam) queryString.set('shop', shopParam as string);
+                if (impersonate) queryString.set('impersonate', impersonate);
                 const query = queryString.toString();
                 window.location.href = `/settings${query ? `?${query}` : ''}`;
               }
@@ -411,9 +413,11 @@ function Dashboard() {
                       const params = new URLSearchParams(window.location.search);
                       const host = params.get('host') || router.query.host;
                       const shopParam = params.get('shop') || router.query.shop;
+                      const impersonate = params.get('impersonate');
                       const queryString = new URLSearchParams();
                       if (host) queryString.set('host', host as string);
                       if (shopParam) queryString.set('shop', shopParam as string);
+                      if (impersonate) queryString.set('impersonate', impersonate);
                       const query = queryString.toString();
                       window.location.href = `/settings${query ? `?${query}` : ''}`;
                     }}
