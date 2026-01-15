@@ -1,6 +1,7 @@
 // This page is for admin use only - not accessible to merchants
 // Merchants see their shop-specific analytics on the main dashboard (/)
 import { useEffect, useState } from 'react';
+import { useSessionHealthCheck } from '../components/SessionHealthCheck';
 import {
   Page,
   Layout,
@@ -28,6 +29,8 @@ interface AnalyticsData {
 }
 
 export default function Analytics() {
+  useSessionHealthCheck(); // Check session health on mount
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData>({

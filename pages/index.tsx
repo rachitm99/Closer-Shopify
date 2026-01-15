@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { useAuthenticatedFetch } from '../lib/use-auth-fetch';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import { Redirect } from '@shopify/app-bridge/actions';
+import { useSessionHealthCheck } from '../components/SessionHealthCheck';
 import {
   Page,
   Layout,
@@ -73,7 +72,8 @@ interface SubmissionData {
 
 function Dashboard() {
   const router = useRouter();
-  const app = useAppBridge();
+  useSessionHealthCheck(); // Check session health on mount
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -142,52 +142,6 @@ function Dashboard() {
           setOnboardingComplete(true);
           const shopDomain = settingsData.shop || 'unknown';
           setShop(shopDomain);
-
-          // Automatically fix/store session if needed (no reinstall required)
-          try {
-            const fixSessionResponse = await authFetch('/api/auth/fix-session');
-            if (fixSessionResponse.ok) {
-              const fixResult = await fixSessionResponse.json();
-              
-              if (fixResult.needsReauth) {
-                // Redirect to OAuth to get fresh access token (breaks out of iframe)
-                console.log('🔄 Dashboard - Need to re-authenticate for access token');
-                console.log('🔄 Dashboard - Auth URL (relative):', fixResult.authUrl);
-                
-                // Build full URL for redirect
-                const fullAuthUrl = `${window.location.origin}${fixResult.authUrl}`;
-                console.log('🔄 Dashboard - Auth URL (full):', fullAuthUrl);
-                
-                try {
-                  if (app) {
-                    const redirect = Redirect.create(app);
-                    redirect.dispatch(Redirect.Action.REMOTE, fullAuthUrl);
-                    console.log('✅ Dashboard - App Bridge REMOTE redirect dispatched');
-                  } else {
-                    // Fallback to exitiframe method
-                    console.log('⚠️ Dashboard - App Bridge not available, using exitiframe');
-                    window.top!.location.href = `https://${router.query.shop}/admin/apps/${process.env.NEXT_PUBLIC_SHOPIFY_API_KEY}/exitiframe?redirectUri=${encodeURIComponent(fullAuthUrl)}`;
-                  }
-                } catch (redirectError) {
-                  console.error('❌ Dashboard - Redirect failed:', redirectError);
-                  // Last resort fallback
-                  window.top!.location.href = fullAuthUrl;
-                }
-                return; // Stop execution while redirecting
-              }
-              
-              if (fixResult.success) {
-                console.log('✅ Dashboard - Session fixed:', fixResult);
-              } else {
-                console.log('ℹ️ Dashboard - Session fix not needed');
-              }
-            } else {
-              console.log('ℹ️ Dashboard - Session fix not needed or already exists');
-            }
-          } catch (fixError) {
-            console.log('ℹ️ Dashboard - Session fix skipped:', fixError);
-            // Don't block dashboard if fix-session fails
-          }
 
           // Check and store current subscription plan in users collection
           try {

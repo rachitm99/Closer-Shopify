@@ -152,10 +152,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('Billing create: Charge data:', JSON.stringify(chargeData, null, 2));
     
     // Create recurring charge
-    const response = await client.post({
-      path: 'recurring_application_charges',
-      data: chargeData,
-    });
+    console.log('Billing create: Sending POST request to Shopify API...');
+    let response;
+    try {
+      response = await client.post({
+        path: 'recurring_application_charges',
+        data: chargeData,
+      });
+      console.log('Billing create: Response received successfully');
+    } catch (apiError: any) {
+      console.error('❌ Shopify API error:', apiError);
+      console.error('❌ API error message:', apiError.message);
+      console.error('❌ API error response:', apiError.response);
+      
+      // Check if it's a 403 Forbidden (scope issue)
+      if (apiError.response?.status === 403 || apiError.response?.code === 403) {
+        console.error('❌ 403 Forbidden - Likely missing scope or permissions issue');
+        return res.status(403).json({
+          error: 'Permission denied',
+          message: 'The app does not have permission to create billing charges. Please reinstall the app to grant the required permissions.',
+          details: apiError.message
+        });
+      }
+      
+      throw apiError; // Re-throw to be caught by outer catch
+    }
 
     const charge = response.body.recurring_application_charge;
     console.log('Billing create: Charge created with ID:', charge.id);

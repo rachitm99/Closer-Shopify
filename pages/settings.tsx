@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useAuthenticatedFetch } from '../lib/use-auth-fetch';
 import { useRouter } from 'next/router';
+import { useSessionHealthCheck } from '../components/SessionHealthCheck';
 import {
   Page,
   Layout,
@@ -26,6 +27,8 @@ import { DEFAULT_SETTINGS, SelectedProduct } from '../lib/defaultSettings';
 function SettingsPage() {
   const router = useRouter();
   const authFetch = useAuthenticatedFetch();
+  useSessionHealthCheck(); // Check session health on mount
+  
   const [enabled, setEnabled] = useState(false);
   const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift' | 'coupon-code'>('giveaway');
 

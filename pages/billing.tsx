@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthenticatedFetch } from '../lib/use-auth-fetch';
+import { useSessionHealthCheck } from '../components/SessionHealthCheck';
 import {
   Page,
   Layout,
@@ -33,6 +34,8 @@ interface Subscription {
 export default function Billing() {
   const router = useRouter();
   const authFetch = useAuthenticatedFetch();
+  useSessionHealthCheck(); // Check session health on mount
+  
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [upgrading, setUpgrading] = useState(false);
