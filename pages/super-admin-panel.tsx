@@ -287,7 +287,7 @@ export default function SuperAdminPanel() {
                   </div>
                   <div style={{ marginTop: '24px' }}>
                     <Button
-                      primary
+                      variant="primary"
                       loading={impersonating}
                       disabled={!selectedShop}
                       onClick={handleImpersonate}
