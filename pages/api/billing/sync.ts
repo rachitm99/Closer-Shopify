@@ -65,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log(`📝 Updating Firebase: shop=${session.shop}, plan=${currentPlan}, status=${planStatus}`);
 
-    // Update Firebase
+    // Update Firebase - this updates currentPlan but NEVER touches overridePlan
     await db.collection(collections.users).doc(session.shop).set({
       shop: session.shop,
       currentPlan,
@@ -81,7 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }),
     }, { merge: true });
 
-    console.log('✅ Firebase updated successfully');
+    console.log('✅ Firebase currentPlan updated (overridePlan untouched if it exists)');
 
     return res.status(200).json({
       success: true,

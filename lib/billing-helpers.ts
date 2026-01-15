@@ -36,12 +36,34 @@ export const PLAN_LIMITS: Record<string, PlanLimits> = {
 
 export async function getActiveSubscription(session: Session) {
   try {
-    // First check users collection for currentPlan (takes priority)
+    // PRIORITY ORDER:
+    // 1. users.overridePlan (manual DB override - NEVER auto-synced - HIGHEST PRIORITY)
+    // 2. users.currentPlan (synced from Shopify automatically)
+    // 3. settings.subscriptionPlan (legacy manual override)
+    // 4. Shopify recurring_application_charges (actual billing)
+    
+    // First check users collection for overridePlan (HIGHEST PRIORITY - never auto-synced)
     const userDoc = await db.collection(collections.users).doc(session.shop).get();
     const userData = userDoc.data();
     
+    if (userData?.overridePlan && ['basic', 'starter', 'growth'].includes(userData.overridePlan)) {
+      console.log('✅ billing-helpers - Using overridePlan from users collection (MANUAL OVERRIDE):', userData.overridePlan);
+      
+      return {
+        plan: userData.overridePlan,
+        status: 'active',
+        isActive: true,
+        inTrial: false,
+        trialEndsOn: null,
+        limits: PLAN_LIMITS[userData.overridePlan] || PLAN_LIMITS.basic,
+        fromFirebase: true,
+        manualOverride: true,
+      };
+    }
+    
+    // Check currentPlan (auto-synced from Shopify)
     if (userData?.currentPlan && ['basic', 'starter', 'growth'].includes(userData.currentPlan)) {
-      console.log('✅ billing-helpers - Using currentPlan from users collection:', userData.currentPlan);
+      console.log('✅ billing-helpers - Using currentPlan from users collection (AUTO-SYNCED):', userData.currentPlan);
       
       return {
         plan: userData.currentPlan,

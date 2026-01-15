@@ -10,6 +10,7 @@ import {
   Text,
   Banner,
   InlineStack,
+  Select,
 } from '@shopify/polaris';
 
 export default function BillingDebug() {
@@ -19,6 +20,7 @@ export default function BillingDebug() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState('basic');
 
   const syncBilling = async () => {
     setLoading(true);
@@ -83,6 +85,57 @@ export default function BillingDebug() {
     }
   };
 
+  const manualUpdatePlan = async () => {
+    setLoading(true);
+    setError('');
+    setResult(null);
+
+    try {
+      const response = await authFetch('/api/billing/manual-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: selectedPlan }),
+      });
+      const data = await response.json();
+      
+      if (response.ok) {
+        setResult(data);
+      } else {
+        setError(data.message || 'Failed to update plan');
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeOverride = async () => {
+    setLoading(true);
+    setError('');
+    setResult(null);
+
+    try {
+      // Remove manual override flag - next sync will update from Shopify
+      const response = await authFetch('/api/billing/manual-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: 'basic', removeOverride: true }),
+      });
+      
+      if (response.ok) {
+        // Now sync from Shopify
+        await syncBilling();
+      } else {
+        setError('Failed to remove override');
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Page
       title="Billing Debug Tools"
@@ -93,7 +146,7 @@ export default function BillingDebug() {
           <Card>
             <BlockStack gap="400">
               <Text as="h2" variant="headingMd">
-                Manual Actions
+                Sync with Shopify
               </Text>
               
               <InlineStack gap="300">
@@ -123,6 +176,60 @@ export default function BillingDebug() {
               <Text as="p" variant="bodySm" tone="subdued">
                 Click "Sync from Shopify" after changing your plan in Shopify admin
               </Text>
+            </BlockStack>
+          </Card>
+        </Layout.Section>
+
+        <Layout.Section>
+          <Card>
+            <BlockStack gap="400">
+              <Text as="h2" variant="headingMd">
+                Manual Plan Override (Database)
+              </Text>
+              
+              <Text as="p" variant="bodySm" tone="subdued">
+                Directly set the plan in Firebase - this overrides Shopify billing
+              </Text>
+
+              <Select
+                label="Select Plan"
+                options={[
+                  { label: 'Basic (Free)', value: 'basic' },
+                  { label: 'Starter ($9.99/mo)', value: 'starter' },
+                  { label: 'Growth ($29.99/mo)', value: 'growth' },
+                ]}
+                value={selectedPlan}
+                onChange={setSelectedPlan}
+              />
+
+              <Button 
+                onClick={manualUpdatePlan} 
+                loading={loading}
+                variant="primary"
+                tone="success"
+              >
+                Update Plan in Database
+              </Button>
+
+              <InlineStack gap="300">
+                <Button 
+                  onClick={removeOverride} 
+                  loading={loading}
+                  tone="critical"
+                >
+                  Remove Override & Sync from Shopify
+                </Button>
+              </InlineStack>
+
+              <Banner tone="info">
+                <p>
+                  <strong>How it works:</strong><br/>
+                  • <code>overridePlan</code> = Manual override (highest priority, never auto-synced)<br/>
+                  • <code>currentPlan</code> = Auto-synced from Shopify billing<br/>
+                  • Auto-sync continues working and updates <code>currentPlan</code><br/>
+                  • If <code>overridePlan</code> exists, it takes priority over <code>currentPlan</code>
+                </p>
+              </Banner>
             </BlockStack>
           </Card>
         </Layout.Section>

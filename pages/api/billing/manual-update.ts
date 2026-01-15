@@ -14,27 +14,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const { plan } = req.body;
+    const { plan, removeOverride } = req.body;
+
+    // If removing override, clear the overridePlan field
+    if (removeOverride) {
+      console.log(`🔓 Removing manual override for shop: ${session.shop}`);
+      
+      await db.collection(collections.users).doc(session.shop).set({
+        overridePlan: null,
+        overrideRemovedAt: new Date().toISOString(),
+      }, { merge: true });
+
+      return res.status(200).json({ 
+        success: true,
+        shop: session.shop,
+        message: 'Manual override removed - using auto-synced plan from Shopify' 
+      });
+    }
 
     if (!plan || !['basic', 'starter', 'growth'].includes(plan)) {
       return res.status(400).json({ error: 'Invalid plan. Must be basic, starter, or growth' });
     }
 
-    console.log(`📝 Manual plan update: shop=${session.shop}, plan=${plan}`);
+    console.log(`📝 Manual plan override: shop=${session.shop}, overridePlan=${plan}`);
 
-    // Update user's plan in Firebase
+    // Update overridePlan field (NEVER touched by auto-sync)
     await db.collection(collections.users).doc(session.shop).set({
-      shop: session.shop,
-      currentPlan: plan,
-      planStatus: 'active',
-      planInTrial: false,
-      planTrialEndsOn: null,
-      planUpdatedAt: new Date().toISOString(),
-      manuallyUpdated: true,
-      manualUpdateTimestamp: new Date().toISOString(),
+      overridePlan: plan,
+      overrideSetAt: new Date().toISOString(),
     }, { merge: true });
 
-    console.log('✅ Firebase updated successfully');
+    console.log('✅ Firebase overridePlan updated - this will not be overwritten by auto-sync');
 
     return res.status(200).json({ 
       success: true,
