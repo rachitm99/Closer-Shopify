@@ -14,11 +14,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // If no access token, try to load the offline session directly
+    let workingSession = session;
     if (!session.accessToken) {
-      return res.status(401).json({ error: 'Invalid session - Please reinstall the app' });
+      const { loadSession } = await import('../../../lib/session-storage');
+      const offlineSession = await loadSession(`offline_${session.shop}`);
+      
+      if (!offlineSession || !offlineSession.accessToken) {
+        return res.status(401).json({ 
+          error: 'Session expired - Please refresh the page or reinstall the app if the issue persists' 
+        });
+      }
+      
+      workingSession = offlineSession;
     }
 
-    const client = new shopify.clients.Rest({ session });
+    const client = new shopify.clients.Rest({ session: workingSession });
 
     // Get all recurring charges
     const response = await client.get({

@@ -16,12 +16,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Unauthorized - Please refresh the page and try again' });
     }
 
+    console.log('Billing create: Session found for shop:', session.shop);
+    
+    // If no access token, try to load the offline session directly
+    let workingSession = session;
     if (!session.accessToken) {
-      console.log('Billing create: Session has no access token');
-      return res.status(401).json({ error: 'Invalid session - Please reinstall the app' });
+      console.log('Billing create: No access token, attempting to load offline session...');
+      const { loadSession } = await import('../../../lib/session-storage');
+      const offlineSession = await loadSession(`offline_${session.shop}`);
+      
+      if (!offlineSession || !offlineSession.accessToken) {
+        console.log('Billing create: No valid offline session found');
+        return res.status(401).json({ 
+          error: 'Session expired - Please refresh the page or reinstall the app if the issue persists' 
+        });
+      }
+      
+      workingSession = offlineSession;
+      console.log('Billing create: Using offline session with access token');
     }
 
-    console.log('Billing create: Session found for shop:', session.shop);
+    console.log('Billing create: Session found for shop:', workingSession.shop);
     const { plan } = req.body;
     
     // Define your pricing plans
@@ -57,13 +72,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const client = new shopify.clients.Rest({ session });
+    const client = new shopify.clients.Rest({ session: workingSession });
 
     console.log('Billing create: Creating recurring charge for plan:', selectedPlan.name);
     
     // Determine if this is a development store (test mode) or production
-    const isDevelopmentStore = session.shop.includes('.myshopify.com') && 
-                               (session.shop.includes('-dev') || session.shop.includes('-test'));
+    const isDevelopmentStore = workingSession.shop.includes('.myshopify.com') && 
+                               (workingSession.shop.includes('-dev') || workingSession.shop.includes('-test'));
     
     // Create recurring charge
     const response = await client.post({
@@ -72,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         recurring_application_charge: {
           name: selectedPlan.name,
           price: selectedPlan.price,
-          return_url: `https://${process.env.SHOPIFY_APP_URL || 'closer-qq8c.vercel.app'}/api/billing/activate?charge_id={{charge_id}}&shop=${session.shop}`,
+          return_url: `https://${process.env.SHOPIFY_APP_URL || 'closer-qq8c.vercel.app'}/api/billing/activate?charge_id={{charge_id}}&shop=${workingSession.shop}`,
           trial_days: selectedPlan.trialDays,
           test: isDevelopmentStore, // Test mode only for dev stores
         },

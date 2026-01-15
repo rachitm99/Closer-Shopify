@@ -57,6 +57,13 @@ export async function getActiveSubscription(session: Session) {
     // If session doesn't have access token, return basic plan
     if (!session.accessToken) {
       console.log('⚠️ billing-helpers - No access token, returning basic plan');
+      
+      // Store basic plan in Firestore
+      await db.collection(collections.settings).doc(session.shop).set({
+        currentPlan: 'basic',
+        planUpdatedAt: new Date().toISOString(),
+      }, { merge: true });
+      
       return {
         plan: 'basic',
         status: 'active',
@@ -80,6 +87,13 @@ export async function getActiveSubscription(session: Session) {
 
     if (!activeCharge) {
       // No active subscription, default to basic (free)
+      // Store in Firestore
+      await db.collection(collections.settings).doc(session.shop).set({
+        currentPlan: 'basic',
+        planStatus: 'active',
+        planUpdatedAt: new Date().toISOString(),
+      }, { merge: true });
+      
       return {
         plan: 'basic',
         status: 'active',
@@ -100,6 +114,16 @@ export async function getActiveSubscription(session: Session) {
     const inTrial = activeCharge.trial_days > 0 && 
                     activeCharge.trial_ends_on && 
                     new Date(activeCharge.trial_ends_on) > new Date();
+
+    // Store current plan in Firestore for easy access
+    await db.collection(collections.settings).doc(session.shop).set({
+      currentPlan: planName,
+      planStatus: activeCharge.status,
+      planInTrial: inTrial,
+      planTrialEndsOn: activeCharge.trial_ends_on || null,
+      planChargeId: activeCharge.id,
+      planUpdatedAt: new Date().toISOString(),
+    }, { merge: true });
 
     return {
       plan: planName,

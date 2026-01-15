@@ -39,6 +39,13 @@ export interface MerchantSettings {
   status?: string;
   // Manual subscription plan override (set from Firebase)
   subscriptionPlan?: 'basic' | 'starter' | 'growth';
+  // Current plan from Shopify (auto-synced)
+  currentPlan?: 'basic' | 'starter' | 'growth';
+  planStatus?: string;
+  planInTrial?: boolean;
+  planTrialEndsOn?: string;
+  planChargeId?: string;
+  planUpdatedAt?: string;
   couponCode?: string;
   couponCodeTitle?: string;
 } 
