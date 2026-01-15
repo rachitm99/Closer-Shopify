@@ -140,6 +140,18 @@ function Dashboard() {
           const shopDomain = settingsData.shop || 'unknown';
           setShop(shopDomain);
 
+          // Check and store current subscription plan in users collection
+          try {
+            const subscriptionResponse = await authFetch('/api/subscription/check');
+            if (subscriptionResponse.ok) {
+              const subscriptionData = await subscriptionResponse.json();
+              console.log('✅ Dashboard - Current plan fetched and stored:', subscriptionData.plan);
+            }
+          } catch (subError) {
+            console.error('⚠️ Dashboard - Error fetching subscription:', subError);
+            // Don't block dashboard loading if subscription check fails
+          }
+
           // Load analytics and submissions (consider followingOnly state)
           await loadAnalytics(shopDomain, followingOnly);
 
