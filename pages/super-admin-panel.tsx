@@ -48,8 +48,39 @@ export default function SuperAdminPanel() {
       return;
     }
 
-    loadStats();
+    // Check if current shop has access
+    checkShopAccess();
   }, []);
+
+  const checkShopAccess = async () => {
+    try {
+      const shop = sessionStorage.getItem('currentShop');
+      
+      if (!shop) {
+        router.push('/');
+        return;
+      }
+
+      const response = await fetch('/api/admin/check-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shop }),
+      });
+
+      const data = await response.json();
+
+      if (!data.hasAccess) {
+        router.push('/');
+        return;
+      }
+
+      // If access granted, load stats
+      loadStats();
+    } catch (err) {
+      console.error('Error checking shop access:', err);
+      router.push('/');
+    }
+  };
 
   const loadStats = async () => {
     try {
@@ -171,6 +202,9 @@ export default function SuperAdminPanel() {
           <Text as="p">
             To change the admin password, update the <strong>adminConfig/settings</strong> document in Firestore.
             Default password is <strong>admin123</strong>.
+          </Text>
+          <Text as="p">
+            Only whitelisted shops can access this panel. Configure in <strong>adminConfig/whitelist</strong> (field: allowedShops - array of shop domains).
           </Text>
         </Banner>
 

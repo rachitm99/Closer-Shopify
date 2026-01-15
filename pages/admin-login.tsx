@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import {
   Page,
@@ -16,6 +16,44 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    checkShopAccess();
+  }, []);
+
+  const checkShopAccess = async () => {
+    try {
+      // Get current shop from URL or session
+      const urlParams = new URLSearchParams(window.location.search);
+      const shop = urlParams.get('shop') || sessionStorage.getItem('currentShop');
+
+      if (!shop) {
+        setChecking(false);
+        return;
+      }
+
+      // Check if shop is whitelisted
+      const response = await fetch('/api/admin/check-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shop }),
+      });
+
+      const data = await response.json();
+
+      if (!data.hasAccess) {
+        router.push('/');
+        return;
+      }
+
+      sessionStorage.setItem('currentShop', shop);
+    } catch (err) {
+      console.error('Error checking shop access:', err);
+    } finally {
+      setChecking(false);
+    }
+  };
 
   const handleLogin = async () => {
     setLoading(true);
@@ -45,6 +83,16 @@ export default function AdminLogin() {
     }
   };
 
+  if (checking) {
+    return (
+      <Page title="Admin Login">
+        <BlockStack gap="500" align="center">
+          <Text as="p">Checking access...</Text>
+        </BlockStack>
+      </Page>
+    );
+  }
+
   return (
     <Page title="Admin Login">
       <BlockStack gap="500">
@@ -55,7 +103,8 @@ export default function AdminLogin() {
             </Text>
             <Text variant="bodyMd" as="p" tone="subdued">
               Enter the admin password to access the super admin panel. To change the password,
-              update the document in Firestore: adminConfig/settings
+              update the document in Firestore: adminConfig/settings. Only whitelisted shops can 
+              access this panel - configure allowed shops in adminConfig/whitelist (field: allowedShops - array).
             </Text>
             
             {error && (
@@ -74,7 +123,7 @@ export default function AdminLogin() {
 
             <InlineStack align="end">
               <Button
-                primary
+                variant="primary"
                 loading={loading}
                 onClick={handleLogin}
               >
