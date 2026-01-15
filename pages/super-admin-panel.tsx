@@ -171,7 +171,7 @@ export default function SuperAdminPanel() {
   // Prepare table data for shops
   const tableRows = shops.slice(0, 20).map(shop => [
     shop.shop,
-    <Badge key={shop.shop} tone={shop.currentPlan === 'growth' ? 'success' : shop.currentPlan === 'starter' ? 'info' : 'default'}>
+    <Badge key={shop.shop} tone={shop.currentPlan === 'growth' ? 'success' : shop.currentPlan === 'starter' ? 'info' : undefined}>
       {shop.currentPlan}
     </Badge>,
     <Badge key={`${shop.shop}-status`} tone={shop.planStatus === 'active' ? 'success' : 'warning'}>
