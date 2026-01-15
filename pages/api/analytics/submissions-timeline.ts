@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db, collections } from '../../../lib/firestore';
+import { getSessionFromRequest } from '../../../lib/auth-helpers';
+import { checkPlanLimit } from '../../../lib/billing-helpers';
 
 /**
  * Submissions Timeline API
@@ -21,6 +23,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Check if user has access to analytics
+    const session = await getSessionFromRequest(req);
+    if (session) {
+      const hasAnalytics = await checkPlanLimit(session, 'analytics');
+      if (!hasAnalytics) {
+        return res.status(403).json({ 
+          error: 'Analytics not available on your plan',
+          message: 'Please upgrade to Starter or Growth plan to access analytics features'
+        });
+      }
+    }
+
     // Get shop from query or session
     const shop = req.query.shop as string;
     

@@ -350,8 +350,25 @@ function SettingsPage() {
               const query = queryString.toString();
               window.location.href = `/${query ? `?${query}` : ''}`;
             }
-          },
+          }
         }}
+        secondaryActions={[
+          {
+            content: 'Billing & Plans',
+            onAction: () => {
+              if (typeof window !== 'undefined') {
+                const params = new URLSearchParams(window.location.search);
+                const host = params.get('host') || router.query.host;
+                const shopParam = params.get('shop') || router.query.shop;
+                const queryString = new URLSearchParams();
+                if (host) queryString.set('host', host as string);
+                if (shopParam) queryString.set('shop', shopParam as string);
+                const query = queryString.toString();
+                window.location.href = `/billing${query ? `?${query}` : ''}`;
+              }
+            }
+          }
+        ]}
       >
         <Layout>
           {error && (

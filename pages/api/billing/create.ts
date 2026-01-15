@@ -22,22 +22,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Define your pricing plans
     const plans = {
       basic: {
-        name: 'Basic Plan',
-        price: 9.99,
-        trialDays: 0, // No trial - immediate payment
+        name: 'Basic',
+        price: 0,
+        trialDays: 0,
       },
-      pro: {
-        name: 'Pro Plan',
-        price: 29.99,
-        trialDays: 0, // No trial - immediate payment
+      starter: {
+        name: 'Starter',
+        price: 29.00,
+        trialDays: 14,
+      },
+      growth: {
+        name: 'Growth',
+        price: 99.00,
+        trialDays: 14,
       },
     };
 
-    const selectedPlan = plans[plan as keyof typeof plans] || plans.basic;
+    const selectedPlan = plans[plan as keyof typeof plans];
+    
+    if (!selectedPlan) {
+      return res.status(400).json({ error: 'Invalid plan selected' });
+    }
+    
+    // Basic plan is free, no charge needed
+    if (plan === 'basic') {
+      return res.status(200).json({ 
+        plan: 'basic',
+        message: 'Basic plan is free - no payment required' 
+      });
+    }
 
     const client = new shopify.clients.Rest({ session });
 
     console.log('Billing create: Creating recurring charge for plan:', selectedPlan.name);
+    
+    // Determine if this is a development store (test mode) or production
+    const isDevelopmentStore = session.shop.includes('.myshopify.com') && 
+                               (session.shop.includes('-dev') || session.shop.includes('-test'));
     
     // Create recurring charge
     const response = await client.post({
@@ -46,9 +67,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         recurring_application_charge: {
           name: selectedPlan.name,
           price: selectedPlan.price,
-          return_url: `https://${session.shop}/admin/apps/${process.env.SHOPIFY_API_KEY}`,
+          return_url: `https://${process.env.SHOPIFY_APP_URL || 'closer-qq8c.vercel.app'}/api/billing/activate?charge_id={{charge_id}}&shop=${session.shop}`,
           trial_days: selectedPlan.trialDays,
-          test: true, // Always test mode - Shopify auto-handles dev vs prod stores
+          test: isDevelopmentStore, // Test mode only for dev stores
         },
       },
     });

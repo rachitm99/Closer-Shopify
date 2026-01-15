@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import shopify from '../../../lib/shopify';
 import { getSessionFromRequest } from '../../../lib/auth-helpers';
+import { getActiveSubscription } from '../../../lib/billing-helpers';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -14,50 +15,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const client = new shopify.clients.Rest({ session });
-    
-    // Check active recurring charges
-    const response = await client.get({
-      path: 'recurring_application_charges',
-    });
+    const subscription = await getActiveSubscription(session);
 
-    const charges = response.body.recurring_application_charges || [];
-    const activeCharge = charges.find((charge: any) => charge.status === 'active');
-
-    if (activeCharge) {
-      // Store subscription status in metafield
-      await client.post({
-        path: 'metafields',
-        data: {
-          metafield: {
-            namespace: 'reward_message_app',
-            key: 'subscription_active',
-            value: 'true',
-            type: 'boolean',
-          },
-        },
-      });
-
-      return res.status(200).json({ 
-        subscribed: true, 
-        plan: activeCharge.name 
-      });
-    }
-
-    // No active subscription - set metafield to false
-    await client.post({
-      path: 'metafields',
-      data: {
-        metafield: {
-          namespace: 'reward_message_app',
-          key: 'subscription_active',
-          value: 'false',
-          type: 'boolean',
-        },
-      },
-    });
-
-    return res.status(200).json({ subscribed: false });
+    return res.status(200).json(subscription);
   } catch (error) {
     console.error('Subscription check error:', error);
     return res.status(500).json({ error: 'Failed to check subscription' });
