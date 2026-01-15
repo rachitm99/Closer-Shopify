@@ -88,6 +88,10 @@ function Dashboard() {
       if (analyticsResponse.ok) {
         const data = await analyticsResponse.json();
         setAnalytics(data);
+      } else if (analyticsResponse.status === 403) {
+        // Analytics not available on current plan
+        const errorData = await analyticsResponse.json();
+        setError(errorData.message || 'Analytics not available on your current plan');
       } else {
         setError('Failed to load analytics data');
       }
@@ -277,7 +281,26 @@ function Dashboard() {
         <Layout>
           {error && (
             <Layout.Section>
-              <Banner tone="critical" onDismiss={() => setError(null)}>
+              <Banner 
+                tone={error.includes('upgrade') || error.includes('not available') ? 'warning' : 'critical'} 
+                onDismiss={() => setError(null)}
+                action={
+                  (error.includes('upgrade') || error.includes('not available')) 
+                    ? {
+                        content: 'Upgrade Plan',
+                        onAction: () => {
+                          const params = new URLSearchParams(window.location.search);
+                          const host = params.get('host') || router.query.host;
+                          const shopParam = params.get('shop') || router.query.shop;
+                          const queryString = new URLSearchParams();
+                          if (host) queryString.set('host', host as string);
+                          if (shopParam) queryString.set('shop', shopParam as string);
+                          router.push(`/billing?${queryString.toString()}`);
+                        }
+                      }
+                    : undefined
+                }
+              >
                 {error}
               </Banner>
             </Layout.Section>

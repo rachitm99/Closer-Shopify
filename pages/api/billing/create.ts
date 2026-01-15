@@ -16,6 +16,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Unauthorized - Please refresh the page and try again' });
     }
 
+    if (!session.accessToken) {
+      console.log('Billing create: Session has no access token');
+      return res.status(401).json({ error: 'Invalid session - Please reinstall the app' });
+    }
+
     console.log('Billing create: Session found for shop:', session.shop);
     const { plan } = req.body;
     

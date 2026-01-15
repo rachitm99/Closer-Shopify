@@ -24,6 +24,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Session not found' });
     }
 
+    if (!session.accessToken) {
+      console.error('Session has no access token for shop:', shop);
+      return res.status(401).json({ error: 'Invalid session - Please reinstall the app' });
+    }
+
     const client = new shopify.clients.Rest({ session });
 
     // First, get the charge to check its status

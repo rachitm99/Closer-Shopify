@@ -14,6 +14,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    if (!session.accessToken) {
+      return res.status(401).json({ error: 'Invalid session - Please reinstall the app' });
+    }
+
     const client = new shopify.clients.Rest({ session });
 
     // Get all active recurring charges
