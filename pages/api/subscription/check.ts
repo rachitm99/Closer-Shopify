@@ -39,6 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             customBranding: false,
             prioritySupport: false,
           },
+          fromFirebase: true,
         };
       }
     }
@@ -59,6 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           customBranding: false,
           prioritySupport: false,
         },
+        fromFirebase: true,
       };
     }
 
