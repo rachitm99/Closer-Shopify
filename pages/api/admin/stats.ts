@@ -24,9 +24,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const submissionsSnapshot = await db.collection(collections.submissions).get();
     const submissions = submissionsSnapshot.docs.map(doc => doc.data());
 
+    // Get all impressions
+    const impressionsSnapshot = await db.collection(collections.impressions).get();
+    const impressions = impressionsSnapshot.docs.map(doc => doc.data());
+
     // Calculate stats
     const totalUsers = users.length;
     const totalSubmissions = submissions.length;
+    const totalImpressions = impressions.reduce((sum, imp: any) => sum + (imp.count || 1), 0);
+    const conversionRate = totalImpressions > 0 ? ((totalSubmissions / totalImpressions) * 100).toFixed(2) : '0.00';
 
     // Count users by plan
     const planCounts = users.reduce((acc: any, user: any) => {
@@ -97,6 +103,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       stats: {
         totalUsers,
         totalSubmissions,
+        totalImpressions,
+        conversionRate,
         planCounts,
         activeTrials,
         recentSubmissions,

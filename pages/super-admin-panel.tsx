@@ -18,6 +18,8 @@ import {
 interface Stats {
   totalUsers: number;
   totalSubmissions: number;
+  totalImpressions: number;
+  conversionRate: string;
   planCounts: Record<string, number>;
   activeTrials: number;
   recentSubmissions: number;
@@ -290,6 +292,24 @@ export default function SuperAdminPanel() {
               <BlockStack gap="200">
                 <Text variant="headingMd" as="h2">Active Trials</Text>
                 <Text variant="heading2xl" as="p">{stats?.activeTrials || 0}</Text>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+
+          <Layout.Section variant="oneThird">
+            <Card>
+              <BlockStack gap="200">
+                <Text variant="headingMd" as="h2">Total Impressions</Text>
+                <Text variant="heading2xl" as="p">{stats?.totalImpressions || 0}</Text>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+
+          <Layout.Section variant="oneThird">
+            <Card>
+              <BlockStack gap="200">
+                <Text variant="headingMd" as="h2">Conversion Rate</Text>
+                <Text variant="heading2xl" as="p">{stats?.conversionRate || '0.00'}%</Text>
               </BlockStack>
             </Card>
           </Layout.Section>
