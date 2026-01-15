@@ -38,6 +38,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let planStatus = 'active';
     let planInTrial = false;
     let planTrialEndsOn = null;
+    let planTrialStartedOn = null;
+    let trialDaysRemaining = null;
     let chargeDetails = null;
 
     if (activeCharge) {
@@ -46,14 +48,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name: activeCharge.name,
         status: activeCharge.status,
         price: activeCharge.price,
+        trial_days: activeCharge.trial_days,
+        trial_ends_on: activeCharge.trial_ends_on,
       });
 
       currentPlan = mapChargeNameToPlan(activeCharge.name);
       planStatus = activeCharge.status;
-      planInTrial = activeCharge.trial_days > 0 && 
-                    activeCharge.trial_ends_on && 
-                    new Date(activeCharge.trial_ends_on) > new Date();
-      planTrialEndsOn = activeCharge.trial_ends_on;
+      
+      // Calculate trial details
+      if (activeCharge.trial_ends_on) {
+        const trialEndDate = new Date(activeCharge.trial_ends_on);
+        const now = new Date();
+        planInTrial = trialEndDate > now;
+        planTrialEndsOn = activeCharge.trial_ends_on;
+        
+        // Calculate trial start date from end date and trial_days
+        if (activeCharge.trial_days && activeCharge.trial_days > 0) {
+          const trialStartDate = new Date(trialEndDate);
+          trialStartDate.setDate(trialStartDate.getDate() - activeCharge.trial_days);
+          planTrialStartedOn = trialStartDate.toISOString();
+        }
+        
+        if (planInTrial) {
+          // Calculate remaining days
+          const timeDiff = trialEndDate.getTime() - now.getTime();
+          trialDaysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+          console.log(`⏰ Trial active: ${trialDaysRemaining} days remaining until ${activeCharge.trial_ends_on}`);
+          console.log(`📅 Trial started: ${planTrialStartedOn}`);
+        }
+      }
+      
       chargeDetails = {
         id: activeCharge.id,
         name: activeCharge.name,
@@ -63,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('ℹ️ No active charge found, defaulting to basic plan');
     }
 
-    console.log(`📝 Updating Firebase: shop=${session.shop}, plan=${currentPlan}, status=${planStatus}`);
+    console.log(`📝 Updating Firebase: shop=${session.shop}, plan=${currentPlan}, status=${planStatus}, trial=${planInTrial}, daysRemaining=${trialDaysRemaining}`);
 
     // Update Firebase - this updates currentPlan but NEVER touches overridePlan
     await db.collection(collections.users).doc(session.shop).set({
@@ -72,6 +96,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       planStatus,
       planInTrial,
       planTrialEndsOn,
+      planTrialStartedOn,
+      trialDaysRemaining: trialDaysRemaining,
       planUpdatedAt: new Date().toISOString(),
       lastSyncedAt: new Date().toISOString(),
       ...(chargeDetails && {
@@ -89,6 +115,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       currentPlan,
       planStatus,
       planInTrial,
+      trialDaysRemaining,
+      planTrialEndsOn,
+      planTrialStartedOn,
       chargeDetails,
       message: 'Billing status synced successfully',
     });

@@ -61,14 +61,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Get shop list for impersonation dropdown
     const shopList = users.map((user: any) => {
-      // Check if trial is active
+      // Check if trial is active and calculate remaining days
       const now = new Date();
       let isInActiveTrial = false;
+      let trialDaysRemaining = null;
+      let trialEndDate = null;
+      
       if (user.planInTrial && user.planTrialEndsOn) {
-        const trialEndDate = typeof user.planTrialEndsOn === 'string' 
+        trialEndDate = typeof user.planTrialEndsOn === 'string' 
           ? new Date(user.planTrialEndsOn)
           : user.planTrialEndsOn.toDate ? user.planTrialEndsOn.toDate() : new Date(user.planTrialEndsOn);
         isInActiveTrial = trialEndDate > now;
+        
+        if (isInActiveTrial) {
+          // Calculate remaining days
+          const timeDiff = trialEndDate.getTime() - now.getTime();
+          trialDaysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        }
       }
 
       return {
@@ -77,6 +86,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         planStatus: user.planStatus || 'active',
         planInTrial: isInActiveTrial,
         planTrialEndsOn: user.planTrialEndsOn || null,
+        planTrialStartedOn: user.planTrialStartedOn || null,
+        trialDaysRemaining: trialDaysRemaining,
         email: user.email || '',
         createdAt: user.createdAt || '',
       };

@@ -44,6 +44,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         overridePlan: userData?.overridePlan,
         planInTrial: userData?.planInTrial,
         planTrialEndsOn: userData?.planTrialEndsOn,
+        planTrialStartedOn: userData?.planTrialStartedOn,
+        trialDaysRemaining: userData?.trialDaysRemaining,
+        lastSyncedAt: userData?.lastSyncedAt,
       }
     });
   } catch (error) {

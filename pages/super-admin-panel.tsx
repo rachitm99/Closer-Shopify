@@ -29,6 +29,8 @@ interface Shop {
   planStatus: string;
   planInTrial: boolean;
   planTrialEndsOn: string | null;
+  planTrialStartedOn: string | null;
+  trialDaysRemaining: number | null;
   email: string;
   createdAt: string;
 }
@@ -221,7 +223,12 @@ export default function SuperAdminPanel() {
         <Badge tone={shop.planStatus === 'active' ? 'success' : shop.planStatus === 'cancelled' || shop.planStatus === 'declined' ? 'critical' : 'warning'}>
           {(shop.planStatus || 'active').toUpperCase()}
         </Badge>
-        {shop.planInTrial && (
+        {shop.planInTrial && shop.trialDaysRemaining !== null && (
+          <Badge tone="info">
+            TRIAL ({shop.trialDaysRemaining}d left)
+          </Badge>
+        )}
+        {shop.planInTrial && shop.trialDaysRemaining === null && (
           <Badge tone="info">
             TRIAL
           </Badge>
@@ -412,7 +419,10 @@ export default function SuperAdminPanel() {
                     <Text as="p"><strong>Current Plan:</strong> {shopDetails.raw?.currentPlan || 'N/A'}</Text>
                     <Text as="p"><strong>Override Plan:</strong> {shopDetails.raw?.overridePlan || 'N/A'}</Text>
                     <Text as="p"><strong>In Trial:</strong> {shopDetails.raw?.planInTrial ? 'Yes' : 'No'}</Text>
-                    <Text as="p"><strong>Trial Ends:</strong> {shopDetails.raw?.planTrialEndsOn || 'N/A'}</Text>
+                    <Text as="p"><strong>Trial Started:</strong> {shopDetails.raw?.planTrialStartedOn ? new Date(shopDetails.raw.planTrialStartedOn).toLocaleDateString() : 'N/A'}</Text>
+                    <Text as="p"><strong>Trial Ends:</strong> {shopDetails.raw?.planTrialEndsOn ? new Date(shopDetails.raw.planTrialEndsOn).toLocaleDateString() : 'N/A'}</Text>
+                    <Text as="p"><strong>Trial Days Remaining:</strong> {shopDetails.raw?.trialDaysRemaining !== null && shopDetails.raw?.trialDaysRemaining !== undefined ? `${shopDetails.raw.trialDaysRemaining} days` : 'N/A'}</Text>
+                    <Text as="p"><strong>Last Synced:</strong> {shopDetails.raw?.lastSyncedAt || 'Never'}</Text>
                   </BlockStack>
                 </Card>
 
