@@ -143,7 +143,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       recurring_application_charge: {
         name: selectedPlan.name,
         price: selectedPlan.price,
-        return_url: `https://${process.env.SHOPIFY_APP_URL || 'closer-qq8c.vercel.app'}/api/billing/activate?charge_id={{charge_id}}&shop=${workingSession.shop}`,
+        return_url: `${process.env.SHOPIFY_APP_URL || 'https://closer-qq8c.vercel.app'}/api/billing/activate?charge_id={{charge_id}}&shop=${workingSession.shop}`,
         trial_days: selectedPlan.trialDays,
         test: true, // Always use test mode for now
       },
