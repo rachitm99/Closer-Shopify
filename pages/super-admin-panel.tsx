@@ -135,6 +135,13 @@ export default function SuperAdminPanel() {
         
         // Open dashboard in new tab
         window.open(`${data.redirectUrl}`, '_blank');
+        // Also provide link to settings
+        setTimeout(() => {
+          const openSettings = confirm(`Dashboard opened. Do you also want to open Settings page for ${selectedShop}?`);
+          if (openSettings) {
+            window.open(`/settings?impersonate=${selectedShop}`, '_blank');
+          }
+        }, 500);
       } else {
         setError(data.error || 'Failed to impersonate shop');
       }
@@ -176,16 +183,18 @@ export default function SuperAdminPanel() {
     <Badge key={shop.shop} tone={shop.currentPlan === 'growth' ? 'success' : shop.currentPlan === 'starter' ? 'info' : undefined}>
       {shop.currentPlan}
     </Badge>,
-    <InlineStack key={`${shop.shop}-status`} gap="200">
-      <Badge tone={shop.planStatus === 'active' ? 'success' : shop.planStatus === 'cancelled' || shop.planStatus === 'declined' ? 'critical' : 'warning'}>
-        {(shop.planStatus || 'active').toUpperCase()}
-      </Badge>
-      {shop.planInTrial && (
-        <Badge tone="info">
-          TRIAL
+    <div key={`${shop.shop}-status`} title={`Status: ${shop.planStatus || 'active'}`}>
+      <InlineStack gap="200">
+        <Badge tone={shop.planStatus === 'active' ? 'success' : shop.planStatus === 'cancelled' || shop.planStatus === 'declined' ? 'critical' : 'warning'}>
+          {(shop.planStatus || 'active').toUpperCase()}
         </Badge>
-      )}
-    </InlineStack>,
+        {shop.planInTrial && (
+          <Badge tone="info">
+            TRIAL
+          </Badge>
+        )}
+      </InlineStack>
+    </div>,
     shop.email || 'N/A',
     shop.createdAt ? new Date(shop.createdAt).toLocaleDateString() : 'N/A',
   ]);

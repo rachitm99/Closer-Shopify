@@ -31,6 +31,8 @@ function SettingsPage() {
   
   const [enabled, setEnabled] = useState(false);
   const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift' | 'coupon-code'>('giveaway');
+  const [isImpersonating, setIsImpersonating] = useState(false);
+  const [impersonatedShop, setImpersonatedShop] = useState<string>('');
 
   const [logoUrl, setLogoUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState(DEFAULT_SETTINGS.popupTitle);
@@ -94,6 +96,33 @@ function SettingsPage() {
       console.log('📋 Settings Page - Current loading state:', loading);
       
       try {
+        // Check for impersonation mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const impersonateShop = urlParams.get('impersonate');
+        
+        if (impersonateShop) {
+          console.log('🎭 Settings Page - Impersonating shop:', impersonateShop);
+          setIsImpersonating(true);
+          setImpersonatedShop(impersonateShop);
+          
+          // Load impersonated shop's settings
+          const response = await fetch(`/api/settings/merchant?shop=${impersonateShop}`, {
+            headers: {
+              'x-admin-auth': 'true',
+            },
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('📋 Settings Page - Loaded impersonated settings:', data);
+            applySettingsData(data);
+          } else {
+            setError('Failed to load impersonated shop settings');
+          }
+          setLoading(false);
+          return;
+        }
+        
         console.log('📋 Settings Page - About to call authFetch for /api/settings/merchant');
         const response = await authFetch('/api/settings/merchant');
         console.log('📋 Settings Page - authFetch completed with status:', response.status);
@@ -102,43 +131,7 @@ function SettingsPage() {
           console.log('✅ Settings Page - Response OK, parsing JSON...');
           const data = await response.json();
           console.log('✅ Settings Page - Data received:', data);
-          
-          // No need to check onboarding here - handled in _app.tsx
-          
-          setEnabled(data.enabled || false);
-          setMode(data.mode || DEFAULT_SETTINGS.mode);
-          setLogoUrl(data.logoUrl || '');
-          setPopupTitle(data.popupTitle || DEFAULT_SETTINGS.popupTitle);
-          setSubtitleTop(data.subtitleTop || DEFAULT_SETTINGS.subtitleTop);
-          setSubtitleBottom(data.subtitleBottom || DEFAULT_SETTINGS.subtitleBottom);
-          setSocialProofSubtitle(data.socialProofSubtitle || DEFAULT_SETTINGS.socialProofSubtitle);
-          setRulesTitle(data.rulesTitle || DEFAULT_SETTINGS.rulesTitle);
-          // giveawayRules editing disabled for now
-          // setGiveawayRules(data.giveawayRules || [
-          //   'Follow us on Instagram',
-          //   'Like our latest post',
-          //   'Tag 2 friends in the comments',
-          //   'Share this post to your story',
-          //   'Turn on post notifications',
-          //   'Use our hashtag in your story'
-          // ]);
-          setRulesDescription(data.rulesDescription || DEFAULT_SETTINGS.rulesDescription);
-          setFormFieldLabel(data.formFieldLabel || DEFAULT_SETTINGS.formFieldLabel);
-          setSubmitButtonText(data.submitButtonText || DEFAULT_SETTINGS.submitButtonText);
-          setSubmittedTitle(data.submittedTitle || DEFAULT_SETTINGS.submittedTitle);
-          setSubmittedSubtitle(data.submittedSubtitle || DEFAULT_SETTINGS.submittedSubtitle);
-          setSubmittedCountdownText(data.submittedCountdownText || DEFAULT_SETTINGS.submittedCountdownText);
-          setSubmittedWinnerText(data.submittedWinnerText || DEFAULT_SETTINGS.submittedWinnerText);
-          setSubmittedSocialProofText(data.submittedSocialProofText || DEFAULT_SETTINGS.submittedSocialProofText);
-          setFollowButtonText(data.followButtonText || DEFAULT_SETTINGS.followButtonText);
-          setCouponCode(data.couponCode || DEFAULT_SETTINGS.couponCode);
-          setCouponCodeTitle(data.couponCodeTitle || DEFAULT_SETTINGS.couponCodeTitle);
-          setRedirectUrl(data.redirectUrl || '');
-          setBannerUrl(data.bannerUrl || '');
-          setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
-          setCountdownTitle(data.countdownTitle || DEFAULT_SETTINGS.countdownTitle);
-          setSelectedProducts(data.selectedProducts || []);
-          console.log('✅ Settings Page - All state updated successfully');
+          applySettingsData(data);
         } else if (response.status === 401) {
           console.log('🔒 Settings Page - Unauthorized (401)');
           // Unauthorized - redirect to auth
@@ -176,6 +169,34 @@ function SettingsPage() {
     }
   }, [authFetch, router.isReady, router.query.shop]);
 
+  // Helper function to apply settings data to state
+  const applySettingsData = (data: any) => {
+    setEnabled(data.enabled || false);
+    setMode(data.mode || DEFAULT_SETTINGS.mode);
+    setLogoUrl(data.logoUrl || '');
+    setPopupTitle(data.popupTitle || DEFAULT_SETTINGS.popupTitle);
+    setSubtitleTop(data.subtitleTop || DEFAULT_SETTINGS.subtitleTop);
+    setSubtitleBottom(data.subtitleBottom || DEFAULT_SETTINGS.subtitleBottom);
+    setSocialProofSubtitle(data.socialProofSubtitle || DEFAULT_SETTINGS.socialProofSubtitle);
+    setRulesTitle(data.rulesTitle || DEFAULT_SETTINGS.rulesTitle);
+    setRulesDescription(data.rulesDescription || DEFAULT_SETTINGS.rulesDescription);
+    setFormFieldLabel(data.formFieldLabel || DEFAULT_SETTINGS.formFieldLabel);
+    setSubmitButtonText(data.submitButtonText || DEFAULT_SETTINGS.submitButtonText);
+    setSubmittedTitle(data.submittedTitle || DEFAULT_SETTINGS.submittedTitle);
+    setSubmittedSubtitle(data.submittedSubtitle || DEFAULT_SETTINGS.submittedSubtitle);
+    setSubmittedCountdownText(data.submittedCountdownText || DEFAULT_SETTINGS.submittedCountdownText);
+    setSubmittedWinnerText(data.submittedWinnerText || DEFAULT_SETTINGS.submittedWinnerText);
+    setSubmittedSocialProofText(data.submittedSocialProofText || DEFAULT_SETTINGS.submittedSocialProofText);
+    setFollowButtonText(data.followButtonText || DEFAULT_SETTINGS.followButtonText);
+    setCouponCode(data.couponCode || DEFAULT_SETTINGS.couponCode);
+    setCouponCodeTitle(data.couponCodeTitle || DEFAULT_SETTINGS.couponCodeTitle);
+    setRedirectUrl(data.redirectUrl || '');
+    setBannerUrl(data.bannerUrl || '');
+    setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
+    setCountdownTitle(data.countdownTitle || DEFAULT_SETTINGS.countdownTitle);
+    setSelectedProducts(data.selectedProducts || []);
+  };
+
   const handleToggle = async () => {
     try {
       setSaving(true);
@@ -183,7 +204,15 @@ function SettingsPage() {
       
       const newEnabled = !enabled;
       
-      const response = await authFetch('/api/settings/merchant', {
+      const url = isImpersonating 
+        ? `/api/settings/merchant?shop=${impersonatedShop}` 
+        : '/api/settings/merchant';
+      
+      const fetchFn = isImpersonating 
+        ? (url: string, options: any) => fetch(url, { ...options, headers: { ...options.headers, 'x-admin-auth': 'true' } })
+        : authFetch;
+      
+      const response = await fetchFn(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -232,7 +261,15 @@ function SettingsPage() {
         return;
       }
       
-      const response = await authFetch('/api/settings/merchant', {
+      const url = isImpersonating 
+        ? `/api/settings/merchant?shop=${impersonatedShop}` 
+        : '/api/settings/merchant';
+      
+      const fetchFn = isImpersonating 
+        ? (url: string, options: any) => fetch(url, { ...options, headers: { ...options.headers, 'x-admin-auth': 'true' } })
+        : authFetch;
+      
+      const response = await fetchFn(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -374,6 +411,16 @@ function SettingsPage() {
         ]}
       >
         <Layout>
+          {isImpersonating && (
+            <Layout.Section>
+              <Banner tone="info">
+                <Text as="p">
+                  🎭 <strong>Admin Impersonation Mode</strong> - You are editing settings for: <strong>{impersonatedShop}</strong>
+                </Text>
+              </Banner>
+            </Layout.Section>
+          )}
+          
           {error && (
             <Layout.Section>
               <Banner tone="critical" onDismiss={() => setError(null)}>

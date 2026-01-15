@@ -57,16 +57,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log('🔷 API /settings/merchant - Cookies:', req.headers.cookie ? 'Present' : 'Not present');
   
   try {
-    console.log('🔷 API /settings/merchant - Getting session from request...');
-    const session = await getSessionFromRequest(req);
-    console.log('🔷 API /settings/merchant - Session result:', session ? `Found for ${session.shop}` : 'Not found');
-    
-    if (!session) {
-      console.log('❌ API /settings/merchant - No session, returning 401');
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    // Check for admin impersonation
+    const impersonateShop = req.query.shop as string | undefined;
+    const adminAuth = req.headers['x-admin-auth'];
+    let shop: string;
 
-    const { shop } = session;
+    if (impersonateShop && adminAuth === 'true') {
+      console.log('🎭 API /settings/merchant - Admin impersonation mode for:', impersonateShop);
+      shop = impersonateShop;
+    } else {
+      console.log('🔷 API /settings/merchant - Getting session from request...');
+      const session = await getSessionFromRequest(req);
+      console.log('🔷 API /settings/merchant - Session result:', session ? `Found for ${session.shop}` : 'Not found');
+      
+      if (!session) {
+        console.log('❌ API /settings/merchant - No session, returning 401');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      shop = session.shop;
+    }
+    
     console.log('🔷 API /settings/merchant - Shop:', shop);
 
     if (req.method === 'GET') {
