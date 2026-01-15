@@ -9,6 +9,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     console.log('Billing create: Getting session...');
+    console.log('Billing create: Request headers:', JSON.stringify({
+      authorization: req.headers.authorization ? 'Present' : 'Missing',
+      cookie: req.headers.cookie ? 'Present' : 'Missing',
+    }));
+    
     const session = await getSessionFromRequest(req);
     
     if (!session) {
@@ -17,18 +22,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     console.log('Billing create: Session found for shop:', session.shop);
+    console.log('Billing create: Session has accessToken:', !!session.accessToken);
     
     // If no access token, try to load the offline session directly
     let workingSession = session;
     if (!session.accessToken) {
       console.log('Billing create: No access token, attempting to load offline session...');
       const { loadSession } = await import('../../../lib/session-storage');
-      const offlineSession = await loadSession(`offline_${session.shop}`);
+      const sessionId = `offline_${session.shop}`;
+      console.log('Billing create: Looking for session ID:', sessionId);
       
-      if (!offlineSession || !offlineSession.accessToken) {
-        console.log('Billing create: No valid offline session found');
+      const offlineSession = await loadSession(sessionId);
+      
+      if (!offlineSession) {
+        console.log('Billing create: No offline session found in storage');
         return res.status(401).json({ 
           error: 'Session expired - Please refresh the page or reinstall the app if the issue persists' 
+        });
+      }
+      
+      if (!offlineSession.accessToken) {
+        console.log('Billing create: Offline session found but has no access token');
+        return res.status(401).json({ 
+          error: 'Invalid session - Please reinstall the app' 
         });
       }
       
@@ -36,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('Billing create: Using offline session with access token');
     }
 
-    console.log('Billing create: Session found for shop:', workingSession.shop);
+    console.log('Billing create: Final working session shop:', workingSession.shop);
     const { plan } = req.body;
     
     // Define your pricing plans

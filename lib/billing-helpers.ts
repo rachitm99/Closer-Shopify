@@ -36,13 +36,31 @@ export const PLAN_LIMITS: Record<string, PlanLimits> = {
 
 export async function getActiveSubscription(session: Session) {
   try {
-    // Check Firestore for manual plan override first
+    // First check users collection for currentPlan (takes priority)
+    const userDoc = await db.collection(collections.users).doc(session.shop).get();
+    const userData = userDoc.data();
+    
+    if (userData?.currentPlan && ['basic', 'starter', 'growth'].includes(userData.currentPlan)) {
+      console.log('✅ billing-helpers - Using currentPlan from users collection:', userData.currentPlan);
+      
+      return {
+        plan: userData.currentPlan,
+        status: userData.planStatus || 'active',
+        isActive: true,
+        inTrial: userData.planInTrial || false,
+        trialEndsOn: userData.planTrialEndsOn || null,
+        limits: PLAN_LIMITS[userData.currentPlan] || PLAN_LIMITS.basic,
+        fromFirebase: true,
+      };
+    }
+    
+    // Check settings collection for manual plan override (subscriptionPlan)
     const merchantDoc = await db.collection(collections.settings).doc(session.shop).get();
     const merchantData = merchantDoc.data();
     
     if (merchantData?.subscriptionPlan) {
       const overridePlan = merchantData.subscriptionPlan;
-      console.log('✅ billing-helpers - Using manual plan override from Firestore:', overridePlan);
+      console.log('✅ billing-helpers - Using manual plan override from settings:', overridePlan);
       
       return {
         plan: overridePlan,
