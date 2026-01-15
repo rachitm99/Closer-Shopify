@@ -29,13 +29,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!session.accessToken) {
       console.log('Billing create: No access token, attempting to load offline session...');
       const { loadSession } = await import('../../../lib/session-storage');
-      const sessionId = `offline_${session.shop}`;
-      console.log('Billing create: Looking for session ID:', sessionId);
       
-      const offlineSession = await loadSession(sessionId);
+      // Try multiple session ID formats
+      const possibleSessionIds = [
+        `offline_${session.shop}`,
+        session.shop, // Sometimes stored without offline_ prefix
+        `${session.shop}`, // Just the shop domain
+      ];
+      
+      let offlineSession = null;
+      for (const sessionId of possibleSessionIds) {
+        console.log('Billing create: Trying session ID:', sessionId);
+        offlineSession = await loadSession(sessionId);
+        if (offlineSession) {
+          console.log('Billing create: Found session with ID:', sessionId);
+          break;
+        }
+      }
       
       if (!offlineSession) {
         console.log('Billing create: No offline session found in storage');
+        console.log('Billing create: Tried session IDs:', possibleSessionIds);
+        
+        // List all sessions in Firestore for debugging
+        try {
+          const { db, collections } = await import('../../../lib/firestore');
+          const sessionsSnapshot = await db.collection(collections.sessions)
+            .where('shop', '==', session.shop)
+            .limit(5)
+            .get();
+          
+          console.log('Billing create: Found', sessionsSnapshot.size, 'sessions for shop in Firestore');
+          sessionsSnapshot.forEach(doc => {
+            console.log('Billing create: Session doc ID:', doc.id, 'Shop:', doc.data().shop);
+          });
+        } catch (listError) {
+          console.error('Billing create: Error listing sessions:', listError);
+        }
+        
         return res.status(401).json({ 
           error: 'Session expired - Please refresh the page or reinstall the app if the issue persists' 
         });

@@ -140,6 +140,20 @@ function Dashboard() {
           const shopDomain = settingsData.shop || 'unknown';
           setShop(shopDomain);
 
+          // Automatically fix/store session if needed (no reinstall required)
+          try {
+            const fixSessionResponse = await authFetch('/api/auth/fix-session');
+            if (fixSessionResponse.ok) {
+              const fixResult = await fixSessionResponse.json();
+              console.log('✅ Dashboard - Session fixed:', fixResult);
+            } else {
+              console.log('ℹ️ Dashboard - Session fix not needed or already exists');
+            }
+          } catch (fixError) {
+            console.log('ℹ️ Dashboard - Session fix skipped:', fixError);
+            // Don't block dashboard if fix-session fails
+          }
+
           // Check and store current subscription plan in users collection
           try {
             const subscriptionResponse = await authFetch('/api/subscription/check');
