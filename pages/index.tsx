@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { useAuthenticatedFetch } from '../lib/use-auth-fetch';
+import { useAppBridge } from '@shopify/app-bridge-react';
+import { Redirect } from '@shopify/app-bridge/actions';
 import {
   Page,
   Layout,
@@ -71,6 +73,7 @@ interface SubmissionData {
 
 function Dashboard() {
   const router = useRouter();
+  const app = useAppBridge();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -147,9 +150,10 @@ function Dashboard() {
               const fixResult = await fixSessionResponse.json();
               
               if (fixResult.needsReauth) {
-                // Redirect to OAuth to get fresh access token
+                // Redirect to OAuth to get fresh access token (breaks out of iframe)
                 console.log('🔄 Dashboard - Need to re-authenticate for access token');
-                window.location.href = fixResult.authUrl;
+                const redirect = Redirect.create(app);
+                redirect.dispatch(Redirect.Action.REMOTE, fixResult.authUrl);
                 return; // Stop execution while redirecting
               }
               
