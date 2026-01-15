@@ -70,11 +70,6 @@ export default function AdminLogin() {
               value={password}
               onChange={setPassword}
               autoComplete="off"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleLogin();
-                }
-              }}
             />
 
             <InlineStack align="end">
