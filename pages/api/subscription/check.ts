@@ -33,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           inTrial: false,
           trialEndsOn: null,
           limits: {
+            name: 'basic',
             maxSubmissions: 100,
             analytics: false,
             customBranding: false,
@@ -52,6 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         inTrial: false,
         trialEndsOn: null,
         limits: {
+          name: 'basic',
           maxSubmissions: 100,
           analytics: false,
           customBranding: false,
