@@ -197,7 +197,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const charge = response.body.recurring_application_charge;
-    console.log('Billing create: Charge created with ID:', charge.id);
+    console.log('✅ Billing charge created successfully!');
+    console.log('📊 Charge details:', {
+      id: charge.id,
+      name: charge.name,
+      price: charge.price,
+      status: charge.status,
+      test: charge.test,
+    });
+    console.log('🔗 Confirmation URL (Shopify pricing plans page):', charge.confirmation_url);
+    console.log('📍 User will be redirected to Shopify to approve the charge');
+    console.log('');
+    console.log('📋 Complete billing flow:');
+    console.log('  1. ✅ Charge created in Shopify');
+    console.log('  2. 🔄 Redirecting user to:', charge.confirmation_url);
+    console.log('  3. 💳 User approves payment on Shopify page');
+    console.log('  4. ↩️  Shopify redirects to: /api/billing/activate');
+    console.log('  5. ✅ We activate the charge and redirect back to app');
+    console.log('');
 
     return res.status(200).json({
       confirmationUrl: charge.confirmation_url,

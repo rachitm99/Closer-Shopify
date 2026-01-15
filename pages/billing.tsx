@@ -94,7 +94,12 @@ export default function Billing() {
 
       if (response.ok) {
         if (data.confirmationUrl) {
-          console.log('Redirecting to Shopify billing approval:', data.confirmationUrl);
+          console.log('✅ Billing charge created successfully!');
+          console.log('🔗 Shopify confirmation URL:', data.confirmationUrl);
+          console.log('📍 This should be the pricing plans page like:');
+          console.log('   https://admin.shopify.com/store/YOUR-STORE/charges/APP-NAME/pricing_plans');
+          console.log('🔄 Redirecting now to Shopify payment approval page...');
+          
           // Use App Bridge for redirect if available, otherwise use window.top
           if (typeof window !== 'undefined') {
             try {
