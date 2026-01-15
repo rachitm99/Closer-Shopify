@@ -67,7 +67,7 @@ export async function getActiveSubscription(session: Session) {
       
       return {
         plan: userData.currentPlan,
-        status: userData.planStatus || 'active',
+        status: userData.planStatus ? userData.planStatus.toLowerCase() : 'active',
         isActive: true,
         inTrial: userData.planInTrial || false,
         trialEndsOn: userData.planTrialEndsOn || null,

@@ -220,7 +220,7 @@ export default function SuperAdminPanel() {
     </Badge>,
     <div key={`${shop.shop}-status`} title={`Actual status value: "${shop.planStatus || 'active'}"`}>
       <InlineStack gap="200">
-        <Badge tone={shop.planStatus === 'active' ? 'success' : shop.planStatus === 'cancelled' || shop.planStatus === 'declined' ? 'critical' : 'warning'}>
+        <Badge tone={(shop.planStatus || 'active').toLowerCase() === 'active' ? 'success' : (shop.planStatus || '').toLowerCase() === 'cancelled' || (shop.planStatus || '').toLowerCase() === 'declined' ? 'critical' : 'warning'}>
           {(shop.planStatus || 'active').toUpperCase()}
         </Badge>
         {shop.planInTrial && shop.trialDaysRemaining !== null && (

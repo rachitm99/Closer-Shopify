@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       currentPlan = mapChargeNameToPlan(activeCharge.name);
-      planStatus = activeCharge.status;
+      planStatus = activeCharge.status ? activeCharge.status.toLowerCase() : 'active';
       
       // Calculate trial details
       if (activeCharge.trial_ends_on) {

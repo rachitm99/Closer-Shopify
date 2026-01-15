@@ -75,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const updateData: any = {
       shop,
       currentPlan: plan,
-      planStatus: charge.status,
+      planStatus: charge.status ? charge.status.toLowerCase() : 'active',
       planInTrial: isInTrial || false,
       planUpdatedAt: new Date().toISOString(),
     };
