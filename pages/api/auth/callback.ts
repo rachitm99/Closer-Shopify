@@ -9,15 +9,25 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  console.log('🎯 ========================================');
+  console.log('🎯 CALLBACK ENDPOINT HIT!');
+  console.log('🎯 Method:', req.method);
+  console.log('🎯 URL:', req.url);
+  console.log('🎯 Query params:', JSON.stringify(req.query));
+  console.log('🎯 ========================================');
+  
   try {
+    console.log('🔄 Starting shopify.auth.callback...');
     const callbackResponse = await shopify.auth.callback({
       rawRequest: req,
       rawResponse: res,
     });
+    console.log('✅ shopify.auth.callback completed');
 
     const { session } = callbackResponse;
 
     if (!session) {
+      console.error('❌ No session returned from callback!');
       throw new Error('No session found');
     }
 

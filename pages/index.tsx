@@ -152,22 +152,26 @@ function Dashboard() {
               if (fixResult.needsReauth) {
                 // Redirect to OAuth to get fresh access token (breaks out of iframe)
                 console.log('🔄 Dashboard - Need to re-authenticate for access token');
-                console.log('🔄 Dashboard - Auth URL:', fixResult.authUrl);
+                console.log('🔄 Dashboard - Auth URL (relative):', fixResult.authUrl);
+                
+                // Build full URL for redirect
+                const fullAuthUrl = `${window.location.origin}${fixResult.authUrl}`;
+                console.log('🔄 Dashboard - Auth URL (full):', fullAuthUrl);
                 
                 try {
                   if (app) {
                     const redirect = Redirect.create(app);
-                    redirect.dispatch(Redirect.Action.REMOTE, fixResult.authUrl);
-                    console.log('✅ Dashboard - App Bridge redirect dispatched');
+                    redirect.dispatch(Redirect.Action.REMOTE, fullAuthUrl);
+                    console.log('✅ Dashboard - App Bridge REMOTE redirect dispatched');
                   } else {
                     // Fallback to exitiframe method
                     console.log('⚠️ Dashboard - App Bridge not available, using exitiframe');
-                    window.top!.location.href = `https://${router.query.shop}/admin/apps/${process.env.NEXT_PUBLIC_SHOPIFY_API_KEY}/exitiframe?redirectUri=${encodeURIComponent(window.location.origin + fixResult.authUrl)}`;
+                    window.top!.location.href = `https://${router.query.shop}/admin/apps/${process.env.NEXT_PUBLIC_SHOPIFY_API_KEY}/exitiframe?redirectUri=${encodeURIComponent(fullAuthUrl)}`;
                   }
                 } catch (redirectError) {
                   console.error('❌ Dashboard - Redirect failed:', redirectError);
                   // Last resort fallback
-                  window.top!.location.href = fixResult.authUrl;
+                  window.top!.location.href = fullAuthUrl;
                 }
                 return; // Stop execution while redirecting
               }
