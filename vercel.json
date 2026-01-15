@@ -6,6 +6,12 @@
       "use": "@vercel/next"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/billing/check-trials",
+      "schedule": "0 2 * * *"
+    }
+  ],
   "github": {
     "silent": true
   }
