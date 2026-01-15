@@ -35,6 +35,18 @@ export const PLAN_LIMITS: Record<string, PlanLimits> = {
 
 export async function getActiveSubscription(session: Session) {
   try {
+    // If session doesn't have access token, return basic plan
+    if (!session.accessToken) {
+      console.log('⚠️ billing-helpers - No access token, returning basic plan');
+      return {
+        plan: 'basic',
+        status: 'active',
+        isActive: true,
+        inTrial: false,
+        limits: PLAN_LIMITS.basic,
+      };
+    }
+    
     const client = new shopify.clients.Rest({ session });
     
     const response = await client.get({
@@ -93,9 +105,14 @@ export async function getActiveSubscription(session: Session) {
 }
 
 export async function checkPlanLimit(
-  session: Session,
+  session: Session | null,
   feature: keyof Omit<PlanLimits, 'name' | 'maxSubmissions'>
 ): Promise<boolean> {
+  if (!session) {
+    // No session means no access, default to basic plan restrictions
+    return PLAN_LIMITS.basic[feature];
+  }
+  
   const subscription = await getActiveSubscription(session);
   return subscription.limits[feature];
 }
