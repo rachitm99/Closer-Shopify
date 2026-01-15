@@ -22,8 +22,8 @@ export const PLAN_LIMITS: Record<string, PlanLimits> = {
     name: 'starter',
     maxSubmissions: 1000,
     analytics: true,
-    customBranding: false,
-    prioritySupport: false,
+    customBranding: true,
+    prioritySupport: true,
   },
   growth: {
     name: 'growth',
