@@ -85,34 +85,32 @@ function Dashboard() {
   const [isImpersonating, setIsImpersonating] = useState(false);
   const authFetch = useAuthenticatedFetch();
 
-  // Helper to load impersonated shop data (direct API call without session token)
+  // Helper to load impersonated shop data (direct Firestore query via single admin API)
   const loadImpersonatedShopData = async (shopDomain: string) => {
     try {
       setIsImpersonating(true);
       
-      // Load submissions for this shop
-      const submissionsResponse = await fetch(`/api/submissions/list?shop=${shopDomain}`, {
+      // Load all shop data in one API call (more efficient - directly from Firestore)
+      const response = await fetch('/api/admin/shop-data', {
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'x-admin-auth': 'true',
         },
+        body: JSON.stringify({ 
+          shop: shopDomain,
+          followingOnly: followingOnly 
+        }),
       });
-      if (submissionsResponse.ok) {
-        const submissionsData = await submissionsResponse.json();
-        setSubmissions(submissionsData.submissions || []);
-      }
 
-      // Load analytics for this shop
-      const analyticsResponse = await fetch(`/api/analytics/submissions-timeline?shop=${shopDomain}&followingOnly=${followingOnly}`, {
-        headers: {
-          'x-admin-auth': 'true',
-        },
-      });
-      if (analyticsResponse.ok) {
-        const analyticsData = await analyticsResponse.json();
-        setAnalytics(analyticsData);
-      } else if (analyticsResponse.status === 403) {
-        const errorData = await analyticsResponse.json();
-        setError(errorData.message || 'Analytics not available for this shop');
+      if (response.ok) {
+        const data = await response.json();
+        setSubmissions(data.submissions || []);
+        setAnalytics(data.analytics || null);
+        setImpressions(data.impressions || null);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to load shop data');
       }
 
       setLoading(false);
