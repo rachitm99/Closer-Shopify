@@ -1,17 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Session } from '@shopify/shopify-api';
-import { storeSession } from '../../../lib/session-storage';
+import { storeSession, loadSession } from '../../../lib/session-storage';
 import { getSessionFromRequest } from '../../../lib/auth-helpers';
 
 /**
- * Temporary endpoint to fix missing sessions without reinstalling
- * This takes the current authenticated session and stores it properly
+ * Endpoint to check session health and fix if needed
+ * Checks if session exists in Firebase with valid access token
+ * Triggers re-auth if session is missing or invalid
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    console.log('🔧 Fix session: Starting...');
+    console.log('🔧 Fix session: Starting health check...');
     
-    // Get the current session from request
+    // Get the current session from request (creates minimal session from token)
     const currentSession = await getSessionFromRequest(req);
     
     if (!currentSession) {
@@ -23,12 +24,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     console.log('🔧 Fix session: Found session for shop:', currentSession.shop);
-    console.log('🔧 Fix session: Has access token:', !!currentSession.accessToken);
-
-    if (!currentSession.accessToken) {
-      console.log('🔧 Fix session: Session has no access token, need to re-authenticate');
-      
-      // Return a special response indicating re-auth is needed
+    
+    // Check if offline session exists in Firebase
+    const offlineSessionId = `offline_${currentSession.shop}`;
+    console.log('🔧 Fix session: Checking Firebase for session:', offlineSessionId);
+    
+    const storedSession = await loadSession(offlineSessionId);
+    
+    if (!storedSession) {
+      console.log('🔧 Fix session: ❌ No session in Firebase - need re-auth');
+      return res.status(200).json({ 
+        success: false,
+        needsReauth: true,
+        message: 'Session not found in storage. Re-authentication required.',
+        authUrl: `/api/auth?shop=${currentSession.shop}`,
+      });
+    }
+    
+    if (!storedSession.accessToken) {
+      console.log('🔧 Fix session: ❌ Session exists but no access token - need re-auth');
       return res.status(200).json({ 
         success: false,
         needsReauth: true,
@@ -36,37 +50,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         authUrl: `/api/auth?shop=${currentSession.shop}`,
       });
     }
+    
+    console.log('🔧 Fix session: ✅ Valid session found in Firebase');
+    console.log('🔧 Fix session: Has access token:', !!storedSession.accessToken);
 
-    // Create a proper offline session
-    const offlineSession = new Session({
-      id: `offline_${currentSession.shop}`,
-      shop: currentSession.shop,
-      state: currentSession.state || 'fix-session',
-      isOnline: false,
-      accessToken: currentSession.accessToken,
-      scope: currentSession.scope,
+    console.log('🔧 Fix session: ✅ Valid session found in Firebase');
+    console.log('🔧 Fix session: Has access token:', !!storedSession.accessToken);
+
+    // Session is healthy - no fix needed
+    return res.status(200).json({
+      success: true,
+      message: 'Session is healthy',
+      sessionId: storedSession.id,
+      shop: storedSession.shop,
+      hasAccessToken: !!storedSession.accessToken,
     });
-
-    console.log('🔧 Fix session: Created offline session with ID:', offlineSession.id);
-
-    // Store it
-    const stored = await storeSession(offlineSession);
-
-    if (stored) {
-      console.log('✅ Fix session: Successfully stored session');
-      return res.status(200).json({
-        success: true,
-        message: 'Session fixed successfully',
-        sessionId: offlineSession.id,
-        shop: offlineSession.shop,
-      });
-    } else {
-      console.log('❌ Fix session: Failed to store session');
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to store session',
-      });
-    }
 
   } catch (error: any) {
     console.error('🔧 Fix session error:', error);
