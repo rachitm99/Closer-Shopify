@@ -35,8 +35,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return acc;
     }, {});
 
-    // Count active trials
-    const activeTrials = users.filter((user: any) => user.planInTrial === true).length;
+    // Count active trials - check both planInTrial flag and trial end date
+    const now = new Date();
+    const activeTrials = users.filter((user: any) => {
+      if (!user.planInTrial) return false;
+      if (!user.planTrialEndsOn) return false;
+      
+      const trialEndDate = typeof user.planTrialEndsOn === 'string' 
+        ? new Date(user.planTrialEndsOn)
+        : user.planTrialEndsOn.toDate ? user.planTrialEndsOn.toDate() : new Date(user.planTrialEndsOn);
+      
+      return trialEndDate > now;
+    }).length;
 
     // Recent submissions (last 7 days)
     const sevenDaysAgo = new Date();
