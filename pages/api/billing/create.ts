@@ -121,24 +121,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const client = new shopify.clients.Rest({ session: workingSession });
 
+    console.log('Billing create: REST client created');
+    console.log('Billing create: Session details:', {
+      shop: workingSession.shop,
+      hasAccessToken: !!workingSession.accessToken,
+      accessTokenLength: workingSession.accessToken?.length,
+      accessTokenStart: workingSession.accessToken?.substring(0, 10) + '...',
+      isOnline: workingSession.isOnline,
+      scope: workingSession.scope,
+    });
     console.log('Billing create: Creating recurring charge for plan:', selectedPlan.name);
     
     // Determine if this is a development store (test mode) or production
     const isDevelopmentStore = workingSession.shop.includes('.myshopify.com') && 
                                (workingSession.shop.includes('-dev') || workingSession.shop.includes('-test'));
     
+    console.log('Billing create: Is development store:', isDevelopmentStore);
+    console.log('Billing create: Test mode will be:', isDevelopmentStore);
+    
+    const chargeData = {
+      recurring_application_charge: {
+        name: selectedPlan.name,
+        price: selectedPlan.price,
+        return_url: `https://${process.env.SHOPIFY_APP_URL || 'closer-qq8c.vercel.app'}/api/billing/activate?charge_id={{charge_id}}&shop=${workingSession.shop}`,
+        trial_days: selectedPlan.trialDays,
+        test: true, // Always use test mode for now
+      },
+    };
+    
+    console.log('Billing create: Charge data:', JSON.stringify(chargeData, null, 2));
+    
     // Create recurring charge
     const response = await client.post({
       path: 'recurring_application_charges',
-      data: {
-        recurring_application_charge: {
-          name: selectedPlan.name,
-          price: selectedPlan.price,
-          return_url: `https://${process.env.SHOPIFY_APP_URL || 'closer-qq8c.vercel.app'}/api/billing/activate?charge_id={{charge_id}}&shop=${workingSession.shop}`,
-          trial_days: selectedPlan.trialDays,
-          test: isDevelopmentStore, // Test mode only for dev stores
-        },
-      },
+      data: chargeData,
     });
 
     const charge = response.body.recurring_application_charge;
@@ -150,11 +166,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error: any) {
-    console.error('Billing creation error:', error);
-    console.error('Error details:', error.message, error.response?.body);
+    console.error('❌ Billing creation error:', error);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error type:', error.type);
+    console.error('❌ Error code:', error.code);
+    console.error('❌ Error response:', error.response);
+    
+    if (error.response) {
+      console.error('❌ Response status:', error.response.status);
+      console.error('❌ Response statusText:', error.response.statusText);
+      console.error('❌ Response headers:', error.response.headers);
+      console.error('❌ Response body:', error.response.body);
+    }
+    
     return res.status(500).json({ 
       error: 'Failed to create billing', 
-      details: error.message 
+      details: error.message,
+      type: error.type,
+      code: error.code
     });
   }
 }
