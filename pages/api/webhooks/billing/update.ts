@@ -71,18 +71,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log(`📝 Updating Firebase: shop=${shop}, plan=${plan}, active=${isActive}, trial=${isInTrial}`);
 
-    // Update user's plan in Firebase
-    await db.collection(collections.users).doc(shop).set({
+    // Update user's plan in Firebase - only include defined values
+    const updateData: any = {
       shop,
       currentPlan: plan,
       planStatus: charge.status,
       planInTrial: isInTrial || false,
-      planTrialEndsOn: charge.trial_ends_on || null,
       planUpdatedAt: new Date().toISOString(),
-      billingChargeId: charge.id,
-      billingChargeName: charge.name,
-      billingChargePrice: charge.price || charge.capped_amount?.amount || '0',
-    }, { merge: true });
+    };
+
+    // Only add fields if they exist (not undefined)
+    if (charge.trial_ends_on !== undefined) {
+      updateData.planTrialEndsOn = charge.trial_ends_on;
+    }
+    if (charge.id !== undefined) {
+      updateData.billingChargeId = charge.id;
+    }
+    if (charge.name !== undefined) {
+      updateData.billingChargeName = charge.name;
+    }
+    if (charge.price !== undefined || charge.capped_amount?.amount !== undefined) {
+      updateData.billingChargePrice = charge.price || charge.capped_amount?.amount || '0';
+    }
+
+    await db.collection(collections.users).doc(shop).set(updateData, { merge: true });
 
     console.log('✅ Firebase updated successfully');
     console.log('🔔 ============ WEBHOOK PROCESSING COMPLETE ============');
