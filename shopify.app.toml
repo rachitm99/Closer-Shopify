@@ -16,9 +16,7 @@ uri = "/api/webhooks/app/uninstalled"
 # Billing webhooks
 [[webhooks.subscriptions]]
 topics = [
-  "app_subscriptions/update",
-  "app_subscriptions/approaching_capped_amount",
-  "app_subscriptions/capped_amount_updated"
+  "app_subscriptions/update"
 ]
 uri = "/api/webhooks/billing/update"
 
