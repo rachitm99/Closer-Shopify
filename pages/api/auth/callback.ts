@@ -28,7 +28,21 @@ export default async function handler(
       hasAccessToken: !!session.accessToken,
       accessTokenLength: session.accessToken?.length || 0,
       scope: session.scope,
+      state: session.state,
     });
+
+    // CRITICAL: Verify this is an offline session
+    if (session.isOnline) {
+      console.error('❌ Callback received ONLINE session instead of OFFLINE!');
+    } else {
+      console.log('✅ Callback received OFFLINE session (correct)');
+    }
+    
+    if (!session.accessToken) {
+      console.error('❌ Callback session has NO ACCESS TOKEN!');
+    } else {
+      console.log('✅ Callback session has access token:', session.accessToken.substring(0, 20) + '...');
+    }
 
     // Persist the session (store offline session and set cookie for subsequent requests)
     try {
