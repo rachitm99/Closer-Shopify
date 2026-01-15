@@ -26,10 +26,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('🔧 Fix session: Has access token:', !!currentSession.accessToken);
 
     if (!currentSession.accessToken) {
-      console.log('🔧 Fix session: Session has no access token, cannot fix');
-      return res.status(400).json({ 
-        error: 'Session has no access token',
-        message: 'This session cannot be stored. Please reinstall the app.'
+      console.log('🔧 Fix session: Session has no access token, need to re-authenticate');
+      
+      // Return a special response indicating re-auth is needed
+      return res.status(200).json({ 
+        success: false,
+        needsReauth: true,
+        message: 'Access token not found. Re-authentication required.',
+        authUrl: `/api/auth?shop=${currentSession.shop}`,
       });
     }
 

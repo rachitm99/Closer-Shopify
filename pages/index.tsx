@@ -145,7 +145,19 @@ function Dashboard() {
             const fixSessionResponse = await authFetch('/api/auth/fix-session');
             if (fixSessionResponse.ok) {
               const fixResult = await fixSessionResponse.json();
-              console.log('✅ Dashboard - Session fixed:', fixResult);
+              
+              if (fixResult.needsReauth) {
+                // Redirect to OAuth to get fresh access token
+                console.log('🔄 Dashboard - Need to re-authenticate for access token');
+                window.location.href = fixResult.authUrl;
+                return; // Stop execution while redirecting
+              }
+              
+              if (fixResult.success) {
+                console.log('✅ Dashboard - Session fixed:', fixResult);
+              } else {
+                console.log('ℹ️ Dashboard - Session fix not needed');
+              }
             } else {
               console.log('ℹ️ Dashboard - Session fix not needed or already exists');
             }
