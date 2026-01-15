@@ -163,7 +163,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (apiError: any) {
       console.error('❌ Shopify API error:', apiError);
       console.error('❌ API error message:', apiError.message);
-      console.error('❌ API error response:', apiError.response);
+      console.error('❌ API error name:', apiError.name);
+      console.error('❌ API error stack:', apiError.stack);
+      
+      // Try to get the actual HTTP response from the error
+      if (apiError.cause) {
+        console.error('❌ Error cause:', apiError.cause);
+      }
+      
+      // Check for FetchError which might have the response
+      if (apiError.type === 'invalid-json') {
+        console.error('❌ Invalid JSON response - likely HTTP error with empty body');
+        console.error('❌ This usually means 403 Forbidden or 401 Unauthorized');
+        return res.status(403).json({
+          error: 'Permission denied or invalid request',
+          message: 'Shopify rejected the billing request. This could be due to: 1) Missing payment scopes (try reinstalling the app), 2) Store not eligible for billing (development stores need Partner approval), or 3) Invalid billing configuration.',
+          details: apiError.message,
+          hint: 'If this is a development store, you need Shopify Partner approval to charge for app subscriptions.'
+        });
+      }
       
       // Check if it's a 403 Forbidden (scope issue)
       if (apiError.response?.status === 403 || apiError.response?.code === 403) {

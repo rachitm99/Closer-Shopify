@@ -8,12 +8,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  console.log('🔔 Billing activate endpoint called');
+  console.log('Query params:', req.query);
+
   try {
     const { charge_id, shop } = req.query;
 
     if (!charge_id || !shop) {
+      console.error('❌ Missing required parameters:', { charge_id, shop });
       return res.status(400).json({ error: 'Missing charge_id or shop parameter' });
     }
+
+    console.log(`📦 Activating charge ${charge_id} for shop ${shop}`);
 
     // Load session for the shop
     const sessionId = `offline_${shop}`;
@@ -37,23 +43,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const charge = getResponse.body.recurring_application_charge;
-    console.log('Charge status:', charge.status);
+    console.log('📊 Charge details:', {
+      id: charge.id,
+      status: charge.status,
+      name: charge.name,
+      price: charge.price,
+    });
 
     // Only activate if status is 'accepted'
     if (charge.status === 'accepted') {
+      console.log('✅ Charge status is accepted, activating...');
       await client.post({
         path: `recurring_application_charges/${charge_id}/activate`,
         data: {},
       });
-      console.log('Billing activated for charge:', charge_id);
+      console.log('✅ Billing activated successfully for charge:', charge_id);
     } else if (charge.status === 'active') {
-      console.log('Charge already active:', charge_id);
+      console.log('ℹ️ Charge already active:', charge_id);
     } else {
-      console.log('Charge not in accepted status:', charge.status);
+      console.log('⚠️ Charge not in accepted status:', charge.status);
       // Redirect back to billing page with error
       return res.redirect(302, `https://${shop}/admin/apps/${process.env.SHOPIFY_API_KEY}/billing?error=charge_not_accepted`);
     }
 
+    console.log('🔄 Redirecting to billing page with success');
     // Redirect back to app billing page with success
     return res.redirect(302, `https://${shop}/admin/apps/${process.env.SHOPIFY_API_KEY}/billing?success=true`);
 

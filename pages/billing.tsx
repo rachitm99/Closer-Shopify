@@ -46,9 +46,20 @@ export default function Billing() {
     // Check for success/error params from redirect
     if (router.query.success === 'true') {
       setSuccessMessage('Plan activated successfully! Your billing has been updated.');
+      // Clear query params
+      router.replace('/billing', undefined, { shallow: true });
     }
     if (router.query.error) {
-      setErrorMessage('There was an issue activating your plan. Please try again or contact support.');
+      const errorType = router.query.error as string;
+      if (errorType === 'charge_not_accepted') {
+        setErrorMessage('The billing charge was not accepted. Please try again.');
+      } else if (errorType === 'activation_failed') {
+        setErrorMessage('Failed to activate the billing charge. Please contact support.');
+      } else {
+        setErrorMessage('There was an issue activating your plan. Please try again or contact support.');
+      }
+      // Clear query params
+      router.replace('/billing', undefined, { shallow: true });
     }
     loadSubscription();
   }, [router.query]);
@@ -70,6 +81,9 @@ export default function Billing() {
   const handleUpgrade = async (planName: string) => {
     try {
       setUpgrading(true);
+      setErrorMessage('');
+      setSuccessMessage('');
+      
       const response = await authFetch('/api/billing/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,20 +94,40 @@ export default function Billing() {
 
       if (response.ok) {
         if (data.confirmationUrl) {
-          // Redirect to Shopify billing confirmation
-          window.top!.location.href = data.confirmationUrl;
+          console.log('Redirecting to Shopify billing approval:', data.confirmationUrl);
+          // Use App Bridge for redirect if available, otherwise use window.top
+          if (typeof window !== 'undefined') {
+            try {
+              const { Redirect } = await import('@shopify/app-bridge/actions');
+              const app = (window as any).shopifyApp;
+              if (app) {
+                const redirect = Redirect.create(app);
+                redirect.dispatch(Redirect.Action.REMOTE, data.confirmationUrl);
+              } else {
+                window.top!.location.href = data.confirmationUrl;
+              }
+            } catch (e) {
+              console.log('App Bridge not available, using window redirect');
+              window.top!.location.href = data.confirmationUrl;
+            }
+          }
         } else if (data.plan === 'basic') {
           // Basic plan selected - reload subscription
+          setSuccessMessage('Plan changed to Basic');
           await loadSubscription();
           setUpgrading(false);
         }
       } else {
-        alert(data.error || 'Failed to upgrade plan');
+        console.error('Billing API error:', data);
+        setErrorMessage(data.message || data.error || 'Failed to upgrade plan. Please try again.');
+        if (data.hint) {
+          setErrorMessage(prev => `${prev} ${data.hint}`);
+        }
         setUpgrading(false);
       }
     } catch (error) {
       console.error('Upgrade error:', error);
-      alert('Failed to upgrade plan');
+      setErrorMessage('Failed to upgrade plan. Please try again or contact support.');
       setUpgrading(false);
     }
   };
