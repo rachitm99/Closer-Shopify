@@ -84,55 +84,47 @@ export default function Billing() {
       setErrorMessage('');
       setSuccessMessage('');
       
-      const response = await authFetch('/api/billing/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planName }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (data.confirmationUrl) {
-          console.log('✅ Billing charge created successfully!');
-          console.log('🔗 Shopify confirmation URL:', data.confirmationUrl);
-          console.log('📍 This should be the pricing plans page like:');
-          console.log('   https://admin.shopify.com/store/YOUR-STORE/charges/APP-NAME/pricing_plans');
-          console.log('🔄 Redirecting now to Shopify payment approval page...');
-          
-          // Use App Bridge for redirect if available, otherwise use window.top
-          if (typeof window !== 'undefined') {
-            try {
-              const { Redirect } = await import('@shopify/app-bridge/actions');
-              const app = (window as any).shopifyApp;
-              if (app) {
-                const redirect = Redirect.create(app);
-                redirect.dispatch(Redirect.Action.REMOTE, data.confirmationUrl);
-              } else {
-                window.top!.location.href = data.confirmationUrl;
-              }
-            } catch (e) {
-              console.log('App Bridge not available, using window redirect');
-              window.top!.location.href = data.confirmationUrl;
-            }
-          }
-        } else if (data.plan === 'basic') {
-          // Basic plan selected - reload subscription
-          setSuccessMessage('Plan changed to Basic');
-          await loadSubscription();
-          setUpgrading(false);
-        }
-      } else {
-        console.error('Billing API error:', data);
-        setErrorMessage(data.message || data.error || 'Failed to upgrade plan. Please try again.');
-        if (data.hint) {
-          setErrorMessage(prev => `${prev} ${data.hint}`);
-        }
+      // Get shop name from session
+      const sessionResponse = await authFetch('/api/auth/session');
+      const sessionData = await sessionResponse.json();
+      
+      if (!sessionData.shop) {
+        setErrorMessage('Unable to get shop information. Please refresh the page.');
         setUpgrading(false);
+        return;
+      }
+      
+      // Extract shop identifier (e.g., closer-store-8820 from closer-store-8820.myshopify.com)
+      const shopIdentifier = sessionData.shop.replace('.myshopify.com', '');
+      
+      // Get app handle from environment or use default
+      const appHandle = process.env.NEXT_PUBLIC_APP_HANDLE || 'follo-1';
+      
+      // Construct Shopify billing URL
+      const shopifyBillingUrl = `https://admin.shopify.com/store/${shopIdentifier}/charges/${appHandle}/pricing_plans`;
+      
+      console.log('🔗 Redirecting to Shopify native billing page:', shopifyBillingUrl);
+      console.log('📍 Shopify will handle all payment processing');
+      
+      // Redirect using App Bridge or window.top
+      if (typeof window !== 'undefined') {
+        try {
+          const { Redirect } = await import('@shopify/app-bridge/actions');
+          const app = (window as any).shopifyApp;
+          if (app) {
+            const redirect = Redirect.create(app);
+            redirect.dispatch(Redirect.Action.REMOTE, shopifyBillingUrl);
+          } else {
+            window.top!.location.href = shopifyBillingUrl;
+          }
+        } catch (e) {
+          console.log('App Bridge not available, using window redirect');
+          window.top!.location.href = shopifyBillingUrl;
+        }
       }
     } catch (error) {
-      console.error('Upgrade error:', error);
-      setErrorMessage('Failed to upgrade plan. Please try again or contact support.');
+      console.error('Redirect error:', error);
+      setErrorMessage('Failed to redirect to billing page. Please try again.');
       setUpgrading(false);
     }
   };
@@ -197,7 +189,7 @@ export default function Billing() {
               onClick={() => handleUpgrade(planKey)}
               loading={upgrading}
             >
-              {planKey === 'basic' ? 'Downgrade' : 'Upgrade'}
+              Select Plan
             </Button>
           )}
         </Box>
