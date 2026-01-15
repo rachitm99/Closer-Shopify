@@ -225,7 +225,7 @@ export default function SuperAdminPanel() {
         </Badge>
         {shop.planInTrial && shop.trialDaysRemaining !== null && (
           <Badge tone="info">
-            TRIAL ({shop.trialDaysRemaining}d left)
+            TRIAL ({String(shop.trialDaysRemaining)}d left)
           </Badge>
         )}
         {shop.planInTrial && shop.trialDaysRemaining === null && (
