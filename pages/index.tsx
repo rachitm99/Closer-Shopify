@@ -152,8 +152,23 @@ function Dashboard() {
               if (fixResult.needsReauth) {
                 // Redirect to OAuth to get fresh access token (breaks out of iframe)
                 console.log('🔄 Dashboard - Need to re-authenticate for access token');
-                const redirect = Redirect.create(app);
-                redirect.dispatch(Redirect.Action.REMOTE, fixResult.authUrl);
+                console.log('🔄 Dashboard - Auth URL:', fixResult.authUrl);
+                
+                try {
+                  if (app) {
+                    const redirect = Redirect.create(app);
+                    redirect.dispatch(Redirect.Action.REMOTE, fixResult.authUrl);
+                    console.log('✅ Dashboard - App Bridge redirect dispatched');
+                  } else {
+                    // Fallback to exitiframe method
+                    console.log('⚠️ Dashboard - App Bridge not available, using exitiframe');
+                    window.top!.location.href = `https://${router.query.shop}/admin/apps/${process.env.NEXT_PUBLIC_SHOPIFY_API_KEY}/exitiframe?redirectUri=${encodeURIComponent(window.location.origin + fixResult.authUrl)}`;
+                  }
+                } catch (redirectError) {
+                  console.error('❌ Dashboard - Redirect failed:', redirectError);
+                  // Last resort fallback
+                  window.top!.location.href = fixResult.authUrl;
+                }
                 return; // Stop execution while redirecting
               }
               
