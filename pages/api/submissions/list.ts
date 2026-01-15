@@ -24,14 +24,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Get session from merchant dashboard authentication
-    const session = await getSessionFromRequest(req);
-    
-    if (!session) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    // Check if admin is impersonating (query param)
+    const impersonateShop = req.query.shop as string | undefined;
+    let shop: string;
 
-    const shop = session.shop;
+    if (impersonateShop) {
+      // Admin impersonation mode - verify admin auth
+      const adminAuth = req.headers['x-admin-auth'];
+      if (adminAuth === 'true' || sessionStorage?.getItem?.('adminAuth') === 'true') {
+        shop = impersonateShop;
+      } else {
+        return res.status(401).json({ error: 'Unauthorized - Admin access required' });
+      }
+    } else {
+      // Normal merchant access - get session from merchant dashboard authentication
+      const session = await getSessionFromRequest(req);
+      
+      if (!session) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      shop = session.shop;
+    }
 
     // Fetch all submissions for this shop
     const submissionsSnapshot = await db.collection(collections.submissions)

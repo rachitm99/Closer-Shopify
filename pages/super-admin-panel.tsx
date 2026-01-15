@@ -27,6 +27,8 @@ interface Shop {
   shop: string;
   currentPlan: string;
   planStatus: string;
+  planInTrial: boolean;
+  planTrialEndsOn: string | null;
   email: string;
   createdAt: string;
 }
@@ -174,9 +176,16 @@ export default function SuperAdminPanel() {
     <Badge key={shop.shop} tone={shop.currentPlan === 'growth' ? 'success' : shop.currentPlan === 'starter' ? 'info' : undefined}>
       {shop.currentPlan}
     </Badge>,
-    <Badge key={`${shop.shop}-status`} tone={shop.planStatus === 'active' ? 'success' : shop.planStatus === 'cancelled' || shop.planStatus === 'declined' ? 'critical' : 'warning'}>
-      {(shop.planStatus || 'active').toUpperCase()}
-    </Badge>,
+    <InlineStack key={`${shop.shop}-status`} gap="200">
+      <Badge tone={shop.planStatus === 'active' ? 'success' : shop.planStatus === 'cancelled' || shop.planStatus === 'declined' ? 'critical' : 'warning'}>
+        {(shop.planStatus || 'active').toUpperCase()}
+      </Badge>
+      {shop.planInTrial && (
+        <Badge tone="info">
+          TRIAL
+        </Badge>
+      )}
+    </InlineStack>,
     shop.email || 'N/A',
     shop.createdAt ? new Date(shop.createdAt).toLocaleDateString() : 'N/A',
   ]);

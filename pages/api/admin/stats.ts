@@ -60,13 +60,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }).length;
 
     // Get shop list for impersonation dropdown
-    const shopList = users.map((user: any) => ({
-      shop: user.shop,
-      currentPlan: user.overridePlan || user.currentPlan || 'basic',
-      planStatus: user.planStatus || 'active',
-      email: user.email || '',
-      createdAt: user.createdAt || '',
-    })).sort((a, b) => a.shop.localeCompare(b.shop));
+    const shopList = users.map((user: any) => {
+      // Check if trial is active
+      const now = new Date();
+      let isInActiveTrial = false;
+      if (user.planInTrial && user.planTrialEndsOn) {
+        const trialEndDate = typeof user.planTrialEndsOn === 'string' 
+          ? new Date(user.planTrialEndsOn)
+          : user.planTrialEndsOn.toDate ? user.planTrialEndsOn.toDate() : new Date(user.planTrialEndsOn);
+        isInActiveTrial = trialEndDate > now;
+      }
+
+      return {
+        shop: user.shop,
+        currentPlan: user.overridePlan || user.currentPlan || 'basic',
+        planStatus: user.planStatus || 'active',
+        planInTrial: isInActiveTrial,
+        planTrialEndsOn: user.planTrialEndsOn || null,
+        email: user.email || '',
+        createdAt: user.createdAt || '',
+      };
+    }).sort((a, b) => a.shop.localeCompare(b.shop));
 
     return res.status(200).json({
       stats: {

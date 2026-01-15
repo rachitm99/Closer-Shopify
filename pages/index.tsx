@@ -82,7 +82,44 @@ function Dashboard() {
   const [shop, setShop] = useState<string>('');
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [followingOnly, setFollowingOnly] = useState(false);
+  const [isImpersonating, setIsImpersonating] = useState(false);
   const authFetch = useAuthenticatedFetch();
+
+  // Helper to load impersonated shop data (direct API call without session token)
+  const loadImpersonatedShopData = async (shopDomain: string) => {
+    try {
+      setIsImpersonating(true);
+      
+      // Load analytics using admin endpoint
+      const response = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-auth': 'true',
+        },
+        body: JSON.stringify({ shop: shopDomain }),
+      });
+
+      if (!response.ok) {
+        setError('Failed to load impersonated shop data');
+        setLoading(false);
+        return;
+      }
+
+      // Load submissions for this shop
+      const submissionsResponse = await fetch(`/api/submissions/list?shop=${shopDomain}`);
+      if (submissionsResponse.ok) {
+        const submissionsData = await submissionsResponse.json();
+        setSubmissions(submissionsData.submissions || []);
+      }
+
+      setLoading(false);
+    } catch (err) {
+      console.error('Error loading impersonated shop:', err);
+      setError('Failed to load shop data');
+      setLoading(false);
+    }
+  };
 
   // Helper to load analytics and submissions for a given shop and optional following filter
   const loadAnalytics = async (shopDomain: string, followOnly = false) => {
@@ -113,6 +150,21 @@ function Dashboard() {
   useEffect(() => {
     const checkOnboardingAndLoadData = async () => {
       try {
+        // Check if impersonating another shop
+        const urlParams = new URLSearchParams(window.location.search);
+        const impersonateShop = urlParams.get('impersonate');
+        
+        if (impersonateShop) {
+          // Admin impersonation mode - load data for the specified shop
+          console.log('🎭 Dashboard - Impersonating shop:', impersonateShop);
+          setShop(impersonateShop);
+          setOnboardingComplete(true);
+          
+          // Load impersonated shop's data
+          await loadImpersonatedShopData(impersonateShop);
+          return;
+        }
+        
         // Fetch user data to check onboarding status using App Bridge session token
         const settingsResponse = await authFetch('/api/settings/merchant');
         if (settingsResponse.ok) {
@@ -305,6 +357,16 @@ function Dashboard() {
         ]}
       >
         <Layout>
+          {isImpersonating && (
+            <Layout.Section>
+              <Banner tone="info">
+                <Text as="p">
+                  🎭 <strong>Admin Impersonation Mode</strong> - You are viewing data for: <strong>{shop}</strong>
+                </Text>
+              </Banner>
+            </Layout.Section>
+          )}
+          
           {error && (
             <Layout.Section>
               <Banner 
