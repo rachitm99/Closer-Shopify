@@ -1,5 +1,6 @@
 import type { Session } from '@shopify/shopify-api';
 import shopify from './shopify';
+import { db, collections } from './firestore';
 
 export interface PlanLimits {
   name: 'basic' | 'starter' | 'growth';
@@ -35,6 +36,24 @@ export const PLAN_LIMITS: Record<string, PlanLimits> = {
 
 export async function getActiveSubscription(session: Session) {
   try {
+    // Check Firestore for manual plan override first
+    const merchantDoc = await db.collection(collections.settings).doc(session.shop).get();
+    const merchantData = merchantDoc.data();
+    
+    if (merchantData?.subscriptionPlan) {
+      const overridePlan = merchantData.subscriptionPlan;
+      console.log('✅ billing-helpers - Using manual plan override from Firestore:', overridePlan);
+      
+      return {
+        plan: overridePlan,
+        status: 'active',
+        isActive: true,
+        inTrial: false,
+        limits: PLAN_LIMITS[overridePlan] || PLAN_LIMITS.basic,
+        manualOverride: true,
+      };
+    }
+    
     // If session doesn't have access token, return basic plan
     if (!session.accessToken) {
       console.log('⚠️ billing-helpers - No access token, returning basic plan');

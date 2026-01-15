@@ -37,6 +37,10 @@ export interface MerchantSettings {
   registeredAt?: FirebaseFirestore.Timestamp;
   lastActivity?: FirebaseFirestore.Timestamp;
   status?: string;
+  // Manual subscription plan override (set from Firebase)
+  subscriptionPlan?: 'basic' | 'starter' | 'growth';
+  couponCode?: string;
+  couponCodeTitle?: string;
 } 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
