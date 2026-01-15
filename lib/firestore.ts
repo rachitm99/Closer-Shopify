@@ -33,6 +33,7 @@ export const collections = {
   submissions: 'submissions',
   analytics: 'analytics',
   users: 'users', // Store merchant user details
+  impressions: 'impressions', // Store impression tracking
 };
 
 export default admin;
