@@ -87,6 +87,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Missing orderId and productId/variantId in request body' });
   }
 
+  // Convert orderId to GID format if numeric
+  let orderGid = String(orderId);
+  if (!orderGid.startsWith('gid://')) {
+    orderGid = `gid://shopify/Order/${orderId}`;
+    console.log('📦 Converted orderId to GID:', orderGid);
+  }
+
   // Validate session or external token
   const session = await getSessionFromRequest(req);
   const authHeader = req.headers.authorization || '';
@@ -234,7 +241,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // 2) Begin order edit
-    const beginBody = { query: ORDER_EDIT_BEGIN, variables: { id: orderId } };
+    const beginBody = { query: ORDER_EDIT_BEGIN, variables: { id: orderGid } };
     console.log('OrderAddProduct - begin edit payload:', { shop, variables: beginBody.variables });
     const beginResp = await fetch(`https://${shop}/admin/api/2024-10/graphql.json`, {
       method: 'POST',
