@@ -238,7 +238,11 @@ export default function SuperAdminPanel() {
       </InlineStack>
     </div>,
     shop.email || 'N/A',
-    shop.createdAt ? new Date(shop.createdAt).toLocaleDateString() : 'N/A',
+    shop.createdAt 
+      ? (typeof shop.createdAt === 'string' 
+          ? new Date(shop.createdAt).toLocaleDateString() 
+          : shop.createdAt.toDate ? shop.createdAt.toDate().toLocaleDateString() : 'N/A')
+      : 'N/A',
   ]);
 
   return (

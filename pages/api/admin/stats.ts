@@ -95,7 +95,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         planTrialStartedOn: user.planTrialStartedOn || null,
         trialDaysRemaining: trialDaysRemaining,
         email: user.email || '',
-        createdAt: user.createdAt || '',
+        createdAt: user.createdAt 
+          ? (typeof user.createdAt === 'string' 
+              ? user.createdAt 
+              : user.createdAt.toDate ? user.createdAt.toDate().toISOString() : '')
+          : '',
       };
     }).sort((a, b) => a.shop.localeCompare(b.shop));
 
