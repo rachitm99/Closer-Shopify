@@ -642,13 +642,23 @@ function Dashboard() {
                             <Badge tone="info">Not Checked</Badge>
                           ),
                           submission.submittedAt 
-                            ? new Date(submission.submittedAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })
+                            ? (() => {
+                                let date;
+                                if (typeof submission.submittedAt === 'string') {
+                                  date = new Date(submission.submittedAt);
+                                } else if (submission.submittedAt.toDate) {
+                                  date = submission.submittedAt.toDate();
+                                } else {
+                                  date = new Date(submission.submittedAt);
+                                }
+                                return date.toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                });
+                              })()
                             : 'N/A',
                           submission.submissionCount || 1,
                         ])}
