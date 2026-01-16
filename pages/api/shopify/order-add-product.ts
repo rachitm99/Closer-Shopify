@@ -107,23 +107,55 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // If no session token and external call, fetch from Firestore
   if (!accessToken && isExternal && shop) {
     try {
-      const sessionDoc = await db.collection(collections.sessions).doc(shop).get();
+      // Try sessions collection first (stores offline tokens)
+      let sessionDoc = await db.collection(collections.sessions).doc(shop).get();
+      
       if (sessionDoc.exists) {
         const sessionData = sessionDoc.data();
         accessToken = sessionData?.accessToken;
-        console.log('✅ Retrieved access token from Firestore for shop:', shop);
+        console.log('✅ Retrieved access token from sessions collection for shop:', shop);
+      } else {
+        // Fallback: try offline session ID format
+        const offlineSessionId = `offline_${shop}`;
+        sessionDoc = await db.collection(collections.sessions).doc(offlineSessionId).get();
+        
+        if (sessionDoc.exists) {
+          const sessionData = sessionDoc.data();
+          accessToken = sessionData?.accessToken;
+          console.log('✅ Retrieved access token from sessions (offline) for shop:', shop);
+        } else {
+          console.log('⚠️ No session document found in Firestore for shop:', shop);
+        }
+      }
+      
+      if (accessToken) {
+        console.log('🔑 Token prefix:', accessToken.substring(0, 15) + '...');
+        console.log('🔑 Token length:', accessToken.length);
       }
     } catch (err) {
-      console.warn('⚠️ Could not fetch access token from Firestore:', err);
+      console.error('⚠️ Could not fetch access token from Firestore:', err);
     }
   }
   
   // Final fallback to environment variable
   if (!accessToken) {
     accessToken = process.env.SHOPIFY_ADMIN_TOKEN;
+    if (accessToken) {
+      console.log('🔑 Using SHOPIFY_ADMIN_TOKEN from environment');
+    }
   }
   
-  if (!accessToken) return res.status(401).json({ error: 'Unauthorized: no access token available', shop });
+  if (!accessToken) {
+    console.log('❌ No access token available after all attempts');
+    console.log('💡 Hint: Make sure the shop has installed the app and has an active session in Firestore');
+    return res.status(401).json({ 
+      error: 'Unauthorized: no access token available', 
+      shop,
+      hint: 'Shop must install app first or set SHOPIFY_ADMIN_TOKEN in environment'
+    });
+  }
+  
+  console.log('✅ Access token is available, proceeding with Shopify API call');
 
   try {
     // Determine variant to use: prefer variantId if provided, otherwise fetch first variant for product
@@ -145,6 +177,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': accessToken },
         body: JSON.stringify(variantPayload),
       });
+
+      console.log('🔍 Shopify API response status:', variantResp.status);
+      
+      if (!variantResp.ok) {
+        const errorText = await variantResp.text();
+        console.error('❌ Shopify API error:', variantResp.status, errorText);
+        return res.status(variantResp.status).json({ 
+          error: 'Shopify API request failed', 
+          status: variantResp.status,
+          details: errorText 
+        });
+      }
 
       const variantData = await variantResp.json();
       if (variantData.errors) {
