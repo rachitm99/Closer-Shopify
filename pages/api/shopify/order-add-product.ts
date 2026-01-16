@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSessionFromRequest, validateShopDomain } from '../../../lib/auth-helpers';
+import { db, collections } from '../../../lib/firestore';
 
 const PRODUCT_VARIANT_QUERY = `query getFirstVariant($id: ID!) {
   product(id: $id) {
@@ -96,7 +97,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (shop && !shop.endsWith('.myshopify.com') && !shop.includes('.')) shop = `${shop}.myshopify.com`;
   if (!shop || !validateShopDomain(shop)) return res.status(400).json({ error: 'Invalid shop domain', shop });
 
-  const accessToken = (session as any).accessToken || process.env.SHOPIFY_ADMIN_TOKEN;
+  // Get access token - priority: session > Firestore > env variable
+  let accessToken = session ? (session as any).accessToken : null;
+  
+  // If no session token and external call, fetch from Firestore
+  if (!accessToken && isExternal && shop) {
+    try {
+      const sessionDoc = await db.collection(collections.sessions).doc(shop).get();
+      if (sessionDoc.exists) {
+        const sessionData = sessionDoc.data();
+        accessToken = sessionData?.accessToken;
+        console.log('✅ Retrieved access token from Firestore for shop:', shop);
+      }
+    } catch (err) {
+      console.warn('⚠️ Could not fetch access token from Firestore:', err);
+    }
+  }
+  
+  // Final fallback to environment variable
+  if (!accessToken) {
+    accessToken = process.env.SHOPIFY_ADMIN_TOKEN;
+  }
+  
   if (!accessToken) return res.status(401).json({ error: 'Unauthorized: no access token available', shop });
 
   try {

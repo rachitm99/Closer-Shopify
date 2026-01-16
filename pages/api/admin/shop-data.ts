@@ -31,10 +31,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .orderBy('submittedAt', 'desc')
       .get();
 
-    const submissions = submissionsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const submissions = submissionsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        // Convert Firestore Timestamp to ISO string for submittedAt
+        submittedAt: data.submittedAt 
+          ? (typeof data.submittedAt === 'string' 
+              ? data.submittedAt 
+              : data.submittedAt.toDate ? data.submittedAt.toDate().toISOString() : data.submittedAt)
+          : null,
+      };
+    });
 
     // Fetch impressions (last 30 days)
     const now = new Date();
