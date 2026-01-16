@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSessionFromRequest, validateShopDomain } from '../../../lib/auth-helpers';
 import { db, collections } from '../../../lib/firestore';
+import Cryptr from 'cryptr';
+
+const cryptr = new Cryptr(process.env.ENCRYPTION_SECRET || 'default-secret-key');
 
 const PRODUCT_VARIANT_QUERY = `query getFirstVariant($id: ID!) {
   product(id: $id) {
@@ -107,13 +110,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // If no session token and external call, fetch from Firestore
   if (!accessToken && isExternal && shop) {
     try {
-      // Try sessions collection first (stores offline tokens)
+      // Try sessions collection first (shop as key)
       let sessionDoc = await db.collection(collections.sessions).doc(shop).get();
       
       if (sessionDoc.exists) {
         const sessionData = sessionDoc.data();
-        accessToken = sessionData?.accessToken;
-        console.log('✅ Retrieved access token from sessions collection for shop:', shop);
+        
+        // Session data is encrypted - need to decrypt it
+        if (sessionData?.data && typeof sessionData.data === 'string') {
+          try {
+            const decrypted = cryptr.decrypt(sessionData.data);
+            const parsedSession = JSON.parse(decrypted);
+            accessToken = parsedSession.accessToken;
+            console.log('✅ Retrieved and decrypted access token from sessions collection for shop:', shop);
+          } catch (decryptError) {
+            console.error('❌ Failed to decrypt session data:', decryptError);
+          }
+        } else if (sessionData?.accessToken) {
+          // Fallback: unencrypted token (older format)
+          accessToken = sessionData.accessToken;
+          console.log('✅ Retrieved unencrypted access token from sessions collection for shop:', shop);
+        }
       } else {
         // Fallback: try offline session ID format
         const offlineSessionId = `offline_${shop}`;
@@ -121,8 +138,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         
         if (sessionDoc.exists) {
           const sessionData = sessionDoc.data();
-          accessToken = sessionData?.accessToken;
-          console.log('✅ Retrieved access token from sessions (offline) for shop:', shop);
+          
+          if (sessionData?.data && typeof sessionData.data === 'string') {
+            try {
+              const decrypted = cryptr.decrypt(sessionData.data);
+              const parsedSession = JSON.parse(decrypted);
+              accessToken = parsedSession.accessToken;
+              console.log('✅ Retrieved and decrypted access token from sessions (offline) for shop:', shop);
+            } catch (decryptError) {
+              console.error('❌ Failed to decrypt offline session data:', decryptError);
+            }
+          } else if (sessionData?.accessToken) {
+            accessToken = sessionData.accessToken;
+            console.log('✅ Retrieved unencrypted access token from sessions (offline) for shop:', shop);
+          }
         } else {
           console.log('⚠️ No session document found in Firestore for shop:', shop);
         }

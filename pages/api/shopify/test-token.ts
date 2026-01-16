@@ -1,5 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db, collections } from '../../../lib/firestore';
+import Cryptr from 'cryptr';
+
+const cryptr = new Cryptr(process.env.ENCRYPTION_SECRET || 'default-secret-key');
 
 /**
  * Test endpoint to verify token retrieval from Firestore
@@ -42,11 +45,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const sessionDoc1 = await db.collection(collections.sessions).doc(shop).get();
     if (sessionDoc1.exists) {
       const data = sessionDoc1.data();
+      let accessToken = null;
+      let decrypted = false;
+      
+      // Try to decrypt if data field exists
+      if (data?.data && typeof data.data === 'string') {
+        try {
+          const decryptedData = cryptr.decrypt(data.data);
+          const parsedSession = JSON.parse(decryptedData);
+          accessToken = parsedSession.accessToken;
+          decrypted = true;
+        } catch (e) {
+          // Decryption failed
+        }
+      } else if (data?.accessToken) {
+        accessToken = data.accessToken;
+      }
+      
       results.locations.push({
         location: `sessions/${shop}`,
-        hasAccessToken: !!data?.accessToken,
-        tokenPrefix: data?.accessToken ? data.accessToken.substring(0, 15) + '...' : null,
-        tokenLength: data?.accessToken?.length || 0,
+        encrypted: decrypted,
+        hasAccessToken: !!accessToken,
+        tokenPrefix: accessToken ? accessToken.substring(0, 15) + '...' : null,
+        tokenLength: accessToken?.length || 0,
         scope: data?.scope || null,
       });
       results.found = true;
@@ -57,11 +78,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const sessionDoc2 = await db.collection(collections.sessions).doc(offlineSessionId).get();
     if (sessionDoc2.exists) {
       const data = sessionDoc2.data();
+      let accessToken = null;
+      let decrypted = false;
+      
+      if (data?.data && typeof data.data === 'string') {
+        try {
+          const decryptedData = cryptr.decrypt(data.data);
+          const parsedSession = JSON.parse(decryptedData);
+          accessToken = parsedSession.accessToken;
+          decrypted = true;
+        } catch (e) {
+          // Decryption failed
+        }
+      } else if (data?.accessToken) {
+        accessToken = data.accessToken;
+      }
+      
       results.locations.push({
         location: `sessions/${offlineSessionId}`,
-        hasAccessToken: !!data?.accessToken,
-        tokenPrefix: data?.accessToken ? data.accessToken.substring(0, 15) + '...' : null,
-        tokenLength: data?.accessToken?.length || 0,
+        encrypted: decrypted,
+        hasAccessToken: !!accessToken,
+        tokenPrefix: accessToken ? accessToken.substring(0, 15) + '...' : null,
+        tokenLength: accessToken?.length || 0,
         scope: data?.scope || null,
       });
       results.found = true;

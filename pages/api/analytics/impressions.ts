@@ -33,10 +33,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'POST') {
       console.log('POST request detected - processing impression tracking');
       // Track a new impression
-      const { shop, page } = req.body;
+      const { shop, page, orderId, orderName } = req.body;
 
       console.log('Extracted shop from body:', shop);
       console.log('Extracted page from body:', page);
+      console.log('Extracted orderId from body:', orderId);
       console.log('Shop type:', typeof shop);
       console.log('Full body:', JSON.stringify(req.body));
 
@@ -51,16 +52,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Store individual impression event
       console.log('Writing to analytics collection...');
-      const analyticsDoc = await db.collection(collections.analytics).add({
+      const impressionData: any = {
         event: 'block_impression',
         shop: shop,
         page: page || 'unknown',
         timestamp: FieldValue.serverTimestamp(),
-      });
+      };
+
+      // Include order information if available
+      if (orderId) {
+        impressionData.orderId = orderId;
+        console.log('📦 Including orderId:', orderId);
+      }
+      if (orderName) {
+        impressionData.orderName = orderName;
+        console.log('📦 Including orderName:', orderName);
+      }
+
+      const analyticsDoc = await db.collection(collections.analytics).add(impressionData);
       console.log('Analytics document created with ID:', analyticsDoc.id, 'for page:', page);
 
-      console.log('✅✅✅ Block impression tracked successfully for shop:', shop, 'page:', page);
-      return res.status(200).json({ success: true, message: 'Impression tracked', page: page });
+      console.log('✅✅✅ Block impression tracked successfully for shop:', shop, 'page:', page, 'orderId:', orderId || 'N/A');
+      return res.status(200).json({ success: true, message: 'Impression tracked', page: page, orderId: orderId || null });
     } else if (req.method === 'GET') {
       console.log('GET request detected - fetching impression stats');
       // Get impression stats for a shop
