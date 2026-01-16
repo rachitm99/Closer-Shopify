@@ -177,21 +177,48 @@ function ThankYouExtension() {
 
     if (settings?.enabled && settings?.shop) {
       impressionSentRef.current = true;
+      
+      // Extract numeric order id only (from GID or direct number)
+      const numericOrderId = (() => {
+        const v = orderNumber || '';
+        const m = String(v).match(/\d+$/);
+        return m ? m[0] : null;
+      })();
+      
+      const impressionPayload: any = {
+        shop: settings.shop,
+        page: 'thank-you',
+      };
+      
+      // Include order information if available (numeric only)
+      if (numericOrderId) {
+        impressionPayload.orderId = numericOrderId;
+        console.log('Thank You - Including numeric orderId in impression:', numericOrderId);
+      }
+      if (orderNumber) {
+        // Also send the original order name/number for reference
+        impressionPayload.orderName = String(orderNumber);
+      }
+      
       fetch(`https://closer-qq8c.vercel.app/api/analytics/impressions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ shop: settings.shop, page: 'thank-you' }),
+          body: JSON.stringify(impressionPayload),
         })
         .then((response) => {
-          // keep minimal logging
+          console.log('Thank You - ✅ Impression tracked, status:', response.status);
           return response.json();
         })
-        .then(() => {})
-        .catch(() => {});
+        .then((data) => {
+          console.log('Thank You - ✅ SUCCESS! Impression response:', data);
+        })
+        .catch((err) => {
+          console.error('Thank You - ❌ FETCH FAILED! Error:', err);
+        });
     }
-  }, [settings]); // Run whenever settings change
+  }, [settings, orderNumber]); // Run whenever settings or orderNumber change
 
   // Add free gift product to order in Free Gift mode (idempotent)
   // NOTE: Disabled automatic add-product call.

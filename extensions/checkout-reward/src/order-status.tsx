@@ -276,6 +276,29 @@ function OrderStatusExtension() {
     
     if (settings?.enabled && settings?.shop) {
       console.log('Order Status - CONDITIONS MET! Starting impression tracking for shop:', settings.shop);
+      console.log('Order Status - Order ID:', orderNumber);
+      
+      // Extract numeric order id only (from GID or direct number)
+      const numericOrderId = (() => {
+        const v = orderNumber || '';
+        const m = String(v).match(/\d+$/);
+        return m ? m[0] : null;
+      })();
+      
+      const impressionPayload: any = {
+        shop: settings.shop,
+        page: 'order-status',
+      };
+      
+      // Include order information if available (numeric only)
+      if (numericOrderId) {
+        impressionPayload.orderId = numericOrderId;
+        console.log('Order Status - Including numeric orderId in impression:', numericOrderId);
+      }
+      if (orderNumber) {
+        // Also send the original order name/number for reference
+        impressionPayload.orderName = String(orderNumber);
+      }
       
       fetch(
         `https://closer-qq8c.vercel.app/api/analytics/impressions`,
@@ -284,10 +307,7 @@ function OrderStatusExtension() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            shop: settings.shop,
-            page: 'order-status',
-          }),
+          body: JSON.stringify(impressionPayload),
         }
       )
       .then(response => {
@@ -301,7 +321,7 @@ function OrderStatusExtension() {
         console.error('Order Status - ❌ FETCH FAILED! Error:', err);
       });
     }
-  }, [settings]); // Run whenever settings change
+  }, [settings, orderNumber]); // Run whenever settings or orderNumber change
 
   const handleSubmit = async () => {
     if (!formValue.trim()) {
