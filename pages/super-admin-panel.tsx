@@ -34,7 +34,7 @@ interface Shop {
   planTrialStartedOn: string | null;
   trialDaysRemaining: number | null;
   email: string;
-  createdAt: string;
+  createdAt: string | { toDate: () => Date } | any;
 }
 
 export default function SuperAdminPanel() {
