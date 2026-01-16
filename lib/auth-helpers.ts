@@ -8,14 +8,22 @@ import shopify from './shopify';
 const cryptr = new Cryptr(process.env.ENCRYPTION_SECRET || 'default-secret-key');
 
 export async function getSessionFromRequest(req: NextApiRequest) {
-  console.log('🔐 getSessionFromRequest - Starting session lookup');
+  // Check if this is an external API call (to suppress expected errors)
+  const authHeader = req.headers.authorization || '';
+  const externalToken = process.env.EXTERNAL_API_TOKEN;
+  const isExternalCall = externalToken && authHeader === `Bearer ${externalToken}`;
+  
+  if (!isExternalCall) {
+    console.log('🔐 getSessionFromRequest - Starting session lookup');
+  }
   
   try {
     // First, try to get session from Authorization header (session token)
-    const authHeader = req.headers.authorization;
-    console.log('🔐 getSessionFromRequest - Auth header present:', !!authHeader);
+    if (!isExternalCall) {
+      console.log('🔐 getSessionFromRequest - Auth header present:', !!authHeader);
+    }
     
-    if (authHeader && authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Bearer ') && !isExternalCall) {
       const token = authHeader.substring(7);
       console.log('🔐 getSessionFromRequest - Bearer token length:', token?.length || 0);
       
@@ -62,44 +70,48 @@ export async function getSessionFromRequest(req: NextApiRequest) {
       }
     }
 
-    // Fall back to cookie-based session
-    console.log('🔐 getSessionFromRequest - Trying cookie-based auth');
-    const cookies = cookie.parse(req.headers.cookie || '');
-    const sessionId = cookies.shopify_app_session;
+    // Fall back to cookie-based session (skip for external calls)
+    if (!isExternalCall) {
+      console.log('🔐 getSessionFromRequest - Trying cookie-based auth');
+      const cookies = cookie.parse(req.headers.cookie || '');
+      const sessionId = cookies.shopify_app_session;
 
-    console.log('🔐 getSessionFromRequest - Cookie session ID:', sessionId ? `Found (${sessionId.substring(0, 20)}...)` : 'Not found');
+      console.log('🔐 getSessionFromRequest - Cookie session ID:', sessionId ? `Found (${sessionId.substring(0, 20)}...)` : 'Not found');
 
-    if (!sessionId) {
-      console.log('❌ getSessionFromRequest - No session ID in cookies');
-      return null;
-    }
-
-    // Try to load from storage first
-    console.log('🔐 getSessionFromRequest - Loading session from storage...');
-    let session = await loadSession(sessionId);
-    console.log('🔐 getSessionFromRequest - Storage lookup result:', session ? 'Found' : 'Not found');
-    
-    // If not found in storage, try to load from encrypted cookie
-    if (!session) {
-      console.log('🔐 getSessionFromRequest - Trying encrypted cookie...');
-      const sessionDataCookie = cookies.shopify_session_data;
-      if (sessionDataCookie) {
-        try {
-          const decrypted = cryptr.decrypt(sessionDataCookie);
-          const sessionData = JSON.parse(decrypted);
-          session = new Session(sessionData);
-          console.log('✅ getSessionFromRequest - Session loaded from encrypted cookie for shop:', sessionData.shop);
-        } catch (error) {
-          console.error('❌ getSessionFromRequest - Error decrypting session cookie:', error);
-        }
-      } else {
-        console.log('⚠️ getSessionFromRequest - No encrypted session cookie found');
+      if (!sessionId) {
+        console.log('❌ getSessionFromRequest - No session ID in cookies');
+        return null;
       }
+
+      // Try to load from storage first
+      console.log('🔐 getSessionFromRequest - Loading session from storage...');
+      let session = await loadSession(sessionId);
+      console.log('🔐 getSessionFromRequest - Storage lookup result:', session ? 'Found' : 'Not found');
+      
+      // If not found in storage, try to load from encrypted cookie
+      if (!session) {
+        console.log('🔐 getSessionFromRequest - Trying encrypted cookie...');
+        const sessionDataCookie = cookies.shopify_session_data;
+        if (sessionDataCookie) {
+          try {
+            const decrypted = cryptr.decrypt(sessionDataCookie);
+            const sessionData = JSON.parse(decrypted);
+            session = new Session(sessionData);
+            console.log('✅ getSessionFromRequest - Session loaded from encrypted cookie for shop:', sessionData.shop);
+          } catch (error) {
+            console.error('❌ getSessionFromRequest - Error decrypting session cookie:', error);
+          }
+        } else {
+          console.log('⚠️ getSessionFromRequest - No encrypted session cookie found');
+        }
+      }
+      
+      console.log('🔐 getSessionFromRequest - Final result:', session ? `Session found for ${session.shop}` : 'No session');
+      return session;
     }
     
-    console.log('🔐 getSessionFromRequest - Final result:', session ? `Session found for ${session.shop}` : 'No session');
-    
-    return session;
+    // For external calls, return null (token will be fetched from Firestore)
+    return null;
   } catch (error) {
     console.error('💥 getSessionFromRequest - Unexpected error:', error);
     return null;

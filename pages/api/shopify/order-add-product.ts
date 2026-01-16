@@ -89,7 +89,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const authHeader = req.headers.authorization || '';
   const externalToken = process.env.EXTERNAL_API_TOKEN;
   const isExternal = externalToken && authHeader === `Bearer ${externalToken}`;
-  if (!session && !isExternal) {
+  
+  // For external calls, suppress session errors (expected behavior)
+  if (isExternal && !session) {
+    console.log('🔑 External API call detected - will fetch token from Firestore');
+  } else if (!session && !isExternal) {
     return res.status(401).json({ error: 'Unauthorized: missing session or invalid external token' });
   }
 
