@@ -328,7 +328,6 @@ function Dashboard() {
   const chartData = analytics?.timeline.map(d => ({
     date: formatDate(d.date),
     Submissions: d.count,
-    'Unique Customers': d.uniqueCustomers,
     Followers: d.followers || 0,
   })) || [];
 
@@ -569,9 +568,11 @@ function Dashboard() {
                             : 0} submissions
                         </Text>
                         <Text as="p" variant="bodyMd">
-                          🎯 <strong>Conversion Rate:</strong> {analytics.totalUniqueCustomers > 0 
-                            ? Math.round((analytics.totalSubmissions / analytics.totalUniqueCustomers) * 100)
-                            : 0}% of entries are from repeat customers
+                          🎯 <strong>Conversion Rate:</strong> {(
+                            (impressions?.totalImpressions || analytics.totalUniqueCustomers || 0) > 0
+                              ? Math.round((analytics.totalSubmissions / (impressions?.totalImpressions || analytics.totalUniqueCustomers || 1)) * 100)
+                              : 0
+                          )}% — {analytics.totalSubmissions} submissions / {(impressions?.totalImpressions || analytics.totalUniqueCustomers || 0)} unique orders
                         </Text>
                         <Text as="p" variant="bodyMd">
                           📈 <strong>Growth:</strong> Track your daily submissions to optimize your giveaway campaigns
