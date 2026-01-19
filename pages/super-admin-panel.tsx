@@ -18,8 +18,8 @@ import {
 interface Stats {
   totalUsers: number;
   totalSubmissions: number;
-  totalImpressions: number;
-  conversionRate: string;
+  totalUniqueOrders: number; // Unique block impressions (unique orders)
+  conversionRate: string; // submissions / unique orders
   planCounts: Record<string, number>;
   activeTrials: number;
   recentSubmissions: number;
@@ -237,6 +237,7 @@ export default function SuperAdminPanel() {
         )}
       </InlineStack>
     </div>,
+    shop.uniqueOrderCount ?? 0,
     shop.email || 'N/A',
     shop.createdAt 
       ? (typeof shop.createdAt === 'string' 
@@ -303,8 +304,8 @@ export default function SuperAdminPanel() {
           <Layout.Section variant="oneThird">
             <Card>
               <BlockStack gap="200">
-                <Text variant="headingMd" as="h2">Total Impressions</Text>
-                <Text variant="heading2xl" as="p">{stats?.totalImpressions || 0}</Text>
+                <Text variant="headingMd" as="h2">Unique Block Impressions</Text>
+                <Text variant="heading2xl" as="p">{stats?.totalUniqueOrders || 0}</Text>
               </BlockStack>
             </Card>
           </Layout.Section>
@@ -314,6 +315,7 @@ export default function SuperAdminPanel() {
               <BlockStack gap="200">
                 <Text variant="headingMd" as="h2">Conversion Rate</Text>
                 <Text variant="heading2xl" as="p">{stats?.conversionRate || '0.00'}%</Text>
+                <Text variant="bodyMd" as="p" tone="subdued">{`${stats?.totalSubmissions || 0} submissions / ${stats?.totalUniqueOrders || 0} unique orders`}</Text>
               </BlockStack>
             </Card>
           </Layout.Section>
@@ -393,8 +395,8 @@ export default function SuperAdminPanel() {
                   </Text>
                 </Banner>
                 <DataTable
-                  columnContentTypes={['text', 'text', 'text', 'text', 'text']}
-                  headings={['Shop', 'Plan', 'Status', 'Email', 'Created']}
+                  columnContentTypes={['text', 'text', 'text', 'numeric', 'text', 'text']}
+                  headings={['Shop', 'Plan', 'Status', 'Unique Impressions', 'Email', 'Created']}
                   rows={tableRows}
                 />
                 {shops.length > 20 && (

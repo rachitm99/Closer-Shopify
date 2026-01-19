@@ -24,15 +24,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const submissionsSnapshot = await db.collection(collections.submissions).get();
     const submissions = submissionsSnapshot.docs.map(doc => doc.data());
 
-    // Get all impressions
-    const impressionsSnapshot = await db.collection(collections.impressions).get();
-    const impressions = impressionsSnapshot.docs.map(doc => doc.data());
+    // Get all block impressions from analytics collection and compute unique orders per shop
+    const impressionsSnapshot = await db.collection(collections.analytics)
+      .where('event', '==', 'block_impression')
+      .get();
 
-    // Calculate stats
+    // Map shop -> Set of numeric orderIds
+    const shopToOrderSet: Record<string, Set<string>> = {};
+    impressionsSnapshot.docs.forEach(doc => {
+      const d: any = doc.data();
+      const shop = d.shop || 'unknown';
+      const rawOrder = d.orderId || d.order_id || d.orderName || d.order || null;
+      if (!rawOrder) return;
+      const m = String(rawOrder).match(/\d+$/);
+      if (!m) return;
+      const orderId = m[0];
+      if (!shopToOrderSet[shop]) shopToOrderSet[shop] = new Set();
+      shopToOrderSet[shop].add(orderId);
+    });
+
     const totalUsers = users.length;
     const totalSubmissions = submissions.length;
-    const totalImpressions = impressions.reduce((sum, imp: any) => sum + (imp.count || 1), 0);
-    const conversionRate = totalImpressions > 0 ? ((totalSubmissions / totalImpressions) * 100).toFixed(2) : '0.00';
+    const totalUniqueOrders = Object.values(shopToOrderSet).reduce((sum: number, s: Set<string>) => sum + s.size, 0);
+    const conversionRate = totalUniqueOrders > 0 ? ((totalSubmissions / totalUniqueOrders) * 100).toFixed(2) : '0.00';
 
     // Count users by plan
     const planCounts = users.reduce((acc: any, user: any) => {
@@ -86,6 +100,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
 
+      // Unique impressions for this shop (unique orders)
+      const uniqueOrderCount = (shopToOrderSet[user.shop] && shopToOrderSet[user.shop].size) || 0;
+
       return {
         shop: user.shop,
         currentPlan: user.overridePlan || user.currentPlan || 'basic',
@@ -100,6 +117,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               ? user.createdAt 
               : user.createdAt.toDate ? user.createdAt.toDate().toISOString() : '')
           : '',
+        uniqueOrderCount,
       };
     }).sort((a, b) => a.shop.localeCompare(b.shop));
 
@@ -107,7 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       stats: {
         totalUsers,
         totalSubmissions,
-        totalImpressions,
+        totalUniqueOrders,
         conversionRate,
         planCounts,
         activeTrials,
