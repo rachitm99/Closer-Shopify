@@ -52,8 +52,10 @@ function SettingsPage() {
   // const [newRule, setNewRule] = useState('');
   const [rulesDescription, setRulesDescription] = useState(DEFAULT_SETTINGS.rulesDescription);
   // Legacy/giveaway rules editable list
+  const MAX_LEGACY_RULES = 10;
   const [legacyRules, setLegacyRules] = useState<string[]>([...DEFAULT_SETTINGS.giveawayRules]);
   const [newRule, setNewRule] = useState('');
+  const [legacyError, setLegacyError] = useState<string | null>(null);
 
   const [formFieldLabel, setFormFieldLabel] = useState(DEFAULT_SETTINGS.formFieldLabel);
   const [submitButtonText, setSubmitButtonText] = useState(DEFAULT_SETTINGS.submitButtonText);
@@ -203,6 +205,46 @@ function SettingsPage() {
     setLegacyRules(Array.isArray(data.giveawayRules) ? data.giveawayRules : DEFAULT_SETTINGS.giveawayRules);
   };
 
+  // Legacy rules helpers
+  const moveRuleUp = (idx: number) => {
+    setLegacyRules(prev => {
+      if (idx <= 0) return prev;
+      const next = [...prev];
+      const tmp = next[idx - 1];
+      next[idx - 1] = next[idx];
+      next[idx] = tmp;
+      return next;
+    });
+  };
+
+  const moveRuleDown = (idx: number) => {
+    setLegacyRules(prev => {
+      if (idx >= prev.length - 1) return prev;
+      const next = [...prev];
+      const tmp = next[idx + 1];
+      next[idx + 1] = next[idx];
+      next[idx] = tmp;
+      return next;
+    });
+  };
+
+  const removeRuleAt = (idx: number) => setLegacyRules(prev => prev.filter((_, i) => i !== idx));
+
+  const handleAddRule = () => {
+    const trimmed = newRule.trim();
+    if (!trimmed) {
+      setLegacyError('Rule cannot be empty');
+      return;
+    }
+    if (legacyRules.length >= MAX_LEGACY_RULES) {
+      setLegacyError(`Maximum of ${MAX_LEGACY_RULES} rules reached`);
+      return;
+    }
+    setLegacyRules(prev => [...prev, trimmed]);
+    setNewRule('');
+    setLegacyError(null);
+  };
+
   const handleToggle = async () => {
     try {
       setSaving(true);
@@ -234,7 +276,7 @@ function SettingsPage() {
           socialProofSubtitle: socialProofSubtitle,
           rulesTitle,
           rulesDescription,
-          giveawayRules: legacyRules,
+          giveawayRules: legacyRules.map((r: any) => r.trim()).filter(Boolean),
           formFieldLabel,
           submitButtonText, 
           redirectUrl 
@@ -292,7 +334,7 @@ function SettingsPage() {
           socialProofSubtitle: socialProofSubtitle,
           rulesTitle,
           rulesDescription,
-          giveawayRules: legacyRules,
+          giveawayRules: legacyRules.map((r: any) => r.trim()).filter(Boolean),
           formFieldLabel,
           submitButtonText, 
           redirectUrl,
@@ -805,23 +847,30 @@ function SettingsPage() {
 
                     <div style={{ marginTop: 8 }}>
                       <Text as="p" variant="bodySm" tone="subdued">Edit individual rules below. Add, remove, or reorder as needed.</Text>
+                      <div style={{ marginTop: 6 }}>
+                        <Text as="p" variant="bodySm" tone="subdued">
+                          {legacyRules.length} / {MAX_LEGACY_RULES} rules
+                        </Text>
+                      </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
                         {legacyRules.map((rule, idx) => (
-                          <div key={`legacy-rule-${idx}`} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                            <TextField
-                              label={`Rule ${idx + 1}`}
-                              value={rule}
-                              onChange={(value) => setLegacyRules(legacyRules.map((r, i) => i === idx ? value : r))}
-                              autoComplete="off"
-                              maxLength={200}
-                            />
-                            <Button
-                              tone="critical"
-                              onClick={() => setLegacyRules(legacyRules.filter((_, i) => i !== idx))}
-                            >
-                              Remove
-                            </Button>
+                          <div key={`legacy-rule-${idx}`} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                            <div style={{ flex: 1 }}>
+                              <TextField
+                                label={`Rule ${idx + 1}`}
+                                value={rule}
+                                onChange={(value) => setLegacyRules(prev => prev.map((r, i) => i === idx ? value : r))}
+                                autoComplete="off"
+                                maxLength={200}
+                              />
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                              <Button size="slim" onClick={() => moveRuleUp(idx)} disabled={idx === 0}>▲</Button>
+                              <Button size="slim" onClick={() => moveRuleDown(idx)} disabled={idx === legacyRules.length - 1}>▼</Button>
+                              <Button size="slim" tone="critical" onClick={() => removeRuleAt(idx)}>Remove</Button>
+                            </div>
                           </div>
                         ))}
 
@@ -832,20 +881,25 @@ function SettingsPage() {
                             onChange={setNewRule}
                             autoComplete="off"
                             maxLength={200}
+                            placeholder="e.g., Follow us on Instagram"
                           />
                           <Button
-                            onClick={() => {
-                              if (newRule && newRule.trim()) {
-                                setLegacyRules([...legacyRules, newRule.trim()]);
-                                setNewRule('');
-                              }
-                            }}
+                            onClick={handleAddRule}
+                            disabled={legacyRules.length >= MAX_LEGACY_RULES}
                           >
                             Add Rule
                           </Button>
                         </div>
+
+                        {legacyError && (
+                          <div style={{ marginTop: 8 }}>
+                            <Text as="p" variant="bodySm" tone="critical">
+                              {legacyError}
+                            </Text>
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    </div> 
 
                     <TextField
                       label="Submit Button Text"

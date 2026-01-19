@@ -198,7 +198,7 @@ function Onboarding() {
           subtitleBottom,
           rulesTitle,
           rulesDescription,
-          giveawayRules: legacyRules,
+          giveawayRules: legacyRules.map((r: any) => r.trim()).filter(Boolean),
           formFieldLabel,
           submitButtonText,
           submittedTitle,
