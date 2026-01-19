@@ -36,20 +36,13 @@ function Onboarding() {
   const [showToast, setShowToast] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [enabled, setEnabled] = useState(true);
-  const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift' | 'coupon-code'>('giveaway');
+  const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift' | 'coupon-code' | 'legacy'>('giveaway');
   const [bannerUrl, setBannerUrl] = useState('');
   const [popupTitle, setPopupTitle] = useState(DEFAULT_SETTINGS.popupTitle);
   const [rulesTitle, setRulesTitle] = useState(DEFAULT_SETTINGS.rulesTitle);
   // Giveaway rules editing disabled for now
-  // const [giveawayRules, setGiveawayRules] = useState([
-  //   ...DEFAULT_SETTINGS.giveawayRules || [
-  //     'Follow us on Instagram',
-  //     'Like our latest post',
-  //     'Tag 2 friends in the comments',
-  //     'Share this post to your story',
-  //   ]
-  // ]);
-  // const [newRule, setNewRule] = useState('');
+  const [legacyRules, setLegacyRules] = useState<string[]>([...DEFAULT_SETTINGS.giveawayRules]);
+  const [newRule, setNewRule] = useState('');
   // Single centered description for onboarding
   const [rulesDescription, setRulesDescription] = useState(DEFAULT_SETTINGS.rulesDescription || 'Enter your Instagram handle and follow @{{your instagram profile url}} to enter');
   const [submitButtonText, setSubmitButtonText] = useState(DEFAULT_SETTINGS.submitButtonText);
@@ -114,10 +107,8 @@ function Onboarding() {
             setBannerUrl(data.bannerUrl || '');
             setPopupTitle(data.popupTitle || DEFAULT_SETTINGS.popupTitle);
             setRulesTitle(data.rulesTitle || DEFAULT_SETTINGS.rulesTitle);
-            // giveawayRules editing disabled for now
-            // setGiveawayRules(data.giveawayRules || [
-            //   'Follow us on Instagram',
-            //   'Like our latest post',
+            // Load legacy/giveaway rules into local editable state
+            setLegacyRules(Array.isArray(data.giveawayRules) ? data.giveawayRules : DEFAULT_SETTINGS.giveawayRules);
             //   'Tag 2 friends in the comments',
             //   'Share this post to your story',
             // ]);
@@ -207,6 +198,7 @@ function Onboarding() {
           subtitleBottom,
           rulesTitle,
           rulesDescription,
+          giveawayRules: legacyRules,
           formFieldLabel,
           submitButtonText,
           submittedTitle,
@@ -1052,9 +1044,10 @@ function Onboarding() {
                   { label: 'Giveaway', value: 'giveaway' },
                   { label: 'Free Gift', value: 'free-gift' },
                   { label: 'Coupon Code', value: 'coupon-code' },
+                  { label: 'Legacy', value: 'legacy' },
                 ]}
                 value={mode}
-                onChange={(value) => setMode(value as 'basic' | 'giveaway' | 'free-gift' | 'coupon-code')}
+                onChange={(value) => setMode(value as 'basic' | 'giveaway' | 'free-gift' | 'coupon-code' | 'legacy')}
                 helpText="Choose how to display your Instagram follow campaign"
               />
             </BlockStack>

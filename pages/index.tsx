@@ -443,7 +443,7 @@ function Dashboard() {
                 <StatCard
                   title="Block Impressions"
                   value={impressions?.totalImpressions || 0}
-                  description="Times popup was shown"
+                  description="Unique customers"
                 />
                 <StatCard
                   title="Conversion Rate"

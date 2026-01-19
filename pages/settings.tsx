@@ -30,7 +30,7 @@ function SettingsPage() {
   useSessionHealthCheck(); // Check session health on mount
   
   const [enabled, setEnabled] = useState(false);
-  const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift' | 'coupon-code'>('giveaway');
+  const [mode, setMode] = useState<'basic' | 'giveaway' | 'free-gift' | 'coupon-code' | 'legacy'>('giveaway');
   const [isImpersonating, setIsImpersonating] = useState(false);
   const [impersonatedShop, setImpersonatedShop] = useState<string>('');
 
@@ -51,6 +51,10 @@ function SettingsPage() {
   // ]);
   // const [newRule, setNewRule] = useState('');
   const [rulesDescription, setRulesDescription] = useState(DEFAULT_SETTINGS.rulesDescription);
+  // Legacy/giveaway rules editable list
+  const [legacyRules, setLegacyRules] = useState<string[]>([...DEFAULT_SETTINGS.giveawayRules]);
+  const [newRule, setNewRule] = useState('');
+
   const [formFieldLabel, setFormFieldLabel] = useState(DEFAULT_SETTINGS.formFieldLabel);
   const [submitButtonText, setSubmitButtonText] = useState(DEFAULT_SETTINGS.submitButtonText);
   const [submittedTitle, setSubmittedTitle] = useState(DEFAULT_SETTINGS.submittedTitle);
@@ -195,6 +199,8 @@ function SettingsPage() {
     setCountdownEndDate(data.countdownEndDate || getDefaultEndDate());
     setCountdownTitle(data.countdownTitle || DEFAULT_SETTINGS.countdownTitle);
     setSelectedProducts(data.selectedProducts || []);
+    // Load editable rules for legacy mode (stored as giveawayRules)
+    setLegacyRules(Array.isArray(data.giveawayRules) ? data.giveawayRules : DEFAULT_SETTINGS.giveawayRules);
   };
 
   const handleToggle = async () => {
@@ -228,6 +234,7 @@ function SettingsPage() {
           socialProofSubtitle: socialProofSubtitle,
           rulesTitle,
           rulesDescription,
+          giveawayRules: legacyRules,
           formFieldLabel,
           submitButtonText, 
           redirectUrl 
@@ -285,6 +292,7 @@ function SettingsPage() {
           socialProofSubtitle: socialProofSubtitle,
           rulesTitle,
           rulesDescription,
+          giveawayRules: legacyRules,
           formFieldLabel,
           submitButtonText, 
           redirectUrl,
@@ -465,15 +473,17 @@ function SettingsPage() {
                     { label: 'Giveaway', value: 'giveaway' },
                     { label: 'Free Gift', value: 'free-gift' },
                     { label: 'Coupon Code', value: 'coupon-code' },
+                    { label: 'Legacy', value: 'legacy' },
                   ]}
                   value={mode}
-                  onChange={(value) => setMode(value as 'basic' | 'giveaway' | 'free-gift' | 'coupon-code')}
+                  onChange={(value) => setMode(value as 'basic' | 'giveaway' | 'free-gift' | 'coupon-code' | 'legacy')}
                 />
                 <Text as="p" variant="bodyMd" tone="subdued">
                   {mode === 'basic' && 'Basic mode: Simple follow button without giveaway elements'}
                   {mode === 'giveaway' && 'Giveaway mode: Full giveaway experience with countdown, rules, and submitted screen'}
                   {mode === 'free-gift' && 'Free Gift mode: Promote a free gift with your Instagram follow'}
                   {mode === 'coupon-code' && 'Coupon Code mode: Reward followers with a discount code after submission'}
+                  {mode === 'legacy' && 'Legacy mode: Display a simple rules list with a submit button (editable points)'}
                 </Text>
               </BlockStack>
             </Card>
@@ -751,6 +761,91 @@ function SettingsPage() {
                       maxLength={200}
                       multiline
                     />
+
+                    <TextField
+                      label="Submit Button Text"
+                      value={submitButtonText}
+                      onChange={setSubmitButtonText}
+                      helpText="Text displayed on the submit button"
+                      autoComplete="off"
+                      maxLength={50}
+                    />
+                  </>
+                )}
+
+                {/* Legacy Mode - editable rules list */}
+                {mode === 'legacy' && (
+                  <>
+                    <TextField
+                      label="Popup Title"
+                      value={popupTitle}
+                      onChange={setPopupTitle}
+                      helpText="The main title shown at the top of the popup"
+                      autoComplete="off"
+                      maxLength={100}
+                    />
+
+                    <TextField
+                      label="Popup Subtitle (under title)"
+                      value={subtitleTop}
+                      onChange={setSubtitleTop}
+                      helpText="Small subtitle shown under the popup title"
+                      autoComplete="off"
+                      maxLength={150}
+                    />
+
+                    <TextField
+                      label="Rules Section Title"
+                      value={rulesTitle}
+                      onChange={setRulesTitle}
+                      helpText="Title for the rules section (e.g., 'How to Enter:', 'Rules:')"
+                      autoComplete="off"
+                      maxLength={50}
+                    />
+
+                    <div style={{ marginTop: 8 }}>
+                      <Text as="p" variant="bodySm" tone="subdued">Edit individual rules below. Add, remove, or reorder as needed.</Text>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                        {legacyRules.map((rule, idx) => (
+                          <div key={`legacy-rule-${idx}`} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <TextField
+                              label={`Rule ${idx + 1}`}
+                              value={rule}
+                              onChange={(value) => setLegacyRules(legacyRules.map((r, i) => i === idx ? value : r))}
+                              autoComplete="off"
+                              maxLength={200}
+                            />
+                            <Button
+                              tone="critical"
+                              onClick={() => setLegacyRules(legacyRules.filter((_, i) => i !== idx))}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+                          <TextField
+                            label="New Rule"
+                            value={newRule}
+                            onChange={setNewRule}
+                            autoComplete="off"
+                            maxLength={200}
+                          />
+                          <Button
+                            onClick={() => {
+                              if (newRule && newRule.trim()) {
+                                setLegacyRules([...legacyRules, newRule.trim()]);
+                                setNewRule('');
+                              }
+                            }}
+                          >
+                            Add Rule
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
 
                     <TextField
                       label="Submit Button Text"

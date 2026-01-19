@@ -1,4 +1,4 @@
-export type DisplayMode = 'basic' | 'giveaway' | 'free-gift' | 'coupon-code';
+export type DisplayMode = 'basic' | 'giveaway' | 'free-gift' | 'coupon-code' | 'legacy';
 
 export interface SelectedProduct {
   id: string;

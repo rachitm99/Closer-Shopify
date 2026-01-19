@@ -22,6 +22,7 @@ import { BasicModeView } from './components/BasicModeView';
 import { GiveawayModeView } from './components/GiveawayModeView';
 import { FreeGiftModeView } from './components/FreeGiftModeView';
 import { CouponCodeModeView } from './components/CouponCodeModeView';
+import { LegacyModeView } from './components/LegacyModeView';
 import { SubmittedView } from './components/SubmittedView';
 
 interface Settings {
@@ -455,6 +456,14 @@ function ThankYouExtension() {
             <CouponCodeModeView
               settings={settings}
               remainingMs={remainingMs}
+              formValue={formValue}
+              setFormValue={setFormValue}
+              handleSubmit={handleSubmit}
+              submitting={submitting}
+            />
+          ) : settings?.mode === 'legacy' ? (
+            <LegacyModeView
+              settings={settings}
               formValue={formValue}
               setFormValue={setFormValue}
               handleSubmit={handleSubmit}
