@@ -177,7 +177,7 @@ export default function AdminAnalytics() {
               <strong>Onboarding Success:</strong> {analytics.completionRate}% of merchants complete the setup process
             </li>
             <li style={{ marginBottom: '8px' }}>
-              <strong>Customer Engagement:</strong> {analytics.totalSubmissions} total entries from {analytics.uniqueCustomers} unique customers
+              <strong>Customer Engagement:</strong> {analytics.totalSubmissions} total entries
             </li>
             <li>
               <strong>Repeat Rate:</strong> {analytics.repeatSubmissions} customers made multiple purchases and re-entered

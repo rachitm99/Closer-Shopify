@@ -569,10 +569,10 @@ function Dashboard() {
                         </Text>
                         <Text as="p" variant="bodyMd">
                           🎯 <strong>Conversion Rate:</strong> {(
-                            (impressions?.totalImpressions || analytics.totalUniqueCustomers || 0) > 0
-                              ? Math.round((analytics.totalSubmissions / (impressions?.totalImpressions || analytics.totalUniqueCustomers || 1)) * 100)
+                            (impressions?.totalImpressions || 0) > 0
+                              ? Math.round((analytics.totalSubmissions / (impressions?.totalImpressions || 1)) * 100)
                               : 0
-                          )}% — {analytics.totalSubmissions} submissions / {(impressions?.totalImpressions || analytics.totalUniqueCustomers || 0)} unique orders
+                          )}% — {analytics.totalSubmissions} submissions / {impressions?.totalImpressions || 0} unique orders
                         </Text>
                         <Text as="p" variant="bodyMd">
                           📈 <strong>Growth:</strong> Track your daily submissions to optimize your giveaway campaigns

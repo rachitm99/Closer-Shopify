@@ -182,16 +182,11 @@ export default function Analytics() {
               <Text as="h2" variant="headingLg">
                 Customer Submissions
               </Text>
-              <InlineGrid columns={{ xs: 1, sm: 3 }} gap="400">
+              <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
                 <StatCard
                   title="Total Submissions"
                   value={analytics.totalSubmissions}
                   description="All giveaway entries"
-                />
-                <StatCard
-                  title="Unique Customers"
-                  value={analytics.uniqueCustomers}
-                  description="Distinct Instagram handles"
                 />
                 <StatCard
                   title="Repeat Entries"
