@@ -35,6 +35,7 @@ interface Shop {
   trialDaysRemaining: number | null;
   email: string;
   createdAt: string | { toDate: () => Date } | any;
+  uniqueOrderCount?: number;
 }
 
 export default function SuperAdminPanel() {
