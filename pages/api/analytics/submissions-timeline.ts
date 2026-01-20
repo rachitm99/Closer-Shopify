@@ -91,13 +91,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       let submittedAtIso = '';
       if (data.submittedAt) {
         if (data.submittedAt.toDate) {
-          // Firebase Timestamp
-          submittedDate = data.submittedAt.toDate().toISOString().split('T')[0];
-          submittedAtIso = data.submittedAt.toDate().toISOString();
+          // Firebase Timestamp - convert to IST timezone for date grouping
+          const utcDate = data.submittedAt.toDate();
+          const istDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+          const year = istDate.getFullYear();
+          const month = String(istDate.getMonth() + 1).padStart(2, '0');
+          const day = String(istDate.getDate()).padStart(2, '0');
+          submittedDate = `${year}-${month}-${day}`;
+          submittedAtIso = utcDate.toISOString();
         } else {
-          // Legacy ISO string
+          // Legacy ISO string - convert to IST timezone for date grouping
           const d = new Date(data.submittedAt);
-          submittedDate = d.toISOString().split('T')[0];
+          const istDate = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+          const year = istDate.getFullYear();
+          const month = String(istDate.getMonth() + 1).padStart(2, '0');
+          const day = String(istDate.getDate()).padStart(2, '0');
+          submittedDate = `${year}-${month}-${day}`;
           submittedAtIso = d.toISOString();
         }
       } else {
