@@ -308,8 +308,22 @@ function Dashboard() {
   );
 
   // Calculate today's and yesterday's stats for trend
-  const todayData = analytics?.timeline[analytics.timeline.length - 1];
-  const yesterdayData = analytics?.timeline[analytics.timeline.length - 2];
+  const getTodayDateString = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // YYYY-MM-DD format
+  };
+  
+  const getYesterdayDateString = () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return yesterday.toISOString().split('T')[0]; // YYYY-MM-DD format
+  };
+  
+  const todayDateStr = getTodayDateString();
+  const yesterdayDateStr = getYesterdayDateString();
+  
+  const todayData = analytics?.timeline?.find(d => d.date === todayDateStr);
+  const yesterdayData = analytics?.timeline?.find(d => d.date === yesterdayDateStr);
   const todayCount = todayData?.count || 0;
   const yesterdayCount = yesterdayData?.count || 0;
   const dailyTrend = todayCount > yesterdayCount 
