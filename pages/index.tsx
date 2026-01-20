@@ -307,22 +307,26 @@ function Dashboard() {
     </Card>
   );
 
-  // Calculate today's and yesterday's stats for trend (in user's local timezone)
+  // Calculate today's and yesterday's stats for trend (in IST timezone)
   const getTodayDateString = () => {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`; // YYYY-MM-DD format in local timezone
+    // Convert to IST (UTC+5:30)
+    const istDate = new Date(today.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    const year = istDate.getFullYear();
+    const month = String(istDate.getMonth() + 1).padStart(2, '0');
+    const day = String(istDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // YYYY-MM-DD format in IST
   };
   
   const getYesterdayDateString = () => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const year = yesterday.getFullYear();
-    const month = String(yesterday.getMonth() + 1).padStart(2, '0');
-    const day = String(yesterday.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`; // YYYY-MM-DD format in local timezone
+    const today = new Date();
+    // Convert to IST (UTC+5:30)
+    const istDate = new Date(today.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    istDate.setDate(istDate.getDate() - 1);
+    const year = istDate.getFullYear();
+    const month = String(istDate.getMonth() + 1).padStart(2, '0');
+    const day = String(istDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // YYYY-MM-DD format in IST
   };
   
   const todayDateStr = getTodayDateString();
