@@ -40,7 +40,7 @@ export function LegacyModeView({ settings, formValue, setFormValue, handleSubmit
             </Text>
           )}
           {settings.subtitleTop && (
-            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 6 }}>
+            <View padding="extraTight">
               <Text size="small" appearance="subdued" alignment="center">
                 {settings.subtitleTop}
               </Text>
@@ -50,7 +50,7 @@ export function LegacyModeView({ settings, formValue, setFormValue, handleSubmit
 
         {/* Banner if set */}
         {settings.bannerUrl && (
-          <View style={{ width: '100%', marginTop: 8 }}>
+          <View padding="tight">
             <Image source={settings.bannerUrl} alt="Banner" fit="cover" />
           </View>
         )}
@@ -66,18 +66,18 @@ export function LegacyModeView({ settings, formValue, setFormValue, handleSubmit
           </Text>
         )}
 
-        <BlockStack spacing="tight" style={{ width: '100%', maxWidth: 420, marginTop: 8 }}>
+        <BlockStack spacing="tight">
           {(settings.giveawayRules || []).map((rule, idx) => (
-            <div key={`rule-${idx}`} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 6 }}>
-              <div style={{ minWidth: 28 }}>
-                <Text size="small" appearance="subdued" alignment="center">
+            <InlineStack key={`rule-${idx}`} spacing="tight" blockAlignment="start">
+              <View minInlineSize={28}>
+                <Text size="small" appearance="subdued">
                   {idx + 1}.
                 </Text>
-              </div>
-              <div style={{ flex: 1 }}>
-                <Text size="small" alignment="leading">{rule}</Text>
-              </div>
-            </div>
+              </View>
+              <View>
+                <Text size="small">{rule}</Text>
+              </View>
+            </InlineStack>
           ))}
         </BlockStack>
       </BlockStack>
@@ -94,7 +94,7 @@ export function LegacyModeView({ settings, formValue, setFormValue, handleSubmit
             prefix="@"
           />
         )}
-        <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center" alignment="center" style={{ width: '100%', alignItems: 'center' }}>
+        <BlockStack spacing="none" blockAlignment="center" inlineAlignment="center" alignment="center">
           {settings?.redirectUrl ? (
             <Link to={settings.redirectUrl} external>
               <Button
@@ -102,7 +102,6 @@ export function LegacyModeView({ settings, formValue, setFormValue, handleSubmit
                 onPress={handleSubmit}
                 loading={submitting}
                 disabled={submitting}
-                style={{ width: '100%' }}
                 aria-label="Submit entry"
               >
                 {settings.submitButtonText || 'Submit'}
@@ -114,7 +113,6 @@ export function LegacyModeView({ settings, formValue, setFormValue, handleSubmit
               onPress={handleSubmit}
               loading={submitting}
               disabled={submitting}
-              style={{ width: '100%' }}
               aria-label="Submit entry"
             >
               {settings.submitButtonText || 'Submit'}
@@ -122,7 +120,7 @@ export function LegacyModeView({ settings, formValue, setFormValue, handleSubmit
           )}
 
           {settings.subtitleBottom && (
-            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
+            <View padding="tight">
               <Text size="small" appearance="subdued" alignment="center">
                 {settings.subtitleBottom}
               </Text>
@@ -130,7 +128,7 @@ export function LegacyModeView({ settings, formValue, setFormValue, handleSubmit
           )}
 
           {settings.socialProofSubtitle && (
-            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
+            <View padding="tight">
               <Text size="small" emphasis="bold" alignment="center">
                 {settings.socialProofSubtitle}
               </Text>

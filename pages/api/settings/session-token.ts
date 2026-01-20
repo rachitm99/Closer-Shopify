@@ -51,6 +51,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       if (doc.exists) {
         const data = doc.data();
+
+        console.log('Session-token - Found settings doc for shop:', shop, {
+          enabled: !!data?.enabled,
+          mode: data?.mode,
+          popupTitle: data?.popupTitle,
+          rulesCount: Array.isArray(data?.giveawayRules) ? data.giveawayRules.length : (data?.giveawayRules ? 1 : 0),
+        });
         
         // Backward compatibility: convert old string format to array
         let rules = data?.giveawayRules || DEFAULT_SETTINGS.giveawayRules;

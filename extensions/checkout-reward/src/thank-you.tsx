@@ -73,6 +73,8 @@ function ThankYouExtension() {
   const [customerEmail, setCustomerEmail] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
   const [customerId, setCustomerId] = useState('');
+  const [isFallbackMode, setIsFallbackMode] = useState(false);
+  const [showLegacyPreview, setShowLegacyPreview] = useState(false);
 
 
   // Countdown timer (always starts from 2 days, 11 hours, 22 minutes, 11 seconds)
@@ -112,8 +114,27 @@ function ThankYouExtension() {
           // best-effort: ignore if data isn't available
         }
         
-        const token = await sessionToken.get();
-        
+        // Safely obtain session token
+        let token: string | null = null;
+        try {
+          if (sessionToken && typeof sessionToken.get === 'function') {
+            token = await sessionToken.get();
+          } else {
+            console.warn('Thank You - sessionToken.get not available');
+          }
+        } catch (err) {
+          console.error('Thank You - sessionToken.get() failed:', err);
+          token = null;
+        }
+
+        if (!token) {
+          console.warn('Thank You - Missing session token, enabling fallback preview');
+          setIsFallbackMode(true);
+          setSettings({ enabled: true, ...DEFAULT_SETTINGS });
+          setLoading(false);
+          return;
+        }
+
         const response = await fetch(
           `https://closer-qq8c.vercel.app/api/settings/session-token`,
           {
@@ -136,6 +157,18 @@ function ThankYouExtension() {
           }
           
           setSettings(data);
+          if (data.mode === 'legacy' && !data.enabled) {
+            console.log('Thank You - Legacy mode configured but disabled; enabling local preview');
+            setShowLegacyPreview(true);
+          }
+
+          if (data.mode === 'legacy') {
+            const usingDefaultTitle = !data.popupTitle || data.popupTitle === DEFAULT_SETTINGS.popupTitle;
+            const usingDefaultRules = !data.giveawayRules || (Array.isArray(data.giveawayRules) && data.giveawayRules.length === DEFAULT_SETTINGS.giveawayRules.length && data.giveawayRules.every((r: string, i: number) => r === DEFAULT_SETTINGS.giveawayRules[i]));
+            if (usingDefaultTitle || usingDefaultRules) {
+              console.warn('Thank You - Legacy mode active but appears to use default popup title or rules. Verify settings in the app settings page.');
+            }
+          }
 
           // If merchant provided a custom countdown end date, calculate remaining time
           try {
@@ -201,23 +234,20 @@ function ThankYouExtension() {
         impressionPayload.orderName = String(orderNumber);
       }
       
-      fetch(`https://closer-qq8c.vercel.app/api/analytics/impressions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(impressionPayload),
-        })
-        .then((response) => {
-          console.log('Thank You - ✅ Impression tracked, status:', response.status);
-          return response.json();
-        })
-        .then((data) => {
+      (async () => {
+        try {
+          const resp = await fetch(`https://closer-qq8c.vercel.app/api/analytics/impressions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(impressionPayload),
+          });
+          console.log('Thank You - ✅ Impression tracked, status:', resp.status);
+          const data = await resp.json().catch(() => ({}));
           console.log('Thank You - ✅ SUCCESS! Impression response:', data);
-        })
-        .catch((err) => {
-          console.error('Thank You - ❌ FETCH FAILED! Error:', err);
-        });
+        } catch (err) {
+          console.error('Thank You - ❌ Impression POST failed:', err);
+        }
+      })();
     }
   }, [settings, orderNumber]); // Run whenever settings or orderNumber change
 
@@ -331,7 +361,8 @@ function ThankYouExtension() {
     return null;
   }
   
-  if (!settings.enabled) {
+  // Render if enabled OR in fallback preview OR we're previewing legacy mode
+  if (!settings.enabled && !isFallbackMode && !showLegacyPreview) {
     console.log('Thank You - Extension disabled, enabled =', settings.enabled);
     return null;
   }
@@ -461,7 +492,7 @@ function ThankYouExtension() {
               handleSubmit={handleSubmit}
               submitting={submitting}
             />
-          ) : settings?.mode === 'legacy' ? (
+          ) : settings?.mode === 'legacy' || showLegacyPreview ? (
             <LegacyModeView
               settings={settings}
               formValue={formValue}

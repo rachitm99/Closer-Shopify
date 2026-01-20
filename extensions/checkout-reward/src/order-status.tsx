@@ -70,7 +70,9 @@ function OrderStatusExtension() {
   //   "Order ID:",
   //   api?.orderConfirmation?.current?.order?.id
   // );
-  const { sessionToken, shop } = api;
+  // Access via any to avoid type issues in different extension targets
+  const sessionToken = (api as any).sessionToken;
+  const shop = (api as any).shop || '';
   const orderData = useOrder();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -80,6 +82,8 @@ function OrderStatusExtension() {
   const [customerEmail, setCustomerEmail] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
   const [customerId, setCustomerId] = useState('');
+  const [isFallbackMode, setIsFallbackMode] = useState(false);
+  const [showLegacyPreview, setShowLegacyPreview] = useState(false);
 
   const productAddedRef = useRef(false);
 
@@ -100,7 +104,7 @@ function OrderStatusExtension() {
       clearInterval(id);
       console.log('⏱️ Order Status - Countdown timer stopped');
     };
-  }, []);
+  }, [initialCountdownMs]);
 
   useEffect(() => {
     async function fetchSettings() {
@@ -119,8 +123,28 @@ function OrderStatusExtension() {
           // ignore if not available
         }
         
-        const token = await sessionToken.get();
-        
+        // Safely obtain session token (some hosts may not expose it)
+        let token: string | null = null;
+        try {
+          if (sessionToken && typeof sessionToken.get === 'function') {
+            token = await sessionToken.get();
+          } else {
+            console.warn('Order Status - sessionToken.get not available');
+          }
+        } catch (err) {
+          console.error('Order Status - sessionToken.get() failed:', err);
+          token = null;
+        }
+
+        // If no token, show fallback preview so UI can be previewed
+        if (!token) {
+          console.warn('Order Status - Missing session token, enabling fallback preview');
+          setIsFallbackMode(true);
+          setSettings({ enabled: true, ...DEFAULT_SETTINGS });
+          setLoading(false);
+          return;
+        }
+
         const response = await fetch(
           `https://closer-qq8c.vercel.app/api/settings/session-token`,
           {
@@ -148,6 +172,21 @@ function OrderStatusExtension() {
           }
           
           setSettings(data);
+
+          // If mode is legacy but disabled, enable a local preview so developers/merchants can preview
+          if (data.mode === 'legacy' && !data.enabled) {
+            console.log('Order Status - Legacy mode configured but disabled; enabling local preview');
+            setShowLegacyPreview(true);
+          }
+
+          // Helpful debug: warn if legacy mode is set but fields look default (merchant may not have saved custom text)
+          if (data.mode === 'legacy') {
+            const usingDefaultTitle = !data.popupTitle || data.popupTitle === DEFAULT_SETTINGS.popupTitle;
+            const usingDefaultRules = !data.giveawayRules || (Array.isArray(data.giveawayRules) && data.giveawayRules.length === DEFAULT_SETTINGS.giveawayRules.length && data.giveawayRules.every((r: string, i: number) => r === DEFAULT_SETTINGS.giveawayRules[i]));
+            if (usingDefaultTitle || usingDefaultRules) {
+              console.warn('Order Status - Legacy mode active but appears to use default popup title or rules. Verify settings in the app settings page.');
+            }
+          }
 
           // If merchant provided a custom countdown end date, calculate remaining time
           try {
@@ -301,26 +340,20 @@ function OrderStatusExtension() {
         impressionPayload.orderName = String(orderNumber);
       }
       
-      fetch(
-        `https://closer-qq8c.vercel.app/api/analytics/impressions`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(impressionPayload),
+      (async () => {
+        try {
+          const resp = await fetch(`https://closer-qq8c.vercel.app/api/analytics/impressions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(impressionPayload),
+          });
+          console.log('Order Status - ✅ Impression tracked, status:', resp.status);
+          const data = await resp.json().catch(() => ({}));
+          console.log('Order Status - ✅ SUCCESS! Impression response:', data);
+        } catch (err) {
+          console.error('Order Status - ❌ Impression POST failed:', err);
         }
-      )
-      .then(response => {
-        console.log('Order Status - ✅ Impression tracked, status:', response.status);
-        return response.json();
-      })
-      .then(data => {
-        console.log('Order Status - ✅ SUCCESS! Impression response:', data);
-      })
-      .catch((err) => {
-        console.error('Order Status - ❌ FETCH FAILED! Error:', err);
-      });
+      })();
     }
   }, [settings, orderNumber]); // Run whenever settings or orderNumber change
 
@@ -391,8 +424,9 @@ function OrderStatusExtension() {
     console.log('Order Status - No settings found');
     return null;
   }
-  
-  if (!settings.enabled) {
+
+  // Render if enabled OR in fallback preview OR we're previewing legacy mode
+  if (!settings.enabled && !isFallbackMode && !showLegacyPreview) {
     console.log('Order Status - Extension disabled, enabled =', settings.enabled);
     return null;
   }
@@ -429,7 +463,7 @@ function OrderStatusExtension() {
               handleSubmit={handleSubmit}
               submitting={submitting}
             />
-          ) : settings?.mode === 'legacy' ? (
+          ) : settings?.mode === 'legacy' || showLegacyPreview ? (
             <LegacyModeView
               settings={settings}
               formValue={formValue}
