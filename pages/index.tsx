@@ -307,16 +307,22 @@ function Dashboard() {
     </Card>
   );
 
-  // Calculate today's and yesterday's stats for trend
+  // Calculate today's and yesterday's stats for trend (in user's local timezone)
   const getTodayDateString = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0]; // YYYY-MM-DD format
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // YYYY-MM-DD format in local timezone
   };
   
   const getYesterdayDateString = () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday.toISOString().split('T')[0]; // YYYY-MM-DD format
+    const year = yesterday.getFullYear();
+    const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+    const day = String(yesterday.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // YYYY-MM-DD format in local timezone
   };
   
   const todayDateStr = getTodayDateString();
