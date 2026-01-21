@@ -55,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .where('timestamp', '>=', thirtyDaysAgo)
       .get();
 
-    // Calculate impression stats as UNIQUE orders per day
+    // Calculate impression stats as UNIQUE orders per day (using IST timezone)
     const dailyImpressionSets: { [key: string]: Set<string> } = {};
     const uniqueOrdersSet = new Set<string>();
 
@@ -64,9 +64,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       let date: string;
       
       if (data.timestamp && typeof data.timestamp.toDate === 'function') {
-        date = data.timestamp.toDate().toISOString().split('T')[0];
+        const utcDate = data.timestamp.toDate();
+        const istDateStr = utcDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+        const istDate = new Date(istDateStr);
+        const year = istDate.getFullYear();
+        const month = String(istDate.getMonth() + 1).padStart(2, '0');
+        const day = String(istDate.getDate()).padStart(2, '0');
+        date = `${year}-${month}-${day}`;
       } else {
-        date = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const istDateStr = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+        const istDate = new Date(istDateStr);
+        const year = istDate.getFullYear();
+        const month = String(istDate.getMonth() + 1).padStart(2, '0');
+        const day = String(istDate.getDate()).padStart(2, '0');
+        date = `${year}-${month}-${day}`;
       }
 
       const rawOrder = data.orderId || data.order_id || data.orderName || data.order || null;
@@ -80,12 +92,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       uniqueOrdersSet.add(orderId);
     });
 
-    // Fill in missing dates and convert sets to counts
+    // Fill in missing dates and convert sets to counts (using IST timezone)
     const impressionTimeline = [];
+    const today = new Date();
+    const todayISTstr = today.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    const todayIST = new Date(todayISTstr);
+    
     for (let i = 29; i >= 0; i--) {
-      const date = new Date();
+      const date = new Date(todayIST);
       date.setDate(date.getDate() - i);
-      const dateString = date.toISOString().split('T')[0];
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateString = `${year}-${month}-${day}`;
       impressionTimeline.push({
         date: dateString,
         impressions: dailyImpressionSets[dateString] ? dailyImpressionSets[dateString].size : 0,
@@ -118,11 +137,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     submissionsForAnalytics.forEach((submission: any) => {
       let date: string;
       if (submission.submittedAt && typeof submission.submittedAt.toDate === 'function') {
-        date = submission.submittedAt.toDate().toISOString().split('T')[0];
+        const utcDate = submission.submittedAt.toDate();
+        const istDateStr = utcDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+        const istDate = new Date(istDateStr);
+        const year = istDate.getFullYear();
+        const month = String(istDate.getMonth() + 1).padStart(2, '0');
+        const day = String(istDate.getDate()).padStart(2, '0');
+        date = `${year}-${month}-${day}`;
       } else if (submission.submittedAt) {
-        date = new Date(submission.submittedAt).toISOString().split('T')[0];
+        const d = new Date(submission.submittedAt);
+        const istDateStr = d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+        const istDate = new Date(istDateStr);
+        const year = istDate.getFullYear();
+        const month = String(istDate.getMonth() + 1).padStart(2, '0');
+        const day = String(istDate.getDate()).padStart(2, '0');
+        date = `${year}-${month}-${day}`;
       } else {
-        date = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const istDateStr = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+        const istDate = new Date(istDateStr);
+        const year = istDate.getFullYear();
+        const month = String(istDate.getMonth() + 1).padStart(2, '0');
+        const day = String(istDate.getDate()).padStart(2, '0');
+        date = `${year}-${month}-${day}`;
       }
 
       if (!dailyStats[date]) {
