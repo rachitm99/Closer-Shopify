@@ -93,21 +93,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (data.submittedAt.toDate) {
           // Firebase Timestamp - convert to IST timezone for date grouping
           const utcDate = data.submittedAt.toDate();
-          const istDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+          const istDateStr = utcDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+          const istDate = new Date(istDateStr);
           const year = istDate.getFullYear();
           const month = String(istDate.getMonth() + 1).padStart(2, '0');
           const day = String(istDate.getDate()).padStart(2, '0');
           submittedDate = `${year}-${month}-${day}`;
           submittedAtIso = utcDate.toISOString();
+          
+          // Debug logging
+          if (submittedDate === '2026-01-21' || submittedDate === '2026-01-20') {
+            console.log(`📅 Date conversion - UTC: ${utcDate.toISOString()}, IST: ${istDateStr}, Date key: ${submittedDate}, Handle: ${data.instaHandle}`);
+          }
         } else {
           // Legacy ISO string - convert to IST timezone for date grouping
           const d = new Date(data.submittedAt);
-          const istDate = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+          const istDateStr = d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+          const istDate = new Date(istDateStr);
           const year = istDate.getFullYear();
           const month = String(istDate.getMonth() + 1).padStart(2, '0');
           const day = String(istDate.getDate()).padStart(2, '0');
           submittedDate = `${year}-${month}-${day}`;
           submittedAtIso = d.toISOString();
+          
+          // Debug logging
+          if (submittedDate === '2026-01-21' || submittedDate === '2026-01-20') {
+            console.log(`📅 Date conversion - UTC: ${d.toISOString()}, IST: ${istDateStr}, Date key: ${submittedDate}, Handle: ${data.instaHandle}`);
+          }
         }
       } else {
         submittedDate = 'unknown';
@@ -180,13 +192,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         uniqueFollowers: dailyData[date].followerHandles.size,
       }));
 
-    // Fill in missing dates for the last 30 days
+    // Debug: Log aggregated data for today and yesterday
+    const todayIST = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    const todayISTDate = new Date(todayIST);
+    const todayKey = `${todayISTDate.getFullYear()}-${String(todayISTDate.getMonth() + 1).padStart(2, '0')}-${String(todayISTDate.getDate()).padStart(2, '0')}`;
+    console.log(`📊 Timeline aggregation - Today's date key in IST: ${todayKey}`);
+    console.log(`📊 Today's data:`, dailyData[todayKey]);
+    console.log(`📊 All date keys:`, Object.keys(dailyData).sort().slice(-5));
+
+    // Fill in missing dates for the last 30 days (using IST timezone)
     const last30Days = [];
     const today = new Date();
+    const todayISTstr = today.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    const todayIST = new Date(todayISTstr);
+    
     for (let i = 29; i >= 0; i--) {
-      const date = new Date(today);
+      const date = new Date(todayIST);
       date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
       
       const existingData = timeline.find(d => d.date === dateStr);
       if (existingData) {
@@ -197,6 +223,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           count: 0,
           uniqueCustomers: 0,
           repeatCustomers: 0,
+          followers: 0,
+          uniqueFollowers: 0,
         });
       }
     }
