@@ -193,9 +193,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }));
 
     // Debug: Log aggregated data for today and yesterday
-    const todayIST = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-    const todayISTDate = new Date(todayIST);
-    const todayKey = `${todayISTDate.getFullYear()}-${String(todayISTDate.getMonth() + 1).padStart(2, '0')}-${String(todayISTDate.getDate()).padStart(2, '0')}`;
+    const currentISTstr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    const currentISTDate = new Date(currentISTstr);
+    const todayKey = `${currentISTDate.getFullYear()}-${String(currentISTDate.getMonth() + 1).padStart(2, '0')}-${String(currentISTDate.getDate()).padStart(2, '0')}`;
     console.log(`📊 Timeline aggregation - Today's date key in IST: ${todayKey}`);
     console.log(`📊 Today's data:`, dailyData[todayKey]);
     console.log(`📊 All date keys:`, Object.keys(dailyData).sort().slice(-5));
