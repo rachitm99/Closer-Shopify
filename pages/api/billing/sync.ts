@@ -6,6 +6,7 @@ import { db, collections } from '../../../lib/firestore';
 // Map Shopify charge name to our plan names
 function mapChargeNameToPlan(chargeName: string): string {
   const lowerName = chargeName.toLowerCase();
+  if (lowerName.includes('custom')) return 'custom';
   if (lowerName.includes('starter')) return 'starter';
   if (lowerName.includes('growth')) return 'growth';
   return 'basic';

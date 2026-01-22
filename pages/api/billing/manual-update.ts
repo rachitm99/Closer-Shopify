@@ -32,8 +32,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    if (!plan || !['basic', 'starter', 'growth'].includes(plan)) {
-      return res.status(400).json({ error: 'Invalid plan. Must be basic, starter, or growth' });
+    if (!plan || !['basic', 'starter', 'growth', 'custom'].includes(plan)) {
+      return res.status(400).json({ error: 'Invalid plan. Must be basic, starter, growth, or custom' });
     }
 
     console.log(`📝 Manual plan override: shop=${session.shop}, overridePlan=${plan}`);

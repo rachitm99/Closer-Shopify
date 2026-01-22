@@ -3,7 +3,7 @@ import shopify from './shopify';
 import { db, collections } from './firestore';
 
 export interface PlanLimits {
-  name: 'basic' | 'starter' | 'growth';
+  name: 'basic' | 'starter' | 'growth' | 'custom';
   maxSubmissions: number;
   analytics: boolean;
   customBranding: boolean;
@@ -32,6 +32,14 @@ export const PLAN_LIMITS: Record<string, PlanLimits> = {
     customBranding: true,
     prioritySupport: true,
   },
+  // Custom private plan: treated the same as Growth
+  custom: {
+    name: 'custom',
+    maxSubmissions: -1, // Unlimited
+    analytics: true,
+    customBranding: true,
+    prioritySupport: true,
+  },
 };
 
 export async function getActiveSubscription(session: Session) {
@@ -46,7 +54,7 @@ export async function getActiveSubscription(session: Session) {
     const userDoc = await db.collection(collections.users).doc(session.shop).get();
     const userData = userDoc.data();
     
-    if (userData?.overridePlan && ['basic', 'starter', 'growth'].includes(userData.overridePlan)) {
+    if (userData?.overridePlan && ['basic', 'starter', 'growth', 'custom'].includes(userData.overridePlan)) {
       console.log('✅ billing-helpers - Using overridePlan from users collection (MANUAL OVERRIDE):', userData.overridePlan);
       
       return {
@@ -62,7 +70,7 @@ export async function getActiveSubscription(session: Session) {
     }
     
     // Check currentPlan (auto-synced from Shopify)
-    if (userData?.currentPlan && ['basic', 'starter', 'growth'].includes(userData.currentPlan)) {
+    if (userData?.currentPlan && ['basic', 'starter', 'growth', 'custom'].includes(userData.currentPlan)) {
       console.log('✅ billing-helpers - Using currentPlan from users collection (AUTO-SYNCED):', userData.currentPlan);
       
       return {
