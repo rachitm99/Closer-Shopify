@@ -50,7 +50,7 @@ export default function SuperAdminPanel() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [liveBillingData, setLiveBillingData] = useState<any>(null);
   const [showLiveBillingModal, setShowLiveBillingModal] = useState(false);
-  const [checkingBilling, setCheckingBilling] = useState(false);
+  const [checkingBillingShop, setCheckingBillingShop] = useState<string | null>(null);
 
   useEffect(() => {
     // Check admin auth
@@ -188,7 +188,7 @@ export default function SuperAdminPanel() {
   };
 
   const handleCheckLiveBilling = async (shop: string) => {
-    setCheckingBilling(true);
+    setCheckingBillingShop(shop);
     setError('');
     try {
       const response = await fetch('/api/admin/check-live-billing', {
@@ -212,7 +212,7 @@ export default function SuperAdminPanel() {
       console.error('Error checking live billing:', err);
       setError('Failed to check live billing');
     } finally {
-      setCheckingBilling(false);
+      setCheckingBillingShop(null);
     }
   };
 
@@ -251,7 +251,7 @@ export default function SuperAdminPanel() {
         <Button 
           size="slim" 
           onClick={() => handleCheckLiveBilling(shop.shop)}
-          loading={checkingBilling}
+          loading={checkingBillingShop === shop.shop}
           tone="success"
         >
           Check Live Billing

@@ -1,5 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db, collections } from '../../../lib/firestore';
+import Cryptr from 'cryptr';
+
+const cryptr = new Cryptr(process.env.ENCRYPTION_SECRET || 'default-secret-key');
 
 /**
  * Check live billing status from Shopify for a shop
@@ -50,17 +53,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ error: 'No session found for shop' });
       }
       const altSessionData = altSessionDoc.data();
-      if (!altSessionData?.accessToken) {
-        return res.status(404).json({ error: 'No access token found in session' });
+      
+      // Decrypt session data
+      try {
+        const decrypted = cryptr.decrypt(altSessionData?.data || '');
+        const sessionInfo = JSON.parse(decrypted);
+        
+        if (!sessionInfo.accessToken) {
+          return res.status(404).json({ error: 'No access token found in session' });
+        }
+        
+        return await queryShopifySubscription(shop, sessionInfo.accessToken, subscriptionId, res);
+      } catch (decryptError) {
+        console.error('Failed to decrypt session:', decryptError);
+        return res.status(500).json({ error: 'Failed to decrypt session data' });
       }
-      return await queryShopifySubscription(shop, altSessionData.accessToken, subscriptionId, res);
     }
 
     const sessionData = sessionDoc.data();
-    if (!sessionData?.accessToken) {
-      return res.status(404).json({ error: 'No access token found in session' });
+    
+    // Decrypt session data
+    try {
+      const decrypted = cryptr.decrypt(sessionData?.data || '');
+      const sessionInfo = JSON.parse(decrypted);
+      
+      if (!sessionInfo.accessToken) {
+        return res.status(404).json({ error: 'No access token found in session' });
+      }
+      
+      return await queryShopifySubscription(shop, sessionInfo.accessToken, subscriptionId, res);
+    } catch (decryptError) {
+      console.error('Failed to decrypt session:', decryptError);
+      return res.status(500).json({ error: 'Failed to decrypt session data' });
     }
-    return await queryShopifySubscription(shop, sessionData.accessToken, subscriptionId, res);
 
   } catch (error: any) {
     console.error('Error checking live billing:', error);
