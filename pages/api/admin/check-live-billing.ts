@@ -46,10 +46,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ error: 'No session found for shop' });
       }
       const altSessionData = altSessionDoc.data();
+      if (!altSessionData?.accessToken) {
+        return res.status(404).json({ error: 'No access token found in session' });
+      }
       return await queryShopifySubscription(shop, altSessionData.accessToken, subscriptionId, res);
     }
 
     const sessionData = sessionDoc.data();
+    if (!sessionData?.accessToken) {
+      return res.status(404).json({ error: 'No access token found in session' });
+    }
     return await queryShopifySubscription(shop, sessionData.accessToken, subscriptionId, res);
 
   } catch (error: any) {
