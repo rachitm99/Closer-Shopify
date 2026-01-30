@@ -73,6 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const isInTrial = charge.trial_days > 0 && charge.trial_ends_on && new Date(charge.trial_ends_on) > new Date();
 
     console.log(`📝 Processing ${webhookTopic} webhook`);
+    console.log(`📝 Subscription Status: ${charge.status}`);
     console.log(`📝 Updating Firebase: shop=${shop}, plan=${plan}, active=${isActive}, trial=${isInTrial}`);
 
     // Update user's plan in Firebase - only include defined values
@@ -86,22 +87,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       lastWebhookReceivedAt: new Date().toISOString(),
     };
 
-    // Handle app_subscriptions/activate - Trial ended, customer is now being charged
-    if (webhookTopic === 'app_subscriptions/activate') {
-      console.log('💰 ACTIVATE webhook: Customer trial ended and is now being charged');
-      updateData.planInTrial = false;
+    // Detect subscription lifecycle events based on status and trial
+    const previousData = await db.collection(collections.users).doc(shop).get();
+    const wasInTrial = previousData.exists ? previousData.data()?.planInTrial : false;
+
+    // Trial ended and now active = billing started (ACTIVATED)
+    if (!isInTrial && wasInTrial && charge.status === 'active') {
+      console.log('💰 ACTIVATION DETECTED: Trial ended, customer is now being charged');
       updateData.trialEndedAt = new Date().toISOString();
       updateData.billingStartedAt = new Date().toISOString();
     }
 
-    // Handle app_subscriptions/cancel - Subscription cancelled
-    if (webhookTopic === 'app_subscriptions/cancel') {
-      console.log('❌ CANCEL webhook: Subscription cancelled by merchant');
-      updateData.currentPlan = 'basic';
-      updateData.planStatus = 'cancelled';
-      updateData.planInTrial = false;
-      updateData.subscriptionCancelledAt = new Date().toISOString();
-      updateData.previousPlan = plan;
+    // Status changed to cancelled, frozen, declined = downgrade to basic
+    if (['cancelled', 'frozen', 'declined'].includes(charge.status?.toLowerCase())) {
+      console.log(`❌ CANCELLATION/FREEZE DETECTED: Status=${charge.status}`);
+      if (charge.status?.toLowerCase() === 'cancelled') {
+        updateData.currentPlan = 'basic';
+        updateData.planInTrial = false;
+        updateData.subscriptionCancelledAt = new Date().toISOString();
+        updateData.previousPlan = plan;
+      } else if (charge.status?.toLowerCase() === 'frozen') {
+        console.log('❄️ Subscription FROZEN - keeping current plan but marking as frozen');
+        updateData.subscriptionFrozenAt = new Date().toISOString();
+      }
     }
 
     // Only add fields if they exist (not undefined)
