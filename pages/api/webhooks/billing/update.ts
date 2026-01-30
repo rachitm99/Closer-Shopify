@@ -16,7 +16,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const webhookTopic = req.headers['x-shopify-topic'] as string;
   console.log('🔔 ============ BILLING WEBHOOK RECEIVED ============');
+  console.log('📍 Topic:', webhookTopic);
   console.log('📍 URL:', req.url);
   console.log('📋 Headers:', JSON.stringify(req.headers, null, 2));
   console.log('⏰ Timestamp:', new Date().toISOString());
@@ -70,6 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const isActive = charge.status === 'active';
     const isInTrial = charge.trial_days > 0 && charge.trial_ends_on && new Date(charge.trial_ends_on) > new Date();
 
+    console.log(`📝 Processing ${webhookTopic} webhook`);
     console.log(`📝 Updating Firebase: shop=${shop}, plan=${plan}, active=${isActive}, trial=${isInTrial}`);
 
     // Update user's plan in Firebase - only include defined values
@@ -79,11 +82,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       planStatus: charge.status ? charge.status.toLowerCase() : 'active',
       planInTrial: isInTrial || false,
       planUpdatedAt: new Date().toISOString(),
+      lastWebhookTopic: webhookTopic,
+      lastWebhookReceivedAt: new Date().toISOString(),
     };
+
+    // Handle app_subscriptions/activate - Trial ended, customer is now being charged
+    if (webhookTopic === 'app_subscriptions/activate') {
+      console.log('💰 ACTIVATE webhook: Customer trial ended and is now being charged');
+      updateData.planInTrial = false;
+      updateData.trialEndedAt = new Date().toISOString();
+      updateData.billingStartedAt = new Date().toISOString();
+    }
+
+    // Handle app_subscriptions/cancel - Subscription cancelled
+    if (webhookTopic === 'app_subscriptions/cancel') {
+      console.log('❌ CANCEL webhook: Subscription cancelled by merchant');
+      updateData.currentPlan = 'basic';
+      updateData.planStatus = 'cancelled';
+      updateData.planInTrial = false;
+      updateData.subscriptionCancelledAt = new Date().toISOString();
+      updateData.previousPlan = plan;
+    }
 
     // Only add fields if they exist (not undefined)
     if (charge.trial_ends_on !== undefined) {
       updateData.planTrialEndsOn = charge.trial_ends_on;
+    }
+    if (charge.trial_days !== undefined) {
+      updateData.trialDays = charge.trial_days;
     }
     if (charge.id !== undefined) {
       updateData.billingChargeId = charge.id;
@@ -93,6 +119,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     if (charge.price !== undefined || charge.capped_amount?.amount !== undefined) {
       updateData.billingChargePrice = charge.price || charge.capped_amount?.amount || '0';
+    }
+
+    // Calculate trial days remaining if in trial
+    if (updateData.planInTrial && charge.trial_ends_on) {
+      const trialEndDate = new Date(charge.trial_ends_on);
+      const now = new Date();
+      const timeDiff = trialEndDate.getTime() - now.getTime();
+      updateData.trialDaysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    } else {
+      updateData.trialDaysRemaining = 0;
     }
 
     await db.collection(collections.users).doc(shop).set(updateData, { merge: true });

@@ -32,6 +32,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const settingsDoc = await db.collection(collections.settings).doc(shop).get();
     const settingsData = settingsDoc.exists ? settingsDoc.data() : null;
 
+    // Calculate trial days remaining in real-time
+    const now = new Date();
+    let isInActiveTrial = false;
+    let trialDaysRemaining = null;
+    
+    if (userData?.planInTrial && userData?.planTrialEndsOn) {
+      const trialEndDate = typeof userData.planTrialEndsOn === 'string' 
+        ? new Date(userData.planTrialEndsOn)
+        : userData.planTrialEndsOn.toDate ? userData.planTrialEndsOn.toDate() : new Date(userData.planTrialEndsOn);
+      isInActiveTrial = trialEndDate > now;
+      
+      if (isInActiveTrial) {
+        // Calculate remaining days
+        const timeDiff = trialEndDate.getTime() - now.getTime();
+        trialDaysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      } else {
+        // Trial has ended, show 0 days remaining
+        trialDaysRemaining = 0;
+      }
+    }
+
     return res.status(200).json({
       success: true,
       shop,
@@ -42,10 +63,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         planStatusType: typeof userData?.planStatus,
         currentPlan: userData?.currentPlan,
         overridePlan: userData?.overridePlan,
-        planInTrial: userData?.planInTrial,
+        planInTrial: isInActiveTrial, // Use calculated value
         planTrialEndsOn: userData?.planTrialEndsOn,
         planTrialStartedOn: userData?.planTrialStartedOn,
-        trialDaysRemaining: userData?.trialDaysRemaining,
+        trialDaysRemaining: trialDaysRemaining, // Use calculated value
         lastSyncedAt: userData?.lastSyncedAt,
       }
     });
