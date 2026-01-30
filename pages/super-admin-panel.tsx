@@ -571,11 +571,14 @@ export default function SuperAdminPanel() {
                 <Card>
                   <BlockStack gap="300">
                     <Text variant="headingMd" as="h3">Dates & Timeline</Text>
-                    <Text as="p"><strong>Created At:</strong> {liveBillingData.subscription?.createdAt ? new Date(liveBillingData.subscription.createdAt).toLocaleString() : 'N/A'}</Text>
-                    <Text as="p"><strong>Current Period End:</strong> {liveBillingData.subscription?.currentPeriodEnd ? new Date(liveBillingData.subscription.currentPeriodEnd).toLocaleString() : 'N/A'}</Text>
+                    <Text as="p"><strong>Subscription Created:</strong> {liveBillingData.subscription?.createdAt ? new Date(liveBillingData.subscription.createdAt).toLocaleString() : 'N/A'}</Text>
+                    {liveBillingData.analysis?.trialEndDate && (
+                      <Text as="p"><strong>Trial End Date:</strong> {new Date(liveBillingData.analysis.trialEndDate).toLocaleString()}</Text>
+                    )}
+                    <Text as="p"><strong>Next Billing Date:</strong> {liveBillingData.analysis?.nextBillingDate ? new Date(liveBillingData.analysis.nextBillingDate).toLocaleString() : 'N/A'}</Text>
                     {liveBillingData.analysis?.daysRemaining !== null && (
                       <Text as="p">
-                        <strong>Days {liveBillingData.analysis?.daysRemaining > 0 ? 'Remaining' : 'Since Period End'}:</strong> {Math.abs(liveBillingData.analysis.daysRemaining)} days
+                        <strong>{liveBillingData.analysis?.isTrialActive ? 'Trial Days Remaining:' : 'Trial Ended:'}</strong> {liveBillingData.analysis?.isTrialActive ? `${liveBillingData.analysis.daysRemaining} days` : `${Math.abs(liveBillingData.analysis.daysRemaining)} day(s) ago`}
                       </Text>
                     )}
                   </BlockStack>

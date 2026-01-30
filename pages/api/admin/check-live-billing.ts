@@ -195,10 +195,14 @@ async function queryShopifySubscription(
     let trialStatus = 'No trial';
     let daysRemaining = null;
     let isTrialActive = false;
+    let trialEndDate = null;
 
-    if (subscription.currentPeriodEnd && subscription.trialDays > 0) {
-      const periodEnd = new Date(subscription.currentPeriodEnd);
-      const diffMs = periodEnd.getTime() - now.getTime();
+    if (subscription.trialDays > 0 && subscription.createdAt) {
+      // Calculate trial end date = createdAt + trialDays
+      trialEndDate = new Date(subscription.createdAt);
+      trialEndDate.setDate(trialEndDate.getDate() + subscription.trialDays);
+      
+      const diffMs = trialEndDate.getTime() - now.getTime();
       daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
       isTrialActive = daysRemaining > 0;
       
@@ -218,9 +222,11 @@ async function queryShopifySubscription(
         isActive: subscription.status === 'ACTIVE',
         isTest: subscription.test,
         trialStatus,
+        trialEndDate: trialEndDate ? trialEndDate.toISOString() : null,
         daysRemaining,
         isTrialActive,
         billingActive: subscription.status === 'ACTIVE' && !isTrialActive,
+        nextBillingDate: subscription.currentPeriodEnd,
       },
     });
 
