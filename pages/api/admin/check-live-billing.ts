@@ -104,25 +104,27 @@ async function queryShopifySubscription(
 ) {
   const query = `
     {
-      appSubscription(id: "gid://shopify/AppSubscription/${subscriptionId}") {
-        id
-        name
-        status
-        test
-        trialDays
-        createdAt
-        currentPeriodEnd
-        returnUrl
-        lineItems {
+      currentAppInstallation {
+        activeSubscriptions {
           id
-          plan {
-            pricingDetails {
-              ... on AppRecurringPricing {
-                price {
-                  amount
-                  currencyCode
+          name
+          status
+          test
+          trialDays
+          createdAt
+          currentPeriodEnd
+          returnUrl
+          lineItems {
+            id
+            plan {
+              pricingDetails {
+                ... on AppRecurringPricing {
+                  price {
+                    amount
+                    currencyCode
+                  }
+                  interval
                 }
-                interval
               }
             }
           }
@@ -161,12 +163,30 @@ async function queryShopifySubscription(
       });
     }
 
-    const subscription = data.data?.appSubscription;
+    const subscriptions = data.data?.currentAppInstallation?.activeSubscriptions || [];
+
+    if (subscriptions.length === 0) {
+      return res.status(404).json({
+        error: 'No active subscriptions found',
+        message: 'The shop has no active app subscriptions',
+      });
+    }
+
+    // Find the subscription matching the ID, or use the first one
+    let subscription = subscriptions.find((sub: any) => 
+      sub.id === `gid://shopify/AppSubscription/${subscriptionId}` ||
+      sub.id.includes(String(subscriptionId))
+    );
+
+    if (!subscription && subscriptions.length > 0) {
+      // If no match, use the first subscription
+      subscription = subscriptions[0];
+    }
 
     if (!subscription) {
       return res.status(404).json({
         error: 'Subscription not found',
-        message: 'The subscription may have been cancelled or deleted',
+        message: 'No matching subscription found',
       });
     }
 
