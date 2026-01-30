@@ -48,6 +48,9 @@ export default function SuperAdminPanel() {
   const [error, setError] = useState('');
   const [shopDetails, setShopDetails] = useState<any>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [liveBillingData, setLiveBillingData] = useState<any>(null);
+  const [showLiveBillingModal, setShowLiveBillingModal] = useState(false);
+  const [checkingBilling, setCheckingBilling] = useState(false);
 
   useEffect(() => {
     // Check admin auth
@@ -184,6 +187,35 @@ export default function SuperAdminPanel() {
     }
   };
 
+  const handleCheckLiveBilling = async (shop: string) => {
+    setCheckingBilling(true);
+    setError('');
+    try {
+      const response = await fetch('/api/admin/check-live-billing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-auth': 'true',
+        },
+        body: JSON.stringify({ shop }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setLiveBillingData(data);
+        setShowLiveBillingModal(true);
+      } else {
+        setError(data.error || 'Failed to check live billing');
+      }
+    } catch (err) {
+      console.error('Error checking live billing:', err);
+      setError('Failed to check live billing');
+    } finally {
+      setCheckingBilling(false);
+    }
+  };
+
   const handleLogout = () => {
     sessionStorage.removeItem('adminAuth');
     router.push('/admin-login');
@@ -212,9 +244,17 @@ export default function SuperAdminPanel() {
   const tableRows = shops.slice(0, 20).map(shop => [
     <div key={`${shop.shop}-name`}>
       <Text as="span">{shop.shop}</Text>
-      <div style={{ marginTop: '4px' }}>
+      <div style={{ marginTop: '4px', display: 'flex', gap: '8px' }}>
         <Button size="slim" onClick={() => handleViewShopDetails(shop.shop)}>
           View Details
+        </Button>
+        <Button 
+          size="slim" 
+          onClick={() => handleCheckLiveBilling(shop.shop)}
+          loading={checkingBilling}
+          tone="success"
+        >
+          Check Live Billing
         </Button>
       </div>
     </div>,
@@ -466,6 +506,123 @@ export default function SuperAdminPanel() {
                       maxHeight: '300px'
                     }}>
                       <pre>{JSON.stringify(shopDetails.users, null, 2)}</pre>
+                    </div>
+                  </BlockStack>
+                </Card>
+              </BlockStack>
+            </div>
+          </div>
+        )}
+
+        {/* Live Billing Check Modal */}
+        {showLiveBillingModal && liveBillingData && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '24px',
+              borderRadius: '8px',
+              maxWidth: '900px',
+              maxHeight: '85vh',
+              overflow: 'auto',
+              width: '90%',
+            }}>
+              <BlockStack gap="400">
+                <InlineStack align="space-between">
+                  <Text variant="headingLg" as="h2">Live Billing Status: {liveBillingData.shop}</Text>
+                  <Button onClick={() => setShowLiveBillingModal(false)}>Close</Button>
+                </InlineStack>
+
+                <Banner tone={liveBillingData.analysis?.billingActive ? 'success' : liveBillingData.analysis?.isTrialActive ? 'info' : 'warning'}>
+                  <BlockStack gap="200">
+                    <Text as="p">
+                      <strong>Billing Status:</strong> {liveBillingData.analysis?.billingActive ? '✅ ACTIVE - Customer is being charged' : liveBillingData.analysis?.isTrialActive ? '🟡 IN TRIAL - Not yet charged' : '⚠️ INACTIVE'}
+                    </Text>
+                    {liveBillingData.subscription?.test && (
+                      <Text as="p" tone="critical">
+                        ⚠️ WARNING: This is a TEST charge - No real money is being charged
+                      </Text>
+                    )}
+                  </BlockStack>
+                </Banner>
+
+                <Card>
+                  <BlockStack gap="300">
+                    <Text variant="headingMd" as="h3">Subscription Overview</Text>
+                    <Text as="p"><strong>Subscription ID:</strong> {liveBillingData.subscriptionId}</Text>
+                    <Text as="p"><strong>Plan Name:</strong> {liveBillingData.subscription?.name}</Text>
+                    <Text as="p"><strong>Status:</strong> <Badge tone={liveBillingData.subscription?.status === 'ACTIVE' ? 'success' : 'critical'}>{liveBillingData.subscription?.status}</Badge></Text>
+                    <Text as="p"><strong>Test Mode:</strong> {liveBillingData.subscription?.test ? '⚠️ YES' : '✅ NO'}</Text>
+                    <Text as="p"><strong>Trial Days:</strong> {liveBillingData.subscription?.trialDays}</Text>
+                    <Text as="p"><strong>Trial Status:</strong> {liveBillingData.analysis?.trialStatus}</Text>
+                  </BlockStack>
+                </Card>
+
+                <Card>
+                  <BlockStack gap="300">
+                    <Text variant="headingMd" as="h3">Dates & Timeline</Text>
+                    <Text as="p"><strong>Created At:</strong> {liveBillingData.subscription?.createdAt ? new Date(liveBillingData.subscription.createdAt).toLocaleString() : 'N/A'}</Text>
+                    <Text as="p"><strong>Current Period End:</strong> {liveBillingData.subscription?.currentPeriodEnd ? new Date(liveBillingData.subscription.currentPeriodEnd).toLocaleString() : 'N/A'}</Text>
+                    {liveBillingData.analysis?.daysRemaining !== null && (
+                      <Text as="p">
+                        <strong>Days {liveBillingData.analysis?.daysRemaining > 0 ? 'Remaining' : 'Since Period End'}:</strong> {Math.abs(liveBillingData.analysis.daysRemaining)} days
+                      </Text>
+                    )}
+                  </BlockStack>
+                </Card>
+
+                {liveBillingData.subscription?.lineItems && liveBillingData.subscription.lineItems.length > 0 && (
+                  <Card>
+                    <BlockStack gap="300">
+                      <Text variant="headingMd" as="h3">Pricing Details</Text>
+                      {liveBillingData.subscription.lineItems.map((item: any, index: number) => {
+                        const pricing = item.plan?.pricingDetails;
+                        if (pricing?.price) {
+                          return (
+                            <Text key={index} as="p">
+                              <strong>Amount:</strong> {pricing.price.amount} {pricing.price.currencyCode} per {pricing.interval.replace('EVERY_30_DAYS', '30 days').replace('ANNUAL', 'year')}
+                            </Text>
+                          );
+                        }
+                        return null;
+                      })}
+                    </BlockStack>
+                  </Card>
+                )}
+
+                <Card>
+                  <BlockStack gap="300">
+                    <Text variant="headingMd" as="h3">Analysis</Text>
+                    <Text as="p"><strong>Is Active:</strong> {liveBillingData.analysis?.isActive ? '✅ Yes' : '❌ No'}</Text>
+                    <Text as="p"><strong>In Trial:</strong> {liveBillingData.analysis?.isTrialActive ? '✅ Yes' : '❌ No'}</Text>
+                    <Text as="p"><strong>Billing Active:</strong> {liveBillingData.analysis?.billingActive ? '✅ Yes (Customer is being charged)' : '❌ No (Not yet charged or trial active)'}</Text>
+                    <Text as="p"><strong>Queried At:</strong> {new Date().toLocaleString()}</Text>
+                  </BlockStack>
+                </Card>
+
+                <Card>
+                  <BlockStack gap="300">
+                    <Text variant="headingMd" as="h3">Raw GraphQL Response</Text>
+                    <div style={{ 
+                      backgroundColor: '#f6f6f7', 
+                      padding: '12px', 
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontFamily: 'monospace',
+                      overflow: 'auto',
+                      maxHeight: '300px'
+                    }}>
+                      <pre>{JSON.stringify(liveBillingData.subscription, null, 2)}</pre>
                     </div>
                   </BlockStack>
                 </Card>
