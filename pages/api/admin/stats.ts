@@ -103,10 +103,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Unique impressions for this shop (unique orders)
       const uniqueOrderCount = (shopToOrderSet[user.shop] && shopToOrderSet[user.shop].size) || 0;
 
+      // Determine display status: If trial has ended but planStatus is stale, 
+      // assume active if subscription exists. Only show non-active statuses if explicitly set.
+      let displayStatus = user.planStatus || 'active';
+      
+      // If trial ended and status is 'expired' or empty, but they have a current plan, assume active
+      if (user.planTrialEndsOn && !isInActiveTrial && (user.currentPlan || user.overridePlan)) {
+        if (!displayStatus || displayStatus === 'expired' || displayStatus === 'pending') {
+          displayStatus = 'active';
+        }
+      }
+
       return {
         shop: user.shop,
         currentPlan: user.overridePlan || user.currentPlan || 'basic',
-        planStatus: user.planStatus || 'active',
+        planStatus: displayStatus,
         planInTrial: isInActiveTrial,
         planTrialEndsOn: user.planTrialEndsOn || null,
         planTrialStartedOn: user.planTrialStartedOn || null,
