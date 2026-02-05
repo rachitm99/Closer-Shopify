@@ -30,6 +30,7 @@ export interface DefaultSettings {
   couponCodeTitle: string;
   giveawayRules: string[];
   selectedProducts: SelectedProduct[];
+  hideBanner: boolean;
 }
 
 export const DEFAULT_SETTINGS: DefaultSettings = {
@@ -58,4 +59,5 @@ export const DEFAULT_SETTINGS: DefaultSettings = {
     'Share this post to your story',
   ],
   selectedProducts: [],
+  hideBanner: false,
 };

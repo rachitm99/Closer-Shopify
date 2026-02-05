@@ -22,6 +22,7 @@ interface LegacyModeViewProps {
     redirectUrl?: string;
     subtitleBottom?: string;
     socialProofSubtitle?: string;
+    hideBanner?: boolean;
   };
   formValue: string;
   setFormValue: (value: string) => void;
@@ -48,8 +49,8 @@ export function LegacyModeView({ settings, formValue, setFormValue, handleSubmit
           )}
         </BlockStack>
 
-        {/* Banner if set */}
-        {settings.bannerUrl && (
+        {/* Banner if set and not hidden */}
+        {settings.bannerUrl && !settings.hideBanner && (
           <View padding="tight">
             <Image source={settings.bannerUrl} alt="Banner" fit="cover" />
           </View>

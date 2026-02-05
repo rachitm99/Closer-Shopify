@@ -56,6 +56,7 @@ function SettingsPage() {
   const [legacyRules, setLegacyRules] = useState<string[]>([...DEFAULT_SETTINGS.giveawayRules]);
   const [newRule, setNewRule] = useState('');
   const [legacyError, setLegacyError] = useState<string | null>(null);
+  const [hideBanner, setHideBanner] = useState(DEFAULT_SETTINGS.hideBanner);
 
   const [formFieldLabel, setFormFieldLabel] = useState(DEFAULT_SETTINGS.formFieldLabel);
   const [submitButtonText, setSubmitButtonText] = useState(DEFAULT_SETTINGS.submitButtonText);
@@ -203,6 +204,7 @@ function SettingsPage() {
     setSelectedProducts(data.selectedProducts || []);
     // Load editable rules for legacy mode (stored as giveawayRules)
     setLegacyRules(Array.isArray(data.giveawayRules) ? data.giveawayRules : DEFAULT_SETTINGS.giveawayRules);
+    setHideBanner(data.hideBanner !== undefined ? data.hideBanner : DEFAULT_SETTINGS.hideBanner);
   };
 
   // Legacy rules helpers
@@ -340,7 +342,8 @@ function SettingsPage() {
           redirectUrl,
           selectedProducts,
           couponCode,
-          couponCodeTitle
+          couponCodeTitle,
+          hideBanner
         }),
       });
 
@@ -909,6 +912,26 @@ function SettingsPage() {
                       autoComplete="off"
                       maxLength={50}
                     />
+
+                    <div>
+                      <Text as="p" variant="bodyMd" fontWeight="semibold">
+                        Banner Display
+                      </Text>
+                      <div style={{ marginTop: '8px' }}>
+                        <SettingToggle
+                          action={{
+                            content: hideBanner ? 'Show banner' : 'Hide banner',
+                            onAction: () => setHideBanner(!hideBanner),
+                          }}
+                          enabled={!hideBanner}
+                        >
+                          <Text as="p" variant="bodySm">
+                            Banner is currently <Text as="span" fontWeight="bold">{hideBanner ? 'hidden' : 'visible'}</Text>. 
+                            {hideBanner ? ' Enable to show the banner image in the popup.' : ' Disable to hide the banner image from the popup.'}
+                          </Text>
+                        </SettingToggle>
+                      </div>
+                    </div>
                   </>
                 )}
 
