@@ -631,11 +631,33 @@ function SettingsPage() {
                       {bannerUrl && (
                         <Button
                           tone="critical"
-                          onClick={() => {
+                          onClick={async () => {
                             setBannerUrl('');
-                            setShowToast(true);
+                            // Auto-save the settings after removing banner
+                            try {
+                              setSaving(true);
+                              const url = isImpersonating 
+                                ? `/api/settings/merchant?shop=${impersonatedShop}` 
+                                : '/api/settings/merchant';
+                              
+                              const fetchFn = isImpersonating 
+                                ? (url: string, options: any) => fetch(url, { ...options, headers: { ...options.headers, 'x-admin-auth': 'true' } })
+                                : authFetch;
+                              
+                              await fetchFn(url, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ bannerUrl: '', hideBanner }),
+                              });
+                              setShowToast(true);
+                            } catch (error) {
+                              console.error('Error removing banner:', error);
+                              setError('Failed to remove banner');
+                            } finally {
+                              setSaving(false);
+                            }
                           }}
-                          disabled={uploadingBanner}
+                          disabled={uploadingBanner || saving}
                         >
                           Remove Banner
                         </Button>

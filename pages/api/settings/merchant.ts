@@ -197,6 +197,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           redirectUrl,
           selectedProducts,
           onboardingCompleted,
+          hideBanner,
         } = req.body;
         const existingDoc = await db.collection(collections.users).doc(shop).get();
         const existingData = existingDoc.exists ? existingDoc.data() : {};
@@ -234,6 +235,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (submittedSocialProofText !== undefined) updateData.submittedSocialProofText = submittedSocialProofText;
         if (followButtonText !== undefined) updateData.followButtonText = followButtonText;
         if (selectedProducts !== undefined) updateData.selectedProducts = selectedProducts;
+        if (hideBanner !== undefined) updateData.hideBanner = hideBanner;
 
 
         // Merge with existing data to preserve analytics and other fields
