@@ -612,21 +612,35 @@ function SettingsPage() {
                         />
                       </div>
                     )}
-                    <label
-                      htmlFor="banner-upload"
-                      style={{
-                        display: 'inline-block',
-                        padding: '8px 16px',
-                        backgroundColor: uploadingBanner ? '#ccc' : '#0050a0',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: uploadingBanner ? 'not-allowed' : 'pointer',
-                        fontSize: '14px',
-                      }}
-                    >
-                      {uploadingBanner ? 'Uploading...' : (bannerUrl ? 'Change Banner' : 'Upload Banner')}
-                    </label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <label
+                        htmlFor="banner-upload"
+                        style={{
+                          display: 'inline-block',
+                          padding: '8px 16px',
+                          backgroundColor: uploadingBanner ? '#ccc' : '#0050a0',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: uploadingBanner ? 'not-allowed' : 'pointer',
+                          fontSize: '14px',
+                        }}
+                      >
+                        {uploadingBanner ? 'Uploading...' : (bannerUrl ? 'Change Banner' : 'Upload Banner')}
+                      </label>
+                      {bannerUrl && (
+                        <Button
+                          tone="critical"
+                          onClick={() => {
+                            setBannerUrl('');
+                            setShowToast(true);
+                          }}
+                          disabled={uploadingBanner}
+                        >
+                          Remove Banner
+                        </Button>
+                      )}
+                    </div>
                     <input
                       id="banner-upload"
                       type="file"
