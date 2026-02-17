@@ -150,7 +150,7 @@ function SettingsPage() {
             if (host) queryString.set('host', host as string);
             if (shopParam) queryString.set('shop', shopParam as string);
             const query = queryString.toString();
-            window.location.href = `/pricing_plans${query ? `?${query}` : ''}`;
+            window.location.href = `/billing${query ? `?${query}` : ''}`;
             return;
           }
           
