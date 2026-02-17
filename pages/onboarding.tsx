@@ -89,6 +89,20 @@ function Onboarding() {
             const data = await response.json();
             shopDomain = data.shop;
             
+            // Check if billing has been selected - if not, redirect to billing first
+            // Skip for existing users who already have a plan
+            if (!data.billingSelected && !data.currentPlan) {
+              console.log('💳 Onboarding - Billing not selected, redirecting to billing...');
+              const params = new URLSearchParams(window.location.search);
+              const host = params.get('host') || router.query.host;
+              const queryString = new URLSearchParams();
+              if (host) queryString.set('host', host as string);
+              if (shopDomain) queryString.set('shop', shopDomain);
+              const query = queryString.toString();
+              window.location.href = `/billing${query ? `?${query}` : ''}`;
+              return;
+            }
+            
             // Check if onboarding is already completed
             if (data.onboardingCompleted) {
               console.log('✅ Onboarding already completed, redirecting to dashboard...');

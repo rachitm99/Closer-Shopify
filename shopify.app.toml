@@ -3,7 +3,7 @@
 client_id = "ecc8f1cfd8ea660f120539d4a163929b"
 name = "Follo"
 application_url = "https://closer-qq8c.vercel.app"
-embedded = true
+embedded = true 
 
 [webhooks]
 api_version = "2025-10"

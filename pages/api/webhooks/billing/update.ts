@@ -85,6 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       planUpdatedAt: new Date().toISOString(),
       lastWebhookTopic: webhookTopic,
       lastWebhookReceivedAt: new Date().toISOString(),
+      billingSelected: true, // Mark billing as selected when any subscription event occurs
     };
 
     // Detect subscription lifecycle events based on status and trial

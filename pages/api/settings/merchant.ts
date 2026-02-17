@@ -198,6 +198,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           selectedProducts,
           onboardingCompleted,
           hideBanner,
+          billingSelected,
+          currentPlan,
+          planStatus,
         } = req.body;
         const existingDoc = await db.collection(collections.users).doc(shop).get();
         const existingData = existingDoc.exists ? existingDoc.data() : {};
@@ -236,6 +239,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (followButtonText !== undefined) updateData.followButtonText = followButtonText;
         if (selectedProducts !== undefined) updateData.selectedProducts = selectedProducts;
         if (hideBanner !== undefined) updateData.hideBanner = hideBanner;
+        if (billingSelected !== undefined) updateData.billingSelected = billingSelected;
+        if (currentPlan !== undefined) updateData.currentPlan = currentPlan;
+        if (planStatus !== undefined) updateData.planStatus = planStatus;
 
 
         // Merge with existing data to preserve analytics and other fields

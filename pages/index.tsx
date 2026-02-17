@@ -172,6 +172,23 @@ function Dashboard() {
           
           console.log('📊 Dashboard - Loaded user data:', settingsData);
           console.log('📊 Dashboard - onboardingCompleted:', settingsData.onboardingCompleted);
+          console.log('📊 Dashboard - billingSelected:', settingsData.billingSelected);
+          
+          // If billing not selected AND no existing plan, redirect to billing page first
+          if (!settingsData.billingSelected && !settingsData.currentPlan) {
+            console.log('💳 Dashboard - Billing not selected, redirecting to billing...');
+            if (typeof window !== 'undefined') {
+              const params = new URLSearchParams(window.location.search);
+              const host = params.get('host') || router.query.host;
+              const shopParam = params.get('shop') || router.query.shop;
+              const queryString = new URLSearchParams();
+              if (host) queryString.set('host', host as string);
+              if (shopParam) queryString.set('shop', shopParam as string);
+              const query = queryString.toString();
+              window.location.href = `/billing${query ? `?${query}` : ''}`;
+            }
+            return;
+          }
           
           // If onboarding not complete, redirect to onboarding
           if (!settingsData.onboardingCompleted) {

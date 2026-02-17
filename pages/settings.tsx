@@ -138,6 +138,22 @@ function SettingsPage() {
           console.log('✅ Settings Page - Response OK, parsing JSON...');
           const data = await response.json();
           console.log('✅ Settings Page - Data received:', data);
+          
+          // Check if billing has been selected - if not, redirect to billing
+          // Skip for existing users who already have a plan
+          if (!data.billingSelected && !data.currentPlan) {
+            console.log('💳 Settings Page - Billing not selected, redirecting to billing...');
+            const params = new URLSearchParams(window.location.search);
+            const host = params.get('host') || router.query.host;
+            const shopParam = params.get('shop') || router.query.shop;
+            const queryString = new URLSearchParams();
+            if (host) queryString.set('host', host as string);
+            if (shopParam) queryString.set('shop', shopParam as string);
+            const query = queryString.toString();
+            window.location.href = `/billing${query ? `?${query}` : ''}`;
+            return;
+          }
+          
           applySettingsData(data);
         } else if (response.status === 401) {
           console.log('🔒 Settings Page - Unauthorized (401)');
