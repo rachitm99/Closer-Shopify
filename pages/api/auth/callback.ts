@@ -147,12 +147,7 @@ export default async function handler(
         formFieldLabel: DEFAULT_SETTINGS.formFieldLabel,
         submitButtonText: DEFAULT_SETTINGS.submitButtonText,
         redirectUrl: '',
-        // Default billing plan
-        currentPlan: 'basic',
-        planStatus: 'active',
-        planInTrial: false,
-        planTrialEndsOn: null,
-        planUpdatedAt: new Date().toISOString(),
+        // Don't set currentPlan here - user must select plan via billing flow
         installedAt: FieldValue.serverTimestamp(),
         registeredAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
@@ -160,7 +155,7 @@ export default async function handler(
         status: 'pending', // pending until onboarding complete
       });
       
-      console.log(`✅ User record created for shop: ${shopDomain} with Basic (free) plan`);
+      console.log(`✅ User record created for shop: ${shopDomain} - awaiting plan selection`);
     } else {
       // Update last activity for returning installs
       await settingsRef.update({
