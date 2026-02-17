@@ -99,7 +99,7 @@ function Onboarding() {
               if (host) queryString.set('host', host as string);
               if (shopDomain) queryString.set('shop', shopDomain);
               const query = queryString.toString();
-              window.location.href = `/billing${query ? `?${query}` : ''}`;
+              window.location.href = `/pricing_plans${query ? `?${query}` : ''}`;
               return;
             }
             
