@@ -25,8 +25,9 @@ export default function Billing() {
 
   const redirectToShopifyPricingPlans = async () => {
     try {
-      // Mark billing as selected and set default plan info
-      // When user picks a paid plan on Shopify, the webhook/sync will override these defaults
+      // Mark that the user has been shown the pricing page
+      // For paid plans, the webhook will update currentPlan/planStatus
+      // For free plans, the billing sync on dashboard will handle it
       await authFetch('/api/settings/merchant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

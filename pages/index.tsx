@@ -212,9 +212,8 @@ function Dashboard() {
           const shopDomain = settingsData.shop || 'unknown';
           setShop(shopDomain);
 
-          // Check and store current subscription plan in users collection
+          // Sync billing and get subscription details
           try {
-            // First sync with Shopify to get latest billing status
             console.log('🔄 Dashboard - Syncing billing status from Shopify...');
             const syncResponse = await authFetch('/api/billing/sync');
             if (syncResponse.ok) {
@@ -224,7 +223,6 @@ function Dashboard() {
               console.warn('⚠️ Dashboard - Billing sync failed, falling back to check');
             }
 
-            // Then get the subscription details
             const subscriptionResponse = await authFetch('/api/subscription/check');
             if (subscriptionResponse.ok) {
               const subscriptionData = await subscriptionResponse.json();
