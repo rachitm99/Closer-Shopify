@@ -83,14 +83,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Shop parameter is required' });
       }
 
-      // Calculate impressions from analytics events
-      const now = new Date();
-      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      
+      // Calculate impressions from analytics events (all-time, no date limit)
       const impressionsQuery = await db.collection(collections.analytics)
         .where('event', '==', 'block_impression')
         .where('shop', '==', shop)
-        .where('timestamp', '>=', thirtyDaysAgo)
         .get();
 
       const impressionStats = {
@@ -116,23 +112,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         dailyImpressions[date] = (dailyImpressions[date] || 0) + 1;
       });
 
-      // Fill in missing dates with 0
-      const timeline = [];
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateString = date.toISOString().split('T')[0];
-        timeline.push({
+      // Build timeline from all available data (no date limit)
+      const timeline = Object.keys(dailyImpressions)
+        .sort()
+        .map(dateString => ({
           date: dateString,
           impressions: dailyImpressions[dateString] || 0,
-        });
-      }
+        }));
 
       return res.status(200).json({
         totalImpressions: impressionStats.totalImpressions,
         lastImpression: impressionStats.lastImpression,
         timeline: timeline,
-        totalLast30Days: Object.values(dailyImpressions).reduce((sum, count) => sum + count, 0),
+        totalAllTime: Object.values(dailyImpressions).reduce((sum, count) => sum + count, 0),
       });
     } else {
       console.log('⚠️ Method not allowed:', req.method);

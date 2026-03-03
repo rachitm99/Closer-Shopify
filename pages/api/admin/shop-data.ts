@@ -45,14 +45,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
     });
 
-    // Fetch impressions (last 30 days)
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    
+    // Fetch impressions (all-time, no date limit)
     const impressionsSnapshot = await db.collection(collections.analytics)
       .where('event', '==', 'block_impression')
       .where('shop', '==', shop)
-      .where('timestamp', '>=', thirtyDaysAgo)
       .get();
 
     // Calculate impression stats as UNIQUE orders per day (using IST timezone)
@@ -92,24 +88,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       uniqueOrdersSet.add(orderId);
     });
 
-    // Fill in missing dates and convert sets to counts (using IST timezone)
-    const impressionTimeline = [];
-    const today = new Date();
-    const todayISTstr = today.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-    const todayIST = new Date(todayISTstr);
-    
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(todayIST);
-      date.setDate(date.getDate() - i);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const dateString = `${year}-${month}-${day}`;
-      impressionTimeline.push({
+    // Build timeline from all available data (no date limit)
+    const impressionTimeline = Object.keys(dailyImpressionSets)
+      .sort()
+      .map(dateString => ({
         date: dateString,
         impressions: dailyImpressionSets[dateString] ? dailyImpressionSets[dateString].size : 0,
-      });
-    }
+      }));
 
     const impressionStats = {
       totalImpressions: uniqueOrdersSet.size,
@@ -117,7 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ? impressionsSnapshot.docs[impressionsSnapshot.docs.length - 1].data().timestamp 
         : null,
       timeline: impressionTimeline,
-      totalLast30Days: Object.values(dailyImpressionSets).reduce((sum, s) => sum + (s ? s.size : 0), 0),
+      totalAllTime: Object.values(dailyImpressionSets).reduce((sum, s) => sum + (s ? s.size : 0), 0),
     };
 
     // Calculate analytics timeline
