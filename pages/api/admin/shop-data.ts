@@ -97,12 +97,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }));
 
     const impressionStats = {
-      totalImpressions: uniqueOrdersSet.size,
+      totalImpressions: impressionsSnapshot.size, // all-time raw count of every impression event
+      uniqueOrders: uniqueOrdersSet.size,          // deduplicated by orderId
       lastImpression: impressionsSnapshot.docs.length > 0 
         ? impressionsSnapshot.docs[impressionsSnapshot.docs.length - 1].data().timestamp 
         : null,
       timeline: impressionTimeline,
-      totalAllTime: Object.values(dailyImpressionSets).reduce((sum, s) => sum + (s ? s.size : 0), 0),
+      totalAllTime: impressionsSnapshot.size,
     };
 
     // Calculate analytics timeline

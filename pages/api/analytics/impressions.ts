@@ -96,7 +96,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           : null,
       };
 
-      // Get detailed timeline (last 30 days) from analytics collection
+      // Get detailed timeline (all-time) from analytics collection
       const dailyImpressions: { [key: string]: number } = {};
       
       impressionsQuery.docs.forEach((doc) => {
