@@ -18,6 +18,7 @@ import {
   DataTable,
   Badge,
   Checkbox,
+  Pagination,
 } from '@shopify/polaris';
 
 // Lazy load Recharts to reduce initial bundle size
@@ -79,6 +80,8 @@ function Dashboard() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [impressions, setImpressions] = useState<ImpressionStats | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
+  const [submissionsPage, setSubmissionsPage] = useState(1);
+  const SUBMISSIONS_PAGE_SIZE = 100;
   const [shop, setShop] = useState<string>('');
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [followingOnly, setFollowingOnly] = useState(false);
@@ -639,6 +642,7 @@ function Dashboard() {
                         onChange={(checked: boolean) => {
                           // Only affect the submissions table locally — do not reload analytics/charts
                           setFollowingOnly(checked);
+                          setSubmissionsPage(1);
                         }}
                       />
                       <Button
@@ -655,55 +659,72 @@ function Dashboard() {
                       No submissions yet. Entries will appear here once customers complete the giveaway form.
                     </Text>
                   ) : (() => {
-                    const visibleSubmissions = followingOnly ? submissions.filter(s => s.isFollowing) : submissions;
+                    const allVisible = followingOnly ? submissions.filter(s => s.isFollowing) : submissions;
+                    const totalPages = Math.ceil(allVisible.length / SUBMISSIONS_PAGE_SIZE);
+                    const safePage = Math.min(submissionsPage, Math.max(1, totalPages));
+                    const pageStart = (safePage - 1) * SUBMISSIONS_PAGE_SIZE;
+                    const pageRows = allVisible.slice(pageStart, pageStart + SUBMISSIONS_PAGE_SIZE);
                     return (
-                      <DataTable
-                        columnContentTypes={[
-                          'text',
-                          'text',
-                          'text',
-                          'numeric',
-                        ]}
-                        headings={[
-                          'Instagram Handle',
-                          'Following Status',
-                          'Submitted On',
-                          'Total Entries',
-                        ]}
-                        rows={visibleSubmissions.map((submission) => [
-                          `@${submission.instaHandle}`,
-                          submission.isFollowerChecked ? (
-                            submission.isFollowing ? (
-                              <Badge tone="success">Following</Badge>
+                      <BlockStack gap="300">
+                        <DataTable
+                          columnContentTypes={[
+                            'text',
+                            'text',
+                            'text',
+                            'numeric',
+                          ]}
+                          headings={[
+                            'Instagram Handle',
+                            'Following Status',
+                            'Submitted On',
+                            'Total Entries',
+                          ]}
+                          rows={pageRows.map((submission) => [
+                            `@${submission.instaHandle}`,
+                            submission.isFollowerChecked ? (
+                              submission.isFollowing ? (
+                                <Badge tone="success">Following</Badge>
+                              ) : (
+                                <Badge tone="attention">Not Following</Badge>
+                              )
                             ) : (
-                              <Badge tone="attention">Not Following</Badge>
-                            )
-                          ) : (
-                            <Badge tone="info">Not Checked</Badge>
-                          ),
-                          submission.submittedAt 
-                            ? (() => {
-                                let date;
-                                if (typeof submission.submittedAt === 'string') {
-                                  date = new Date(submission.submittedAt);
-                                } else if (submission.submittedAt.toDate) {
-                                  date = submission.submittedAt.toDate();
-                                } else {
-                                  date = new Date(submission.submittedAt);
-                                }
-                                return date.toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                });
-                              })()
-                            : 'N/A',
-                          submission.submissionCount || 1,
-                        ])}
-                        footerContent={`Showing ${visibleSubmissions.length} ${visibleSubmissions.length === 1 ? 'submission' : 'submissions'}`}
-                      />
+                              <Badge tone="info">Not Checked</Badge>
+                            ),
+                            submission.submittedAt 
+                              ? (() => {
+                                  let date;
+                                  if (typeof submission.submittedAt === 'string') {
+                                    date = new Date(submission.submittedAt);
+                                  } else if (submission.submittedAt.toDate) {
+                                    date = submission.submittedAt.toDate();
+                                  } else {
+                                    date = new Date(submission.submittedAt);
+                                  }
+                                  return date.toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  });
+                                })()
+                              : 'N/A',
+                            submission.submissionCount || 1,
+                          ])}
+                          footerContent={`Showing ${pageStart + 1}–${Math.min(pageStart + SUBMISSIONS_PAGE_SIZE, allVisible.length)} of ${allVisible.length} ${allVisible.length === 1 ? 'submission' : 'submissions'}`}
+                        />
+                        {totalPages > 1 && (
+                          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '8px' }}>
+                            <Pagination
+                              hasPrevious={safePage > 1}
+                              onPrevious={() => setSubmissionsPage(safePage - 1)}
+                              hasNext={safePage < totalPages}
+                              onNext={() => setSubmissionsPage(safePage + 1)}
+                              label={`Page ${safePage} of ${totalPages}`}
+                            />
+                          </div>
+                        )}
+                      </BlockStack>
                     );
                   })()}
                 </BlockStack>
