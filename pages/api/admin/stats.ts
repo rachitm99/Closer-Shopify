@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db, collections } from '../../../lib/firestore';
+import { isSuperAdminAuthenticated } from '../../../lib/super-admin-auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -7,9 +8,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Check admin auth
-    const adminAuth = req.headers['x-admin-auth'];
-    if (adminAuth !== 'true') {
+    // Require a valid super admin session cookie.
+    if (!isSuperAdminAuthenticated(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 

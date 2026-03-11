@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db } from '../../../lib/firestore';
+import { setSuperAdminSessionCookie } from '../../../lib/super-admin-auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -21,6 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Default password if not set: "admin123"
       console.log('⚠️ No admin password set in Firestore, using default');
       if (password === 'admin123') {
+        setSuperAdminSessionCookie(res);
         return res.status(200).json({ success: true });
       }
       return res.status(401).json({ error: 'Invalid password' });
@@ -28,6 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check password
     if (password === adminData.password) {
+      setSuperAdminSessionCookie(res);
       return res.status(200).json({ success: true });
     }
 

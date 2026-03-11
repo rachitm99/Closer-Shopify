@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import type { GetServerSideProps } from 'next';
 import {
   Page,
   Layout,
@@ -14,6 +15,7 @@ import {
   DataTable,
   Spinner,
 } from '@shopify/polaris';
+import { isSuperAdminAuthenticatedFromCookieHeader } from '../lib/super-admin-auth';
 
 interface Stats {
   totalUsers: number;
@@ -218,7 +220,9 @@ export default function SuperAdminPanel() {
 
   const handleLogout = () => {
     sessionStorage.removeItem('adminAuth');
-    router.push('/admin-login');
+    fetch('/api/admin/logout', { method: 'POST' }).finally(() => {
+      router.push('/admin-login');
+    });
   };
 
   if (loading) {
@@ -637,3 +641,20 @@ export default function SuperAdminPanel() {
     </Page>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const cookieHeader = context.req.headers.cookie;
+
+  if (!isSuperAdminAuthenticatedFromCookieHeader(cookieHeader)) {
+    return {
+      redirect: {
+        destination: '/admin-login',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};

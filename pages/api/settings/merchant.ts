@@ -3,6 +3,7 @@ import { getSessionFromRequest } from '../../../lib/auth-helpers';
 import { db, collections, FieldValue, Timestamp } from '../../../lib/firestore';
 import axios from 'axios';
 import { DEFAULT_SETTINGS, SelectedProduct } from '../../../lib/defaultSettings';
+import { isSuperAdminAuthenticated } from '../../../lib/super-admin-auth';
 
 export interface MerchantSettings {
   shop: string;
@@ -59,10 +60,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // Check for admin impersonation
     const impersonateShop = req.query.shop as string | undefined;
-    const adminAuth = req.headers['x-admin-auth'];
+    const hasAdminSession = isSuperAdminAuthenticated(req);
     let shop: string;
 
-    if (impersonateShop && adminAuth === 'true') {
+    if (impersonateShop && hasAdminSession) {
       console.log('🎭 API /settings/merchant - Admin impersonation mode for:', impersonateShop);
       shop = impersonateShop;
     } else {

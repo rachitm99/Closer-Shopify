@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { db, collections } from '../../../lib/firestore';
 import { getSessionFromRequest } from '../../../lib/auth-helpers';
 import { checkPlanLimit } from '../../../lib/billing-helpers';
+import { isSuperAdminAuthenticated } from '../../../lib/super-admin-auth';
 
 /**
  * Submissions Timeline API
@@ -24,8 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // Check for admin impersonation
-    const adminAuth = req.headers['x-admin-auth'];
-    const isAdmin = adminAuth === 'true';
+    const isAdmin = isSuperAdminAuthenticated(req);
 
     // Check if user has access to analytics (skip for admin)
     if (!isAdmin) {
