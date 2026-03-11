@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import type { GetServerSideProps } from 'next';
 import { useAuthenticatedFetch } from '../lib/use-auth-fetch';
 import { useRouter } from 'next/router';
 import { useSessionHealthCheck } from '../components/SessionHealthCheck';
@@ -21,6 +22,7 @@ import {
   Select,
   Button,
 } from '@shopify/polaris';
+import { isSuperAdminAuthenticatedFromCookieHeader } from '../lib/super-admin-auth';
 
 import { DEFAULT_SETTINGS, SelectedProduct } from '../lib/defaultSettings';
 
@@ -113,16 +115,15 @@ function SettingsPage() {
           setImpersonatedShop(impersonateShop);
           
           // Load impersonated shop's settings
-          const response = await fetch(`/api/settings/merchant?shop=${impersonateShop}`, {
-            headers: {
-              'x-admin-auth': 'true',
-            },
-          });
+          const response = await fetch(`/api/settings/merchant?shop=${impersonateShop}`);
           
           if (response.ok) {
             const data = await response.json();
             console.log('📋 Settings Page - Loaded impersonated settings:', data);
             applySettingsData(data);
+          } else if (response.status === 401) {
+            window.location.href = '/unauthorized-access';
+            return;
           } else {
             setError('Failed to load impersonated shop settings');
           }
@@ -275,7 +276,7 @@ function SettingsPage() {
         : '/api/settings/merchant';
       
       const fetchFn = isImpersonating 
-        ? (url: string, options: any) => fetch(url, { ...options, headers: { ...options.headers, 'x-admin-auth': 'true' } })
+        ? (url: string, options: any) => fetch(url, options)
         : authFetch;
       
       const response = await fetchFn(url, {
@@ -333,7 +334,7 @@ function SettingsPage() {
         : '/api/settings/merchant';
       
       const fetchFn = isImpersonating 
-        ? (url: string, options: any) => fetch(url, { ...options, headers: { ...options.headers, 'x-admin-auth': 'true' } })
+        ? (url: string, options: any) => fetch(url, options)
         : authFetch;
       
       const response = await fetchFn(url, {
@@ -657,7 +658,7 @@ function SettingsPage() {
                                 : '/api/settings/merchant';
                               
                               const fetchFn = isImpersonating 
-                                ? (url: string, options: any) => fetch(url, { ...options, headers: { ...options.headers, 'x-admin-auth': 'true' } })
+                                ? (url: string, options: any) => fetch(url, options)
                                 : authFetch;
                               
                               await fetchFn(url, {
@@ -1349,3 +1350,24 @@ function SettingsPage() {
 }
 
 export default dynamic(() => Promise.resolve(SettingsPage), { ssr: false });
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const impersonateShop = context.query.impersonate;
+  const isImpersonationAttempt = typeof impersonateShop === 'string' && impersonateShop.length > 0;
+
+  if (isImpersonationAttempt) {
+    const cookieHeader = context.req.headers.cookie;
+    if (!isSuperAdminAuthenticatedFromCookieHeader(cookieHeader)) {
+      return {
+        redirect: {
+          destination: '/unauthorized-access',
+          permanent: false,
+        },
+      };
+    }
+  }
+
+  return {
+    props: {},
+  };
+};

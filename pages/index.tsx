@@ -98,7 +98,6 @@ function Dashboard() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-auth': 'true',
         },
         body: JSON.stringify({ 
           shop: shopDomain,
@@ -111,6 +110,9 @@ function Dashboard() {
         setSubmissions(data.submissions || []);
         setAnalytics(data.analytics || null);
         setImpressions(data.impressions || null);
+      } else if (response.status === 401) {
+        window.location.href = '/unauthorized-access';
+        return;
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to load shop data');
