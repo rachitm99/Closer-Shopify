@@ -298,7 +298,13 @@ function SettingsPage() {
           giveawayRules: legacyRules.map((r: any) => r.trim()).filter(Boolean),
           formFieldLabel,
           submitButtonText, 
-          redirectUrl 
+          redirectUrl,
+          submittedTitle,
+          submittedSubtitle,
+          submittedCountdownText,
+          submittedWinnerText,
+          submittedSocialProofText,
+          followButtonText
         }),
       });
 
@@ -360,6 +366,12 @@ function SettingsPage() {
           selectedProducts,
           couponCode,
           couponCodeTitle,
+          submittedTitle,
+          submittedSubtitle,
+          submittedCountdownText,
+          submittedWinnerText,
+          submittedSocialProofText,
+          followButtonText,
           hideBanner
         }),
       });
@@ -1224,23 +1236,27 @@ function SettingsPage() {
                       maxLength={150}
                     />
 
-                    {/* <TextField
-                      label="Submitted Countdown Text"
-                      value={submittedCountdownText}
-                      onChange={setSubmittedCountdownText}
-                      helpText="Text before countdown on submitted screen (e.g., '🎁Giveaway ends in')"
-                      autoComplete="off"
-                      maxLength={80}
-                    />
+                    {mode === 'giveaway' && (
+                      <>
+                        <TextField
+                          label="Submitted Countdown Text"
+                          value={submittedCountdownText}
+                          onChange={setSubmittedCountdownText}
+                          helpText="Text shown above the countdown timer on the submitted screen"
+                          autoComplete="off"
+                          maxLength={80}
+                        />
 
-                    <TextField
-                      label="Submitted Winner Announcement Text"
-                      value={submittedWinnerText}
-                      onChange={setSubmittedWinnerText}
-                      helpText="Winner announcement text (e.g., '🏆Winner announced on Jan 23')"
-                      autoComplete="off"
-                      maxLength={100}
-                    /> */}
+                        <TextField
+                          label="Submitted Winner Announcement Text"
+                          value={submittedWinnerText}
+                          onChange={setSubmittedWinnerText}
+                          helpText="Winner announcement text shown below the countdown timer"
+                          autoComplete="off"
+                          maxLength={100}
+                        />
+                      </>
+                    )}
 
                     {/* <TextField
                       label="Submitted Social Proof Text"
