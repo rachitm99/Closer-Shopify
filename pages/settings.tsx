@@ -1247,6 +1247,23 @@ function SettingsPage() {
                           maxLength={80}
                         />
 
+                        <div>
+                          <Text as="p" variant="bodyMd" fontWeight="semibold">
+                            Post-Submission Countdown End Date & Time
+                          </Text>
+                          <Text as="p" variant="bodySm" tone="subdued">
+                            Set when the submitted-screen countdown should end.
+                          </Text>
+                          <div style={{ marginTop: '8px' }}>
+                            <input
+                              type="datetime-local"
+                              value={countdownEndDate}
+                              onChange={(e) => setCountdownEndDate(e.target.value)}
+                              style={{ width: '100%', padding: '8px', borderRadius: 4, border: '1px solid #ddd', fontSize: '14px' }}
+                            />
+                          </div>
+                        </div>
+
                         <TextField
                           label="Submitted Winner Announcement Text"
                           value={submittedWinnerText}
