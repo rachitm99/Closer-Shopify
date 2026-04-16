@@ -71,6 +71,13 @@ interface SubmissionData {
   submissionCount?: number;
 }
 
+interface SubmissionsMeta {
+  returned: number;
+  limit: number;
+  totalAvailable: number;
+  hasMore: boolean;
+}
+
 function Dashboard() {
   const router = useRouter();
   useSessionHealthCheck(); // Check session health on mount
@@ -80,6 +87,7 @@ function Dashboard() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [impressions, setImpressions] = useState<ImpressionStats | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
+  const [submissionsMeta, setSubmissionsMeta] = useState<SubmissionsMeta | null>(null);
   const [submissionsPage, setSubmissionsPage] = useState(1);
   const SUBMISSIONS_PAGE_SIZE = 100;
   const [shop, setShop] = useState<string>('');
@@ -108,6 +116,7 @@ function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         setSubmissions(data.submissions || []);
+        setSubmissionsMeta(data.submissionsMeta || null);
         setAnalytics(data.analytics || null);
         setImpressions(data.impressions || null);
       } else if (response.status === 401) {
@@ -145,6 +154,7 @@ function Dashboard() {
       if (submissionsResponse.ok) {
         const submissionsData = await submissionsResponse.json();
         setSubmissions(submissionsData.submissions || []);
+        setSubmissionsMeta(null);
       }
     } catch (err) {
       console.error('Error loading analytics:', err);
@@ -715,6 +725,13 @@ function Dashboard() {
                           ])}
                           footerContent={`Showing ${pageStart + 1}–${Math.min(pageStart + SUBMISSIONS_PAGE_SIZE, allVisible.length)} of ${allVisible.length} ${allVisible.length === 1 ? 'submission' : 'submissions'}`}
                         />
+                        {isImpersonating && submissionsMeta?.hasMore && (
+                          <Banner tone="info">
+                            <Text as="p">
+                              Showing the most recent {submissionsMeta.returned} of {submissionsMeta.totalAvailable} submissions to keep admin loading fast for high-volume shops.
+                            </Text>
+                          </Banner>
+                        )}
                         {totalPages > 1 && (
                           <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '8px' }}>
                             <Pagination

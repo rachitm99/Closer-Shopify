@@ -2,6 +2,52 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { db, collections } from '../../../lib/firestore';
 import { isSuperAdminAuthenticated } from '../../../lib/super-admin-auth';
 
+const IST_TIMEZONE = 'Asia/Kolkata';
+const DEFAULT_SUBMISSIONS_LIMIT = 200;
+const MAX_SUBMISSIONS_LIMIT = 500;
+
+function toDateKeyInIST(value: any): string {
+  if (!value) {
+    const now = new Date();
+    const istDateStr = now.toLocaleString('en-US', { timeZone: IST_TIMEZONE });
+    const istDate = new Date(istDateStr);
+    return `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}-${String(istDate.getDate()).padStart(2, '0')}`;
+  }
+
+  const baseDate = typeof value === 'string'
+    ? new Date(value)
+    : value.toDate
+      ? value.toDate()
+      : new Date(value);
+
+  if (Number.isNaN(baseDate.getTime())) {
+    const now = new Date();
+    const istDateStr = now.toLocaleString('en-US', { timeZone: IST_TIMEZONE });
+    const istDate = new Date(istDateStr);
+    return `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}-${String(istDate.getDate()).padStart(2, '0')}`;
+  }
+
+  const istDateStr = baseDate.toLocaleString('en-US', { timeZone: IST_TIMEZONE });
+  const istDate = new Date(istDateStr);
+  return `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}-${String(istDate.getDate()).padStart(2, '0')}`;
+}
+
+function toIsoOrNull(value: any): string | null {
+  if (!value) return null;
+
+  if (typeof value === 'string') return value;
+  if (value.toDate) return value.toDate().toISOString();
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+function extractOrderId(rawOrder: any): string | null {
+  if (!rawOrder) return null;
+  const m = String(rawOrder).match(/\d+$/);
+  return m ? m[0] : null;
+}
+
 /**
  * Admin API to fetch all shop data at once (submissions, analytics, impressions)
  * More efficient than multiple API calls
@@ -18,84 +64,82 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const { shop, followingOnly } = req.body;
+    const parsedLimit = Number(req.body?.submissionsLimit);
+    const submissionsLimit = Number.isFinite(parsedLimit)
+      ? Math.min(Math.max(Math.floor(parsedLimit), 1), MAX_SUBMISSIONS_LIMIT)
+      : DEFAULT_SUBMISSIONS_LIMIT;
 
     if (!shop) {
       return res.status(400).json({ error: 'Shop parameter is required' });
     }
 
-    console.log(`📊 Admin fetching all data for shop: ${shop}`);
+    console.log(`📊 Admin fetching data for shop: ${shop} (limit=${submissionsLimit}, followingOnly=${Boolean(followingOnly)})`);
 
-    // Fetch submissions
-    const submissionsSnapshot = await db.collection(collections.submissions)
-      .where('shop', '==', shop)
+    const submissionsBaseQuery = db.collection(collections.submissions)
+      .where('shop', '==', shop);
+
+    const filteredSubmissionsBaseQuery = followingOnly
+      ? submissionsBaseQuery.where('isFollowing', '==', true)
+      : submissionsBaseQuery;
+
+    // Return only the most recent entries to keep payload size and memory bounded.
+    const submissionsListSnapshot = await filteredSubmissionsBaseQuery
       .orderBy('submittedAt', 'desc')
+      .limit(submissionsLimit)
       .get();
 
-    const submissions = submissionsSnapshot.docs.map(doc => {
+    const submissions = submissionsListSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
         ...data,
-        // Convert Firestore Timestamp to ISO string for submittedAt
-        submittedAt: data.submittedAt 
-          ? (typeof data.submittedAt === 'string' 
-              ? data.submittedAt 
-              : data.submittedAt.toDate ? data.submittedAt.toDate().toISOString() : data.submittedAt)
-          : null,
+        submittedAt: toIsoOrNull(data.submittedAt),
       };
     });
+
+    const totalSubmissionsAggregate = await filteredSubmissionsBaseQuery.count().get();
+    const totalSubmissions = totalSubmissionsAggregate.data().count || 0;
 
     // Fetch impressions (last 30 days)
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const impressionsSnapshot = await db.collection(collections.analytics)
+    const impressionsQuery = db.collection(collections.analytics)
       .where('event', '==', 'block_impression')
       .where('shop', '==', shop)
       .where('timestamp', '>=', thirtyDaysAgo)
-      .get();
+      .select('timestamp', 'orderId', 'order_id', 'orderName', 'order');
 
     // Calculate impression stats as UNIQUE orders per day (using IST timezone)
     const dailyImpressionSets: { [key: string]: Set<string> } = {};
     const uniqueOrdersSet = new Set<string>();
 
-    impressionsSnapshot.docs.forEach((doc) => {
+    let lastImpressionDate: Date | null = null;
+    for await (const doc of impressionsQuery.stream() as any) {
       const data = doc.data();
-      let date: string;
-      
-      if (data.timestamp && typeof data.timestamp.toDate === 'function') {
-        const utcDate = data.timestamp.toDate();
-        const istDateStr = utcDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        const istDate = new Date(istDateStr);
-        const year = istDate.getFullYear();
-        const month = String(istDate.getMonth() + 1).padStart(2, '0');
-        const day = String(istDate.getDate()).padStart(2, '0');
-        date = `${year}-${month}-${day}`;
-      } else {
-        const now = new Date();
-        const istDateStr = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        const istDate = new Date(istDateStr);
-        const year = istDate.getFullYear();
-        const month = String(istDate.getMonth() + 1).padStart(2, '0');
-        const day = String(istDate.getDate()).padStart(2, '0');
-        date = `${year}-${month}-${day}`;
-      }
+      const date = toDateKeyInIST(data.timestamp);
 
-      const rawOrder = data.orderId || data.order_id || data.orderName || data.order || null;
-      if (!rawOrder) return;
-      const m = String(rawOrder).match(/\d+$/);
-      if (!m) return;
-      const orderId = m[0];
+      const orderId = extractOrderId(data.orderId || data.order_id || data.orderName || data.order || null);
+      if (!orderId) continue;
 
       if (!dailyImpressionSets[date]) dailyImpressionSets[date] = new Set();
       dailyImpressionSets[date].add(orderId);
       uniqueOrdersSet.add(orderId);
-    });
+
+      const impressionDate = data.timestamp?.toDate
+        ? data.timestamp.toDate()
+        : (typeof data.timestamp === 'string' ? new Date(data.timestamp) : null);
+      if (impressionDate && !Number.isNaN(impressionDate.getTime())) {
+        if (!lastImpressionDate || impressionDate > lastImpressionDate) {
+          lastImpressionDate = impressionDate;
+        }
+      }
+    }
 
     // Fill in missing dates and convert sets to counts (last 30 days, using IST timezone)
     const impressionTimeline = [];
     const today = new Date();
-    const todayISTstr = today.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    const todayISTstr = today.toLocaleString('en-US', { timeZone: IST_TIMEZONE });
     const todayIST = new Date(todayISTstr);
 
     for (let i = 29; i >= 0; i--) {
@@ -113,84 +157,67 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const impressionStats = {
       totalImpressions: uniqueOrdersSet.size,
-      lastImpression: impressionsSnapshot.docs.length > 0 
-        ? impressionsSnapshot.docs[impressionsSnapshot.docs.length - 1].data().timestamp 
-        : null,
+      lastImpression: lastImpressionDate ? lastImpressionDate.toISOString() : null,
       timeline: impressionTimeline,
       totalLast30Days: Object.values(dailyImpressionSets).reduce((sum, s) => sum + (s ? s.size : 0), 0),
     };
 
-    // Calculate analytics timeline
-    const submissionsForAnalytics = followingOnly 
-      ? submissions.filter((sub: any) => sub.isFollowing === true)
-      : submissions;
+    // Build timeline from last 30 days only to keep query cost predictable for very large shops.
+    const timelineStart = new Date();
+    timelineStart.setDate(timelineStart.getDate() - 30);
 
-    // Group by date
-    const dailyStats: { [key: string]: { 
-      count: number; 
+    const recentTimelineQuery = filteredSubmissionsBaseQuery
+      .where('submittedAt', '>=', timelineStart)
+      .select('submittedAt', 'customerEmail', 'submissionCount', 'isFollowing', 'instaHandle');
+
+    const dailyStats: { [key: string]: {
+      count: number;
       uniqueCustomers: Set<string>;
       repeatCustomers: number;
       followers: number;
       uniqueFollowers: Set<string>;
     } } = {};
+    let totalUniqueCustomers = 0;
 
-    submissionsForAnalytics.forEach((submission: any) => {
-      let date: string;
-      if (submission.submittedAt && typeof submission.submittedAt.toDate === 'function') {
-        const utcDate = submission.submittedAt.toDate();
-        const istDateStr = utcDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        const istDate = new Date(istDateStr);
-        const year = istDate.getFullYear();
-        const month = String(istDate.getMonth() + 1).padStart(2, '0');
-        const day = String(istDate.getDate()).padStart(2, '0');
-        date = `${year}-${month}-${day}`;
-      } else if (submission.submittedAt) {
-        const d = new Date(submission.submittedAt);
-        const istDateStr = d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        const istDate = new Date(istDateStr);
-        const year = istDate.getFullYear();
-        const month = String(istDate.getMonth() + 1).padStart(2, '0');
-        const day = String(istDate.getDate()).padStart(2, '0');
-        date = `${year}-${month}-${day}`;
-      } else {
-        const now = new Date();
-        const istDateStr = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-        const istDate = new Date(istDateStr);
-        const year = istDate.getFullYear();
-        const month = String(istDate.getMonth() + 1).padStart(2, '0');
-        const day = String(istDate.getDate()).padStart(2, '0');
-        date = `${year}-${month}-${day}`;
-      }
+    try {
+      const recentTimelineSnapshot = await recentTimelineQuery.get();
+      recentTimelineSnapshot.forEach((doc) => {
+        const submission = doc.data();
+        const date = toDateKeyInIST(submission.submittedAt);
 
-      if (!dailyStats[date]) {
-        dailyStats[date] = {
-          count: 0,
-          uniqueCustomers: new Set(),
-          repeatCustomers: 0,
-          followers: 0,
-          uniqueFollowers: new Set(),
-        };
-      }
-
-      dailyStats[date].count++;
-      if (submission.customerEmail) {
-        dailyStats[date].uniqueCustomers.add(submission.customerEmail);
-      }
-      if (submission.submissionCount && submission.submissionCount > 1) {
-        dailyStats[date].repeatCustomers++;
-      }
-      if (submission.isFollowing) {
-        dailyStats[date].followers++;
-        if (submission.instaHandle) {
-          dailyStats[date].uniqueFollowers.add(submission.instaHandle.toLowerCase());
+        if (!dailyStats[date]) {
+          dailyStats[date] = {
+            count: 0,
+            uniqueCustomers: new Set(),
+            repeatCustomers: 0,
+            followers: 0,
+            uniqueFollowers: new Set(),
+          };
         }
-      }
-    });
 
-    // Convert to timeline format
+        dailyStats[date].count++;
+        if (submission.customerEmail) {
+          dailyStats[date].uniqueCustomers.add(String(submission.customerEmail).toLowerCase());
+        }
+        if (submission.submissionCount && submission.submissionCount > 1) {
+          dailyStats[date].repeatCustomers++;
+        }
+        if (submission.isFollowing) {
+          dailyStats[date].followers++;
+          if (submission.instaHandle) {
+            dailyStats[date].uniqueFollowers.add(String(submission.instaHandle).toLowerCase());
+          }
+        }
+      });
+
+      totalUniqueCustomers = Object.values(dailyStats).reduce((sum, day) => sum + day.uniqueCustomers.size, 0);
+    } catch (timelineError) {
+      console.warn('Falling back to empty timeline for admin shop-data due to timeline query issue:', timelineError);
+    }
+
     const timeline = Object.keys(dailyStats)
       .sort()
-      .map(date => ({
+      .map((date) => ({
         date,
         count: dailyStats[date].count,
         uniqueCustomers: dailyStats[date].uniqueCustomers.size,
@@ -199,33 +226,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         uniqueFollowers: dailyStats[date].uniqueFollowers.size,
       }));
 
-    const totalUniqueCustomers = new Set(
-      submissionsForAnalytics
-        .filter((s: any) => s.customerEmail)
-        .map((s: any) => s.customerEmail)
-    ).size;
-
-    const totalUniqueFollowers = new Set(
-      submissionsForAnalytics
-        .filter((s: any) => s.isFollowing && s.instaHandle)
-        .map((s: any) => s.instaHandle.toLowerCase())
-    ).size;
+    let totalFollowers = 0;
+    if (followingOnly) {
+      totalFollowers = totalSubmissions;
+    } else {
+      const followerCountAggregate = await submissionsBaseQuery.where('isFollowing', '==', true).count().get();
+      totalFollowers = followerCountAggregate.data().count || 0;
+    }
 
     const analytics = {
       timeline,
       allTimeData: timeline,
-      totalSubmissions: submissionsForAnalytics.length,
+      totalSubmissions,
       totalUniqueCustomers,
-      totalFollowers: submissionsForAnalytics.filter((s: any) => s.isFollowing).length,
-      totalUniqueFollowers,
-      followersAdded: submissionsForAnalytics.filter((s: any) => s.isFollowing).length,
-      uniqueFollowerHandles: totalUniqueFollowers,
+      totalFollowers,
+      totalUniqueFollowers: 0,
+      followersAdded: totalFollowers,
+      uniqueFollowerHandles: 0,
     };
 
-    console.log(`✅ Admin data fetched: ${submissions.length} submissions, ${impressionStats.totalImpressions} impressions`);
+    console.log(`✅ Admin data fetched: ${submissions.length}/${totalSubmissions} submissions returned, ${impressionStats.totalImpressions} impressions`);
 
     return res.status(200).json({
       submissions,
+      submissionsMeta: {
+        returned: submissions.length,
+        limit: submissionsLimit,
+        totalAvailable: totalSubmissions,
+        hasMore: totalSubmissions > submissions.length,
+      },
       impressions: impressionStats,
       analytics,
     });
