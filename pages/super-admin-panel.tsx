@@ -349,7 +349,7 @@ export default function SuperAdminPanel() {
           <Layout.Section variant="oneThird">
             <Card>
               <BlockStack gap="200">
-                <Text variant="headingMd" as="h2">Unique Block Impressions</Text>
+                <Text variant="headingMd" as="h2">Unique Block Impressions (Last 30 Days)</Text>
                 <Text variant="heading2xl" as="p">{stats?.totalUniqueOrders || 0}</Text>
               </BlockStack>
             </Card>
