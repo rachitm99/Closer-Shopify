@@ -5,12 +5,25 @@ import { Provider as AppBridgeProvider } from '@shopify/app-bridge-react';
 import { useRouter } from 'next/router';
 import { useMemo, useState, useEffect } from 'react';
 
+const PUBLIC_LEGAL_ROUTES = new Set([
+  '/privacy',
+  '/terms',
+  '/terms-and-conditions',
+  '/terms-of-service',
+]);
+
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const [host, setHost] = useState<string | null>(null);
+  const normalizedPath = (router.pathname || '/').toLowerCase().replace(/\/+$/, '') || '/';
+  const isPublicLegalRoute = PUBLIC_LEGAL_ROUTES.has(normalizedPath);
   
   // Get host from URL - handle both query param and URL search params
   useEffect(() => {
+    if (isPublicLegalRoute) {
+      return;
+    }
+
     console.log('🏠 _app.tsx - useEffect triggered');
     console.log('🏠 _app.tsx - router.query:', router.query);
     console.log('🏠 _app.tsx - router.isReady:', router.isReady);
@@ -35,14 +48,14 @@ function MyApp({ Component, pageProps }: AppProps) {
         console.log('⚠️ _app.tsx - No host parameter found anywhere!');
       }
     }
-  }, [router.query.host, router.isReady]);
+  }, [router.query.host, router.isReady, isPublicLegalRoute]);
   
   const appBridgeConfig = useMemo(() => {
     console.log('🔧 _app.tsx - Creating appBridgeConfig');
     console.log('🔧 _app.tsx - host:', host);
     console.log('🔧 _app.tsx - API key exists:', !!process.env.NEXT_PUBLIC_SHOPIFY_API_KEY);
     
-    if (!host) {
+    if (isPublicLegalRoute || !host) {
       console.log('⚠️ _app.tsx - No host, returning null config');
       return null;
     }
@@ -54,7 +67,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     };
     console.log('✅ _app.tsx - Config created:', { ...config, apiKey: config.apiKey ? '[REDACTED]' : '' });
     return config;
-  }, [host]);
+  }, [host, isPublicLegalRoute]);
 
   // If no host parameter or no API key, render without App Bridge
   if (!appBridgeConfig || !process.env.NEXT_PUBLIC_SHOPIFY_API_KEY) {
