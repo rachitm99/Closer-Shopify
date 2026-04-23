@@ -100,14 +100,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const totalSubmissionsAggregate = await filteredSubmissionsBaseQuery.count().get();
     const totalSubmissions = totalSubmissionsAggregate.data().count || 0;
 
-    // Fetch impressions (last 30 days)
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
+    // Fetch impressions (all-time)
     const impressionsQuery = db.collection(collections.analytics)
       .where('event', '==', 'block_impression')
       .where('shop', '==', shop)
-      .where('timestamp', '>=', thirtyDaysAgo)
       .select('timestamp', 'orderId', 'order_id', 'orderName', 'order');
 
     // Calculate impression stats as UNIQUE orders per day (using IST timezone)
@@ -136,30 +132,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    // Fill in missing dates and convert sets to counts (last 30 days, using IST timezone)
+    // Fill in missing dates and convert sets to counts (all-time, using IST timezone)
     const impressionTimeline = [];
     const today = new Date();
     const todayISTstr = today.toLocaleString('en-US', { timeZone: IST_TIMEZONE });
     const todayIST = new Date(todayISTstr);
 
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(todayIST);
-      date.setDate(date.getDate() - i);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const dateString = `${year}-${month}-${day}`;
-      impressionTimeline.push({
-        date: dateString,
-        impressions: dailyImpressionSets[dateString] ? dailyImpressionSets[dateString].size : 0,
-      });
+    // Get all dates from the dailyImpressionSets
+    const allDates = Object.keys(dailyImpressionSets).sort();
+    if (allDates.length > 0) {
+      const earliestDate = new Date(allDates[0]);
+      const latestDate = new Date(allDates[allDates.length - 1]);
+      
+      for (let d = new Date(earliestDate); d <= latestDate; d.setDate(d.getDate() + 1)) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
+        impressionTimeline.push({
+          date: dateString,
+          impressions: dailyImpressionSets[dateString] ? dailyImpressionSets[dateString].size : 0,
+        });
+      }
     }
 
     const impressionStats = {
       totalImpressions: uniqueOrdersSet.size,
       lastImpression: lastImpressionDate ? lastImpressionDate.toISOString() : null,
       timeline: impressionTimeline,
-      totalLast30Days: Object.values(dailyImpressionSets).reduce((sum, s) => sum + (s ? s.size : 0), 0),
     };
 
     // Build timeline from last 30 days only to keep query cost predictable for very large shops.

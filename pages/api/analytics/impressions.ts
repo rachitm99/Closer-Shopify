@@ -96,7 +96,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           : null,
       };
 
-      // Get detailed timeline (last 30 days) from analytics collection
+      // Get detailed timeline (all-time) from analytics collection
       const dailyImpressions: { [key: string]: number } = {};
       
       impressionsQuery.docs.forEach((doc) => {
@@ -112,23 +112,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         dailyImpressions[date] = (dailyImpressions[date] || 0) + 1;
       });
 
-      // Fill in missing dates with 0 (last 30 days)
+      // Fill in missing dates with 0 (all-time)
       const timeline = [];
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateString = date.toISOString().split('T')[0];
-        timeline.push({
-          date: dateString,
-          impressions: dailyImpressions[dateString] || 0,
-        });
+      const allDates = Object.keys(dailyImpressions).sort();
+      if (allDates.length > 0) {
+        const earliestDate = new Date(allDates[0]);
+        const latestDate = new Date(allDates[allDates.length - 1]);
+        
+        for (let d = new Date(earliestDate); d <= latestDate; d.setDate(d.getDate() + 1)) {
+          const dateString = d.toISOString().split('T')[0];
+          timeline.push({
+            date: dateString,
+            impressions: dailyImpressions[dateString] || 0,
+          });
+        }
       }
 
       return res.status(200).json({
         totalImpressions: impressionStats.totalImpressions,
         lastImpression: impressionStats.lastImpression,
         timeline: timeline,
-        totalLast30Days: Object.values(dailyImpressions).reduce((sum, count) => sum + count, 0),
       });
     } else {
       console.log('⚠️ Method not allowed:', req.method);

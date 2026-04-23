@@ -57,7 +57,6 @@ interface ImpressionStats {
   totalImpressions: number;
   lastImpression: any;
   timeline: { date: string; impressions: number }[];
-  totalLast30Days: number;
 }
 
 interface SubmissionData {
