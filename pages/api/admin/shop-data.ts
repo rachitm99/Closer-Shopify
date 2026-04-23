@@ -249,7 +249,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       timeline,
       allTimeData: timeline,
       totalSubmissions,
-      totalUniqueCustomers: allTimeUniqueCustomers.size,
+      totalUniqueCustomers: uniqueOrdersSet.size,
       totalFollowers,
       totalUniqueFollowers: 0,
       followersAdded: totalFollowers,

@@ -67,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Count unique Instagram handles, otherwise fall back to total submissions
-    const uniqueCustomers = uniqueHandles.size || totalSubmissions;
+    const uniqueCustomers = totalUniqueOrders;
     const uniqueFollowerHandles = followerHandles.size;
     
     // Calculate rates
