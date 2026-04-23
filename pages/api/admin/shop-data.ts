@@ -177,9 +177,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       followers: number;
       uniqueFollowers: Set<string>;
     } } = {};
-    let totalUniqueCustomers = 0;
+    const allTimeUniqueCustomers = new Set<string>();
 
     try {
+      const allTimeSubmissionsSnapshot = await filteredSubmissionsBaseQuery
+        .select('customerEmail')
+        .get();
+
+      allTimeSubmissionsSnapshot.forEach((doc) => {
+        const submission = doc.data();
+        if (submission.customerEmail) {
+          allTimeUniqueCustomers.add(String(submission.customerEmail).toLowerCase());
+        }
+      });
+
       const recentTimelineSnapshot = await recentTimelineQuery.get();
       recentTimelineSnapshot.forEach((doc) => {
         const submission = doc.data();
@@ -209,8 +220,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
         }
       });
-
-      totalUniqueCustomers = Object.values(dailyStats).reduce((sum, day) => sum + day.uniqueCustomers.size, 0);
     } catch (timelineError) {
       console.warn('Falling back to empty timeline for admin shop-data due to timeline query issue:', timelineError);
     }
@@ -238,7 +247,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       timeline,
       allTimeData: timeline,
       totalSubmissions,
-      totalUniqueCustomers,
+      totalUniqueCustomers: allTimeUniqueCustomers.size,
       totalFollowers,
       totalUniqueFollowers: 0,
       followersAdded: totalFollowers,
