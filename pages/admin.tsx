@@ -10,6 +10,7 @@ interface AnalyticsData {
   extensionEnabled: number;
   totalSubmissions: number;
   uniqueCustomers: number;
+  totalUniqueOrders: number;
   repeatSubmissions: number;
   completionRate: number;
   activationRate: number;

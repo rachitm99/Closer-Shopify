@@ -66,6 +66,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
+    // Get all block impressions from analytics collection and compute unique orders
+    const impressionsSnapshot = await db.collection(collections.analytics)
+      .where('event', '==', 'block_impression')
+      .get();
+
+    // Map shop -> Set of numeric orderIds
+    const shopToOrderSet: Record<string, Set<string>> = {};
+    impressionsSnapshot.docs.forEach(doc => {
+      const d: any = doc.data();
+      const shop = d.shop || 'unknown';
+      const rawOrder = d.orderId || d.order_id || d.orderName || d.order || null;
+      if (!rawOrder) return;
+      const m = String(rawOrder).match(/\d+$/);
+      if (!m) return;
+      const orderId = m[0];
+      if (!shopToOrderSet[shop]) shopToOrderSet[shop] = new Set();
+      shopToOrderSet[shop].add(orderId);
+    });
+
+    const totalUniqueOrders = Object.values(shopToOrderSet).reduce((sum: number, s: Set<string>) => sum + s.size, 0);
+
     // Count unique Instagram handles, otherwise fall back to total submissions
     const uniqueCustomers = totalUniqueOrders;
     const uniqueFollowerHandles = followerHandles.size;
@@ -86,6 +107,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       extensionEnabled,
       totalSubmissions,
       uniqueCustomers,
+      totalUniqueOrders,
       followersAdded: followersCount,
       uniqueFollowerHandles: uniqueFollowerHandles,
       repeatSubmissions,
