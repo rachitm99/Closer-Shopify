@@ -180,6 +180,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const allTimeUniqueCustomers = new Set<string>();
 
     try {
+      // Get all submissions (not limited to 30 days) to count all-time unique customers
       const allTimeSubmissionsSnapshot = await filteredSubmissionsBaseQuery
         .select('customerEmail')
         .get();
@@ -191,6 +192,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       });
 
+      // Still build 30-day timeline for charts
       const recentTimelineSnapshot = await recentTimelineQuery.get();
       recentTimelineSnapshot.forEach((doc) => {
         const submission = doc.data();

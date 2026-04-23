@@ -83,14 +83,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Shop parameter is required' });
       }
 
-      // Calculate impressions from analytics events (last 30 days)
-      const now = new Date();
-      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
+      // Calculate impressions from analytics events (all-time)
       const impressionsQuery = await db.collection(collections.analytics)
         .where('event', '==', 'block_impression')
         .where('shop', '==', shop)
-        .where('timestamp', '>=', thirtyDaysAgo)
         .get();
 
       const impressionStats = {
